@@ -214,6 +214,11 @@ export const render = async () => {
   applyScene();
 };
 
+
+// ── GLOBAL HOOKS FOR ROOMS ────────────────────────────────────────────────────
+window._northClearMsgs = () => {
+  state.msgs = [state.msgs[0]];
+};
 // ── BOOT ──────────────────────────────────────────────────────────────────────
 NorthLog.info(`North Forge ${NORTH_VERSION.current} starting`);
 render();
