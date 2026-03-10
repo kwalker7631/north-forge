@@ -113,7 +113,7 @@ const formView = () => `
 
     <div class="pe-field">
       <label class="pe-label">1 · Your Idea</label>
-      <textarea class="pe-textarea" id="pe-idea" placeholder="Randy finds a massive geode underground. Luna somehow escapes and shows up in the cave..." oninput="peSet('idea',this.value)">${formData.idea}</textarea>
+      <textarea class="pe-textarea" id="pe-idea" placeholder="Randy finds a massive geode underground. Luna somehow escapes and shows up in the cave...">${formData.idea}</textarea>
     </div>
 
     <div class="pe-field">
@@ -220,6 +220,8 @@ window.clearChat = () => {
 };
 
 window.peForge = async () => {
+  const ideaEl = document.getElementById('pe-idea');
+  if (ideaEl) formData.idea = ideaEl.value;
   if (!formData.idea.trim()) { window.showToast('Describe your idea first!'); return; }
   if (!formData.character)   { window.showToast('Pick a character!'); return; }
   if (!formData.platform)    { window.showToast('Pick a platform!'); return; }
