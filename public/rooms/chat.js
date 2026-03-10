@@ -210,9 +210,15 @@ const csBlock = (text, idx) => {
 const esc = (s) => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
 window.setChatMode = (m) => { chatMode = m; window.goTo('chat'); };
-window.peSet = (f, v) => { formData[f] = v; window.goTo('chat'); };
+window.peSet = (f, v) => {
+  // save textarea before re-render wipes it
+  const el = document.getElementById('pe-idea');
+  if (el) formData.idea = el.value;
+  formData[f] = v;
+  window.goTo('chat');
+};
 
-window.clearChat = () => {
+window.clearChat = () => { window._northClearMsgs?.();
   if (window.appState) {
     window.appState.msgs = [window.appState.msgs[0]];
   }
@@ -297,10 +303,10 @@ window.copyCS = (id) => {
 };
 
 window.copyFull = (idx) => {
-  const msgs = window.appState?.msgs || [];
-  const msg  = msgs[idx];
-  if (!msg) return;
-  navigator.clipboard.writeText(msg.content.trim())
+  const rows = document.querySelectorAll('.msg-row:not(.user) .msg-text');
+  const el = rows[idx];
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent.trim())
     .then(() => window.showToast('✓ Full call sheet copied!'))
     .catch(() => window.showToast('Copy failed'));
 };
