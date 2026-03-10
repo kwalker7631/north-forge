@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>North Forge — Pine Barron Farms</title>
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    html { font-size:28px; }
+    body { font-family:Georgia,'Times New Roman',serif; background:#020617;
+           color:#ffffff; height:100vh; overflow:hidden; }
+
+    #app-shell   { display:flex; flex-direction:column; height:100vh; }
+    #topbar      { flex-shrink:0; background:rgba(2,6,23,0.98);
+                   backdrop-filter:blur(16px);
+                   border-bottom:2px solid #38bdf844;
+                   padding:14px 24px;
+                   display:flex; align-items:center; gap:14px; }
+    #room-content { flex:1; overflow-y:auto; position:relative; z-index:5; }
+    #bottomnav   { flex-shrink:0; background:rgba(2,6,23,0.98);
+                   backdrop-filter:blur(20px);
+                   border-top:2px solid #38bdf844;
+                   display:flex; overflow-x:auto; padding:8px 10px; gap:4px;
+                   scrollbar-width:none; }
+
+    #sky-canvas  { position:fixed; inset:0; z-index:0; pointer-events:none;
+                   transition:background 1.5s ease; }
+
+    #topbar-left  { display:flex; align-items:center; gap:12px; flex:1; }
+    #topbar-right { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+    #topbar-status{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .farm-title   { font-weight:900; font-size:1.3em; color:#ffffff;
+                    text-shadow:0 0 20px rgba(255,255,255,0.2); }
+    .farm-sub     { font-size:0.62em; color:#94a3b8; margin-top:3px; }
+    .status-dot   { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .status-dot.online  { background:#22c55e; box-shadow:0 0 10px #22c55e; }
+    .status-dot.offline { background:#ef4444; box-shadow:0 0 10px #ef4444; }
+    .status-label { font-size:0.65em; font-weight:900; }
+    .wx-pill, .moon-pill, .version-pill {
+      font-size:0.62em; color:#cbd5e1; font-weight:700;
+      background:rgba(15,23,42,0.9);
+      border:1px solid #334155;
+      border-radius:20px; padding:4px 12px; }
+
+    .tbtn { display:flex; align-items:center; gap:6px;
+            background:rgba(15,23,42,0.9); border:2px solid #334155;
+            border-radius:10px; color:#e2e8f0; padding:8px 16px;
+            cursor:pointer; font-size:0.72em; font-weight:900;
+            font-family:Georgia,serif; transition:all 0.2s; }
+    .tbtn:hover { color:#fff; border-color:#38bdf8;
+                  background:rgba(56,189,248,0.1); }
+    .fsbtn { width:38px; height:38px; background:none; border:none;
+             color:#fff; cursor:pointer; font-size:1.4em; font-weight:900;
+             font-family:Georgia,serif; }
+    .fs-row { display:flex; align-items:center;
+              background:rgba(15,23,42,0.9); border:2px solid #334155;
+              border-radius:10px; padding:2px; gap:2px; }
+    .fs-val { width:48px; text-align:center; font-size:0.65em;
+              font-weight:900; color:#38bdf8; }
+
+    .nav-tab { display:flex; flex-direction:column; align-items:center;
+               gap:5px; padding:10px 16px; background:none; border:none;
+               border-top:4px solid transparent; cursor:pointer;
+               color:#94a3b8; transition:all 0.2s; min-width:82px;
+               white-space:nowrap; font-family:Georgia,serif; }
+    .nav-tab .tab-icon  { font-size:1.6em; }
+    .nav-tab .tab-label { font-size:0.58em; font-weight:900;
+                          letter-spacing:0.5px; text-transform:uppercase; }
+    .nav-tab:hover  { color:#ffffff; background:rgba(56,189,248,0.08); }
+    .nav-tab.active { color:#38bdf8; border-top-color:#38bdf8;
+                      background:rgba(56,189,248,0.12); }
+
+    .toast { position:fixed; top:18px; left:50%; transform:translateX(-50%);
+             background:#0284c7; color:#fff; font-weight:900;
+             padding:12px 28px; border-radius:30px; z-index:500;
+             font-size:0.82em; box-shadow:0 8px 28px rgba(0,0,0,0.5);
+             white-space:nowrap; animation:fadeDown 0.3s ease; }
+    @keyframes fadeDown {
+      from { opacity:0; transform:translateX(-50%) translateY(-10px); }
+      to   { opacity:1; transform:translateX(-50%) translateY(0); }
+    }
+
+    .north-peek { position:fixed; bottom:100px; right:0; z-index:400;
+                  display:flex; align-items:flex-end; gap:0;
+                  animation:peekSlide 0.4s ease-out forwards; }
+    @keyframes peekSlide {
+      from { opacity:0; transform:translateX(40px); }
+      to   { opacity:1; transform:translateX(0); }
+    }
+    .peek-bubble { background:rgba(2,6,23,0.98); border:2px solid #38bdf8;
+                   border-radius:18px 18px 4px 18px; padding:16px 20px;
+                   max-width:260px; margin-right:8px;
+                   box-shadow:0 8px 32px rgba(56,189,248,0.4); }
+    .peek-label  { color:#38bdf8; font-size:0.58em; font-weight:900;
+                   letter-spacing:1px; text-transform:uppercase; margin-bottom:6px; }
+    .peek-msg    { color:#ffffff; font-size:0.82em; line-height:1.55;
+                   margin-bottom:12px; font-weight:500; }
+    .peek-actions{ display:flex; gap:8px; }
+    .peek-actions button { border:none; border-radius:8px; padding:7px 14px;
+                           font-weight:900; font-size:0.68em; cursor:pointer;
+                           font-family:Georgia,serif; }
+    .peek-actions button:first-child { background:#38bdf8; color:#020617; }
+    .peek-actions button:last-child  { background:rgba(255,255,255,0.08);
+                                       color:#94a3b8; }
+    .peek-avatar { width:54px; height:54px; border-radius:50% 50% 50% 8px;
+                   background:linear-gradient(135deg,#0ea5e9,#0284c7);
+                   display:flex; align-items:center; justify-content:center;
+                   font-size:1.6em; box-shadow:0 0 25px rgba(56,189,248,0.5); }
+
+    #naughty-layer { position:fixed; inset:0; pointer-events:none;
+                     z-index:300; overflow:hidden; }
+    .naughty-animal { position:absolute; font-size:3em; }
+    .anim-peek      { bottom:-130px; left:28%;
+                      animation:aPeek 4.5s ease-in-out forwards; }
+    .anim-peekRight { right:-130px; bottom:80px;
+                      animation:aPeekR 4.5s ease-in-out forwards; }
+    .anim-sprintFast{ bottom:80px; left:-15%;
+                      animation:aSprint 4s linear forwards; }
+    .anim-ufoHover  { top:-15%; left:75%;
+                      animation:aUfo 4.5s ease-in-out forwards; }
+    @keyframes aPeek   { 0%,100%{bottom:-130px} 20%,80%{bottom:80px} }
+    @keyframes aPeekR  { 0%,100%{right:-130px}  20%,80%{right:22px}  }
+    @keyframes aSprint { 0%{left:-15%} 100%{left:120%} }
+    @keyframes aUfo    { 0%{top:-15%;opacity:0} 15%{opacity:1}
+                         80%{top:20%;opacity:1} 100%{top:-15%;opacity:0} }
+
+    .room-wrap   { padding:24px 28px 36px; }
+    .panel-desc  { color:#94a3b8; font-size:0.88em; line-height:1.7;
+                   margin-bottom:22px; border-left:4px solid #38bdf8;
+                   padding-left:16px; font-weight:600; }
+    .content-card{ background:rgba(15,23,42,0.92); padding:22px;
+                   border-radius:18px; border:2px solid #1e293b;
+                   cursor:pointer; transition:all 0.25s; }
+    .content-card:hover { border-color:#38bdf8; transform:translateY(-4px);
+                          box-shadow:0 12px 30px rgba(0,0,0,0.5); }
+    .list-btn    { display:block; width:100%;
+                   background:rgba(15,23,42,0.92);
+                   border:2px solid #1e293b; padding:14px 18px;
+                   border-radius:14px; color:#ffffff; text-align:left;
+                   margin-bottom:10px; cursor:pointer; font-weight:900;
+                   transition:all 0.25s; font-size:0.88em;
+                   font-family:Georgia,serif; }
+    .list-btn:hover { border-color:#38bdf8; transform:translateX(5px);
+                      background:rgba(56,189,248,0.08); }
+    .error-room  { padding:48px; text-align:center; color:#ef4444;
+                   font-size:1.2em; line-height:1.8; }
+
+    ::-webkit-scrollbar       { width:7px; height:7px; }
+    ::-webkit-scrollbar-track { background:#020617; }
+    ::-webkit-scrollbar-thumb { background:#334155; border-radius:7px; }
+  </style>
+</head>
+<body>
+
+<div id="sky-canvas"></div>
+<div id="naughty-layer"></div>
+<div id="toast-slot"></div>
+<div id="peek-slot"></div>
+
+<div id="app-shell">
+
+  <div id="topbar">
+    <div id="topbar-left">
+      <div>
+        <div class="farm-title">🏚️ North Forge</div>
+        <div class="farm-sub">Pine Barron Farms · Piscataway NJ</div>
+      </div>
+      <div id="topbar-status"></div>
+    </div>
+    <div id="topbar-right">
+      <button class="tbtn" onclick="changeScene()">🌅 Sky</button>
+      <div class="fs-row">
+        <button class="fsbtn" onclick="bumpFont(-1)">−</button>
+        <div class="fs-val" id="fs-display">20px</div>
+        <button class="fsbtn" onclick="bumpFont(1)">+</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="room-content"></div>
+
+  <div id="bottomnav">
+    <button class="nav-tab active" data-tab="home" onclick="goTo('home')">
+      <span class="tab-icon">🏠</span>
+      <span class="tab-label">Home</span>
+    </button>
+    <button class="nav-tab" data-tab="chat" onclick="goTo('chat')">
+      <span class="tab-icon">💬</span>
+      <span class="tab-label">North</span>
+    </button>
+    <button class="nav-tab" data-tab="slots" onclick="goTo('slots')">
+      <span class="tab-icon">🎰</span>
+      <span class="tab-label">Slots</span>
+    </button>
+    <button class="nav-tab" data-tab="rocklab" onclick="goTo('rocklab')">
+      <span class="tab-icon">⛏️</span>
+      <span class="tab-label">Rock Lab</span>
+    </button>
+    <button class="nav-tab" data-tab="racing" onclick="goTo('racing')">
+      <span class="tab-icon">🏁</span>
+      <span class="tab-label">Racing</span>
+    </button>
+    <button class="nav-tab" data-tab="weird" onclick="goTo('weird')">
+      <span class="tab-icon">👻</span>
+      <span class="tab-label">Weird NJ</span>
+    </button>
+    <button class="nav-tab" data-tab="jeeb" onclick="goTo('jeeb')">
+      <span class="tab-icon">🍄</span>
+      <span class="tab-label">Jeeb</span>
+    </button>
+    <button class="nav-tab" data-tab="idioms" onclick="goTo('idioms')">
+      <span class="tab-icon">🤬</span>
+      <span class="tab-label">Idioms</span>
+    </button>
+    <button class="nav-tab" data-tab="cast" onclick="goTo('cast')">
+      <span class="tab-icon">🧠</span>
+      <span class="tab-label">Cast</span>
+    </button>
+    <button class="nav-tab" data-tab="setup" onclick="goTo('setup')">
+      <span class="tab-icon">🔑</span>
+      <span class="tab-label">Setup</span>
+    </button>
+  </div>
+
+</div>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Environment / Secrets — NEVER commit API keys
+.env
+.env.local
+.env*.local
+
+# Node (if you ever add build tools)
+node_modules/
+npm-debug.log
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor folders
+.vscode/
+.idea/
+
+# Firebase emulator data
+.firebaserc.local
