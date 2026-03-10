@@ -1,257 +1,321 @@
-// rooms/platforms.js — Platform Lab
-// Browse platform knowledge, hacks, cinematography. North uses this silently in chat.
+// platforms.js — Craft Engine: Platform Knowledge Base
+// North reads this before generating every prompt.
+// Add new hacks here as they're discovered — North uses them immediately.
 
-import { PLATFORMS, CINEMATOGRAPHY } from '../platforms.js';
+export const PLATFORMS = [
+  {
+    id:       'sora2',
+    name:     'Sora 2',
+    icon:     '🌀',
+    color:    '#0ea5e9',
+    maker:    'OpenAI',
+    best_for: 'Cinematic realism, long duration, complex scene transitions, character consistency',
+    format:   '9:16 vertical · up to 20s · 1080p',
+    model:    'sora-2',
 
-let activeTab    = 'platforms';  // 'platforms' | 'cinema' | 'hacks'
-let activePlatId = 'sora2';
+    prompt_structure: [
+      'HOOK (0–1.5s): scroll-stopping visual, present tense, action already happening',
+      'SCENE: 2–3 sentences, specific NJ location, exact lighting condition, character @ID',
+      'CAMERA: angle + movement + lens in one line (e.g. Low angle, slow push-in, 35mm)',
+      'AUDIO: ambient → dialogue/sound → music layer',
+      'TEXT OVERLAY: 3 words max, optional',
+    ],
 
-export const render = (state) => `
-  <div class="room-wrap">
+    techniques: [
+      'Lock characters with @soraId in every scene sentence — consistency breaks without it',
+      'Describe lighting as a time + weather combo: "3pm November light, low sun through bare oaks"',
+      'Use present tense throughout — Sora responds better to "Ken walks" than "Ken is walking"',
+      'Specify lens focal length — "85mm portrait" vs "16mm wide" gives completely different energy',
+      'Add micro-details: "mud on boots", "breath visible in cold air" — elevates realism dramatically',
+      'Keep scene description under 80 words — Sora degrades with over-stuffed prompts',
+      'Name the exact NJ location — "Route 539 Pine Barrens" beats "rural road"',
+      'End with an audio note — Sora responds to sound design cues',
+    ],
 
-    <div class="pl-tabs">
-      <button class="pl-tab ${activeTab==='platforms'?'active':''}"
-              onclick="plTab('platforms')">🎬 Platforms</button>
-      <button class="pl-tab ${activeTab==='hacks'?'active':''}"
-              onclick="plTab('hacks')">🔥 Hack Library</button>
-      <button class="pl-tab ${activeTab==='cinema'?'active':''}"
-              onclick="plTab('cinema')">📷 Cinematography</button>
-    </div>
+    hacks: [
+      '🔥 SEED LOCK: Add [seed:XXXX] to get consistent results across multiple generations',
+      '🔥 STYLE ANCHOR: Open with "Shot on RED Komodo, anamorphic lens" for instant film look',
+      '🔥 NEGATIVE SPACE: End prompt with "No text overlays, no color grading artifacts" to clean output',
+      '🔥 EMOTION FIRST: Start with the emotional tone before the visual — "Melancholy golden hour…" outperforms purely visual openers',
+      '🔥 CHARACTER ANCHOR: Describe the character\'s physical tell before the action — "Randy in his camo helmet, headlamp on, crouches at cave entrance" locks the look',
+      '🔥 WEATHER AS MOOD: Fog, overcast, golden hour — Sora reads weather as emotional direction',
+    ],
 
-    ${activeTab === 'platforms' ? platformsView() : ''}
-    ${activeTab === 'hacks'     ? hacksView()     : ''}
-    ${activeTab === 'cinema'    ? cinemaView()    : ''}
+    avoid: [
+      'Passive voice ("is being seen", "was walking")',
+      'More than 2 characters in motion simultaneously — consistency breaks',
+      'Abstract concepts without visual anchors ("hope", "freedom" with no image attached)',
+      'Overlong prompts — sweet spot is 60–90 words for the scene block',
+    ],
 
-  </div>
+    callsheet_template: (scene, char, loc, cam, audio) => `
+═══════════════════════════════════════
+  SORA 2 · CALL SHEET
+  Pine Barron Farms Production
+═══════════════════════════════════════
+FORMAT:    9:16 Vertical · 1080p
+DURATION:  8–12 seconds recommended
+LOCATION:  ${loc}
+CHARACTER: ${char}
+───────────────────────────────────────
+SCENE
+${scene}
+───────────────────────────────────────
+CAMERA
+${cam}
+───────────────────────────────────────
+AUDIO
+${audio}
+───────────────────────────────────────
+CLEAN PROMPT (paste into Sora)
+${scene} ${cam} ${audio} Shot on RED Komodo, anamorphic. No text overlays.
+═══════════════════════════════════════`,
+  },
 
-  <style>
-    .pl-tabs { display:flex; gap:10px; margin-bottom:22px; flex-wrap:wrap; }
-    .pl-tab  { background:rgba(15,23,42,0.9); border:2px solid #1e293b;
-               border-radius:12px; padding:11px 22px; color:#64748b;
-               cursor:pointer; font-weight:900; font-size:0.82em;
-               font-family:Georgia,serif; transition:all .2s; }
-    .pl-tab.active { color:#fff; border-color:#38bdf8;
-                     background:rgba(56,189,248,0.12); }
+  {
+    id:       'kling',
+    name:     'Kling AI',
+    icon:     '⚡',
+    color:    '#f59e0b',
+    maker:    'Kuaishou',
+    best_for: 'Physics simulation, fluid motion, material texture, fast action sequences',
+    format:   '9:16 vertical · 5s or 10s · 720p/1080p',
+    model:    'kling-v1.6',
 
-    /* PLATFORM SELECTOR */
-    .plat-selector { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
-    .plat-btn { display:flex; align-items:center; gap:8px;
-                background:rgba(2,6,23,0.9); border:2px solid #1e293b;
-                border-radius:14px; padding:12px 20px; cursor:pointer;
-                font-weight:900; font-size:0.82em; font-family:Georgia,serif;
-                color:#64748b; transition:all .2s; }
-    .plat-btn.active { color:#fff; }
-    .plat-btn:hover  { color:#94a3b8; }
+    prompt_structure: [
+      'Subject: exact description of who/what is in motion',
+      'Action: precise physical movement with material detail',
+      'Environment: location + surface textures + lighting',
+      'Camera: movement type + speed (slow/fast/static)',
+      'Style: cinematic, photorealistic, high detail',
+    ],
 
-    /* PLATFORM DETAIL */
-    .plat-detail { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-    @media(max-width:700px){ .plat-detail { grid-template-columns:1fr; } }
-    .plat-card { background:rgba(2,6,23,0.92); border:2px solid #1e293b;
-                 border-radius:18px; padding:22px; }
-    .plat-card-title { font-size:0.6em; font-weight:900; letter-spacing:2px;
-                       text-transform:uppercase; margin-bottom:14px; }
-    .technique-item { display:flex; gap:10px; margin-bottom:10px;
-                      align-items:flex-start; }
-    .technique-dot  { width:8px; height:8px; border-radius:50%;
-                      background:#38bdf8; flex-shrink:0; margin-top:6px; }
-    .technique-text { color:#cbd5e1; font-size:0.8em; line-height:1.6; }
-    .avoid-item { color:#ef444499; font-size:0.78em; margin-bottom:7px;
-                  padding-left:14px; border-left:3px solid #ef444433; }
-    .struct-item{ color:#94a3b8; font-size:0.78em; margin-bottom:7px;
-                  font-family:monospace; background:rgba(15,23,42,0.8);
-                  padding:8px 12px; border-radius:8px; }
+    techniques: [
+      'Kling is physics-first — describe weight, momentum, material: "heavy boots crunch gravel"',
+      'Motion blur is a strength — lean into fast movement: "dust cloud trails the ATV"',
+      'Material texture prompting is powerful: "worn leather", "rusted iron", "wet mud"',
+      'Camera movement descriptions work well: "tracking shot following subject left to right"',
+      'Short focused prompts outperform long ones — 3 tight sentences beats a paragraph',
+      'Specify surface the character is moving on — Kling simulates it accurately',
+    ],
 
-    /* HACKS */
-    .hack-grid { display:grid;
-                 grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
-                 gap:14px; }
-    .hack-card { background:rgba(2,6,23,0.92); border:2px solid #f59e0b33;
-                 border-radius:16px; padding:20px; }
-    .hack-plat { font-size:0.56em; font-weight:900; letter-spacing:1px;
-                 text-transform:uppercase; margin-bottom:8px; }
-    .hack-text { color:#fcd34d; font-weight:900; font-size:0.84em;
-                 line-height:1.6; margin-bottom:10px; }
-    .hack-copy { background:rgba(245,158,11,0.15); border:1px solid #f59e0b44;
-                 color:#f59e0b; border-radius:8px; padding:6px 14px;
-                 font-size:0.66em; font-weight:900; cursor:pointer;
-                 font-family:Georgia,serif; transition:all .2s; }
-    .hack-copy:hover { background:rgba(245,158,11,0.25); }
+    hacks: [
+      '🔥 PHYSICS ANCHOR: Describe what\'s touching what — "boots on wet pine needles" gives Kling something to simulate',
+      '🔥 SPEED CONTRAST: Mix fast and slow in one scene — "Randy sprints then suddenly stops, dust settling around him"',
+      '🔥 TEXTURE STACKING: Layer 3 material textures — "mud-caked gloves grip a cold quartz crystal in a damp cave"',
+      '🔥 NEGATIVE PROMPT: Always add "no camera shake, no artifacts, photorealistic" at the end',
+      '🔥 MOTION DIRECTION: Specify direction of every movement — Kling responds to "left to right pan" vs just "pan"',
+    ],
 
-    /* CINEMATOGRAPHY */
-    .cinema-section { margin-bottom:28px; }
-    .cinema-title   { font-weight:900; font-size:0.88em; color:#38bdf8;
-                      margin-bottom:14px; padding-bottom:8px;
-                      border-bottom:2px solid #38bdf822; }
-    .cinema-grid    { display:grid;
-                      grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-                      gap:10px; }
-    .cinema-card    { background:rgba(2,6,23,0.92); border:2px solid #1e293b;
-                      border-radius:14px; padding:16px; cursor:pointer;
-                      transition:all .2s; }
-    .cinema-card:hover { border-color:#38bdf8; transform:translateY(-2px); }
-    .cinema-name    { font-weight:900; color:#fff; font-size:0.82em;
-                      margin-bottom:5px; }
-    .cinema-use     { color:#64748b; font-size:0.72em; line-height:1.55; }
+    avoid: [
+      'Complex dialogue scenes — Kling is motion-first, not conversation',
+      'Multiple scene cuts — it\'s one continuous shot per generation',
+      'Abstract environments — needs physical, textured spaces to shine',
+      'Asking for specific facial expressions — motion is the strength, not subtle emotion',
+    ],
 
-    .forge-plat-btn { background:linear-gradient(135deg,#0284c7,#0ea5e9);
-                      color:#fff; border:none; border-radius:12px;
-                      padding:12px 24px; font-weight:900; cursor:pointer;
-                      font-size:0.82em; font-family:Georgia,serif;
-                      transition:all .2s; margin-top:14px; width:100%; }
-    .forge-plat-btn:hover { transform:scale(1.02); }
-  </style>
-`;
+    callsheet_template: (scene, char, loc, cam, audio) => `
+═══════════════════════════════════════
+  KLING AI · CALL SHEET
+  Pine Barron Farms Production
+═══════════════════════════════════════
+FORMAT:    9:16 Vertical
+DURATION:  5s or 10s
+LOCATION:  ${loc}
+CHARACTER: ${char}
+───────────────────────────────────────
+SCENE (physics-first)
+${scene}
+───────────────────────────────────────
+CAMERA
+${cam}
+───────────────────────────────────────
+CLEAN PROMPT (paste into Kling)
+${scene} ${cam}. Photorealistic, high detail, cinematic. No camera shake, no artifacts.
+═══════════════════════════════════════`,
+  },
 
-// ── PLATFORMS VIEW ────────────────────────────────────────────────────────────
-const platformsView = () => {
-  const p = PLATFORMS.find(x => x.id === activePlatId) || PLATFORMS[0];
+  {
+    id:       'veo3',
+    name:     'VEO 3',
+    icon:     '🎬',
+    color:    '#22c55e',
+    maker:    'Google DeepMind',
+    best_for: 'Native audio generation, dialogue, ambient sound, music sync, documentary style',
+    format:   '9:16 vertical · up to 8s · 1080p',
+    model:    'veo-3',
+
+    prompt_structure: [
+      'Visual scene: what is happening and where',
+      'Character action: specific and present tense',
+      'AUDIO BLOCK: this is VEO 3\'s superpower — be very specific',
+      '  · Ambient: background sound environment',
+      '  · Dialogue: exact words if needed',
+      '  · Music: genre + tempo + mood',
+      'Camera: movement and framing',
+    ],
+
+    techniques: [
+      'VEO 3 generates audio natively — this is the differentiator, use it hard',
+      'Describe the soundscape in as much detail as the visuals',
+      'Dialogue works — write the actual line you want spoken',
+      'Music direction is powerful: "lo-fi hip hop beat, 80 BPM, melancholy"',
+      'Documentary style is a strength — "handheld, naturalistic, observational"',
+      'Ambient layers stack well: "wind through pines + distant chickens + gravel crunch"',
+      'North\'s voice could be generated here — describe his vocal quality',
+    ],
+
+    hacks: [
+      '🔥 AUDIO FIRST: Write your audio description before your visual — VEO 3 builds the world around sound',
+      '🔥 DIALOGUE LOCK: Put exact dialogue in quotes: Randy says "I found something. Get the camera."',
+      '🔥 SOUND LAYERING: Stack 3 audio layers — ambient + action sound + music = cinematic richness',
+      '🔥 VOICE CHARACTER: Describe voice tone — "gruff, military cadence, barely containing excitement"',
+      '🔥 NATURE AUDIO: Pine Barrens has a specific sound — "wind through scrub pine, distant crow, dead leaves"',
+    ],
+
+    avoid: [
+      'Ignoring the audio block — VEO 3 without audio direction wastes its main strength',
+      'Fast action sequences — Sora and Kling do this better',
+      'Highly stylized looks — VEO 3 leans naturalistic/documentary',
+    ],
+
+    callsheet_template: (scene, char, loc, cam, audio) => `
+═══════════════════════════════════════
+  VEO 3 · CALL SHEET
+  Pine Barron Farms Production
+═══════════════════════════════════════
+FORMAT:    9:16 Vertical · 1080p
+DURATION:  6–8 seconds
+LOCATION:  ${loc}
+CHARACTER: ${char}
+───────────────────────────────────────
+VISUAL SCENE
+${scene}
+───────────────────────────────────────
+CAMERA
+${cam}
+───────────────────────────────────────
+⭐ AUDIO (VEO 3 superpower — be specific)
+${audio}
+───────────────────────────────────────
+CLEAN PROMPT (paste into VEO 3)
+${scene} ${cam}. AUDIO: ${audio}.
+═══════════════════════════════════════`,
+  },
+
+  {
+    id:       'grok',
+    name:     'Grok Aurora',
+    icon:     '✖️',
+    color:    '#f8fafc',
+    maker:    'xAI',
+    best_for: 'Stylized visuals, surreal imagery, bold aesthetics, Weird NJ content, dreamcore',
+    format:   '9:16 vertical · various durations',
+    model:    'aurora',
+
+    prompt_structure: [
+      'Aesthetic direction first — Grok responds to strong style anchors',
+      'Subject and action',
+      'Environment with surreal or heightened details',
+      'Mood and color palette',
+      'Camera and composition',
+    ],
+
+    techniques: [
+      'Grok Aurora leans into the surreal and stylized — perfect for Weird NJ and Jeeb content',
+      'Lead with aesthetic: "Cinematic dark fairytale", "1970s exploitation film grain", "dreamcore pastoral"',
+      'Color palette direction is powerful: "desaturated greens + amber highlights"',
+      'Great for Salem\'s content — goth aesthetic, dark beauty, stylized reality',
+      'Pine Barrens folklore content is a natural fit — Jersey Devil, ghost roads, fog',
+      'Experimental and bold — if other platforms play it safe, Grok will take the risk',
+    ],
+
+    hacks: [
+      '🔥 STYLE REFERENCE: Name a visual style era — "1970s New Jersey documentary", "80s VHS horror"',
+      '🔥 COLOR GRADE FIRST: Open with color palette — "Teal and orange grade, heavy contrast" sets the whole tone',
+      '🔥 SURREAL LAYER: Add one impossible detail to ground the weird — "the barn casts no shadow"',
+      '🔥 FOLKLORE ANCHOR: Pine Barrens has 300 years of folklore — name it: "Jersey Devil territory", "the pines at 3am"',
+      '🔥 SALEM CONTENT: Dark aesthetic + Grok = perfect match. Describe Salem\'s energy: "goth girl, pine forest, moonlight, surreal"',
+    ],
+
+    avoid: [
+      'Expecting photorealism — that\'s Sora and Kling\'s territory',
+      'Complex character consistency across multiple generations',
+      'Fast sports/action content — stylized slow burn is the strength',
+    ],
+
+    callsheet_template: (scene, char, loc, cam, audio) => `
+═══════════════════════════════════════
+  GROK AURORA · CALL SHEET
+  Pine Barron Farms Production
+═══════════════════════════════════════
+FORMAT:    9:16 Vertical
+LOCATION:  ${loc}
+CHARACTER: ${char}
+───────────────────────────────────────
+AESTHETIC DIRECTION
+[Define style/era/mood before scene]
+───────────────────────────────────────
+SCENE
+${scene}
+───────────────────────────────────────
+CAMERA
+${cam}
+───────────────────────────────────────
+CLEAN PROMPT (paste into Grok Aurora)
+${scene} ${cam}. Stylized cinematic, bold aesthetic, high contrast.
+═══════════════════════════════════════`,
+  },
+];
+
+// ── CINEMATOGRAPHY KNOWLEDGE ──────────────────────────────────────────────────
+export const CINEMATOGRAPHY = {
+  lenses: [
+    { name:'14–16mm ultra wide', use:'Establishing shots, vast spaces, barn exterior, field at dawn' },
+    { name:'24mm wide',          use:'Environmental storytelling, character in context, cave entrances' },
+    { name:'35mm',               use:'Natural perspective, walking shots, Randy\'s daily life' },
+    { name:'50mm standard',      use:'Intimate conversations, kitchen scenes, North\'s loft' },
+    { name:'85mm portrait',      use:'Character close-ups, emotional moments, cast intros' },
+    { name:'135mm telephoto',    use:'Compressed distance, Luna in the field, long road shots' },
+    { name:'Anamorphic',         use:'Cinematic widescreen feel, lens flares, epic barn shots' },
+    { name:'Macro',              use:'Geode details, crystal formations, Randy\'s rock lab' },
+  ],
+
+  moves: [
+    { name:'Static locked',      use:'Tension, observation, North watching from loft' },
+    { name:'Slow push-in',       use:'Revelation, drama, finding something in the cave' },
+    { name:'Pull back reveal',   use:'Scale reveal, farm establishing shot, sunrise over field' },
+    { name:'Tracking shot',      use:'Following character, Randy walking to cave, Ken on ATV' },
+    { name:'Handheld',           use:'Urgency, documentary feel, found footage energy' },
+    { name:'Low angle',          use:'Power, menace, Luna looking up, Jersey Devil territory' },
+    { name:'High angle / drone', use:'Farm scale, Pine Barrens canopy, racing overview' },
+    { name:'Dutch angle',        use:'Unease, Weird NJ content, something is wrong' },
+    { name:'Whip pan',           use:'Energy, action cut, Randy reacting fast' },
+  ],
+
+  lighting: [
+    { name:'Magic hour / golden', use:'Farm life beauty, warm barn exterior, late day field' },
+    { name:'Blue hour / dusk',    use:'Transition, melancholy, end of day on the farm' },
+    { name:'Overcast / flat',     use:'Even, documentary, Pine Barrens midday' },
+    { name:'Hard noon sun',       use:'Summer farm work, harsh reality, outdoor labor' },
+    { name:'Practical interior',  use:'Barn light, kitchen, North\'s loft monitor glow' },
+    { name:'Headlamp / torch',    use:'Cave scenes, Randy underground, night search' },
+    { name:'Moonlight',           use:'Night farm, Weird NJ, ghostly Pine Barrens' },
+    { name:'Storm light',         use:'Drama, tension, before the weather breaks' },
+  ],
+};
+
+// ── NORTH SYSTEM PROMPT INJECTION ─────────────────────────────────────────────
+// This is what gets added to North's system prompt before every generation
+export const getPlatformContext = (platformId) => {
+  const p = PLATFORMS.find(x => x.id === platformId);
+  if (!p) return '';
   return `
-    <div class="panel-desc">
-      North reads this before generating every prompt. Tap a platform, then forge a scene with its optimal techniques baked in.
-    </div>
-
-    <div class="plat-selector">
-      ${PLATFORMS.map(pl => `
-        <button class="plat-btn ${pl.id===activePlatId?'active':''}"
-                style="border-color:${pl.id===activePlatId?pl.color+'88':'#1e293b'};
-                       color:${pl.id===activePlatId?pl.color:'#64748b'};"
-                onclick="plSelect('${pl.id}')">
-          ${pl.icon} ${pl.name}
-        </button>`).join('')}
-    </div>
-
-    <div style="background:rgba(2,6,23,0.95);border:2px solid ${p.color}44;
-                border-radius:20px;padding:22px;margin-bottom:20px;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
-        <div>
-          <div style="font-size:2em;margin-bottom:6px;">${p.icon}</div>
-          <div style="font-weight:900;font-size:1.2em;color:#fff;">${p.name}</div>
-          <div style="font-size:0.66em;color:${p.color};font-weight:900;margin-top:3px;">${p.maker} · ${p.format}</div>
-        </div>
-        <div style="background:${p.color}18;border:2px solid ${p.color}44;border-radius:14px;
-                    padding:12px 18px;max-width:240px;font-size:0.74em;color:#94a3b8;line-height:1.5;">
-          <strong style="color:#fff;">Best for:</strong><br/>${p.best_for}
-        </div>
-      </div>
-      <button class="forge-plat-btn" style="background:linear-gradient(135deg,${p.color},${p.color}bb);"
-        onclick="forgePlatform('${p.id}')">
-        🎬 Forge a Pine Barron Scene for ${p.name}
-      </button>
-    </div>
-
-    <div class="plat-detail">
-
-      <div class="plat-card">
-        <div class="plat-card-title" style="color:${p.color};">✓ Prompt Structure</div>
-        ${p.prompt_structure.map(s => `<div class="struct-item">${s}</div>`).join('')}
-      </div>
-
-      <div class="plat-card">
-        <div class="plat-card-title" style="color:#22c55e;">⭐ Key Techniques</div>
-        ${p.techniques.map(t => `
-          <div class="technique-item">
-            <div class="technique-dot" style="background:${p.color};"></div>
-            <div class="technique-text">${t}</div>
-          </div>`).join('')}
-      </div>
-
-      <div class="plat-card">
-        <div class="plat-card-title" style="color:#f59e0b;">🔥 Active Hacks</div>
-        ${p.hacks.map(h => `
-          <div style="background:rgba(245,158,11,0.08);border:1px solid #f59e0b22;
-                      border-radius:10px;padding:10px 14px;margin-bottom:9px;">
-            <div style="color:#fcd34d;font-size:0.8em;font-weight:900;line-height:1.55;">${h}</div>
-          </div>`).join('')}
-      </div>
-
-      <div class="plat-card">
-        <div class="plat-card-title" style="color:#ef4444;">✗ Avoid</div>
-        ${p.avoid.map(a => `<div class="avoid-item">${a}</div>`).join('')}
-      </div>
-
-    </div>
-  `;
-};
-
-// ── HACKS VIEW ────────────────────────────────────────────────────────────────
-const hacksView = () => `
-  <div class="panel-desc">
-    Every discovered hack, trick, and technique across all platforms. Copy any hack to use it directly.
-  </div>
-  <div class="hack-grid">
-    ${PLATFORMS.flatMap(p =>
-      p.hacks.map(h => `
-        <div class="hack-card">
-          <div class="hack-plat" style="color:${p.color};">${p.icon} ${p.name}</div>
-          <div class="hack-text">${h.replace('🔥 ','')}</div>
-          <button class="hack-copy"
-            onclick="navigator.clipboard.writeText(${JSON.stringify(h.replace('🔥 ',''))}).then(()=>showToast('✓ Hack copied!'))">
-            📋 Copy Hack
-          </button>
-        </div>`)
-    ).join('')}
-  </div>
+PLATFORM: ${p.name} (${p.maker})
+BEST FOR: ${p.best_for}
+FORMAT: ${p.format}
+KEY TECHNIQUES: ${p.techniques.slice(0,4).join(' | ')}
+ACTIVE HACKS: ${p.hacks.slice(0,3).map(h => h.replace('🔥 ','')).join(' | ')}
+AVOID: ${p.avoid.slice(0,2).join(' | ')}
 `;
-
-// ── CINEMATOGRAPHY VIEW ───────────────────────────────────────────────────────
-const cinemaView = () => `
-  <div class="panel-desc">
-    DP-level craft knowledge. Tap any lens, move, or light to forge a scene using that technique.
-  </div>
-
-  <div class="cinema-section">
-    <div class="cinema-title">🔭 Lenses</div>
-    <div class="cinema-grid">
-      ${CINEMATOGRAPHY.lenses.map(l => `
-        <div class="cinema-card"
-          onclick="forgeScene('CINEMATOGRAPHY TEST — Pine Barron Farms scene shot on ${l.name}. Use case: ${l.use}. Character: Ken (@kennethwalker479) or Luna the goat. Full SORA 9:16 format.')">
-          <div class="cinema-name">📷 ${l.name}</div>
-          <div class="cinema-use">${l.use}</div>
-        </div>`).join('')}
-    </div>
-  </div>
-
-  <div class="cinema-section">
-    <div class="cinema-title">🎥 Camera Moves</div>
-    <div class="cinema-grid">
-      ${CINEMATOGRAPHY.moves.map(m => `
-        <div class="cinema-card"
-          onclick="forgeScene('CINEMATOGRAPHY TEST — Pine Barron Farms scene using ${m.name} camera move. Use case: ${m.use}. Full SORA 9:16 format.')">
-          <div class="cinema-name">🎥 ${m.name}</div>
-          <div class="cinema-use">${m.use}</div>
-        </div>`).join('')}
-    </div>
-  </div>
-
-  <div class="cinema-section">
-    <div class="cinema-title">💡 Lighting</div>
-    <div class="cinema-grid">
-      ${CINEMATOGRAPHY.lighting.map(l => `
-        <div class="cinema-card"
-          onclick="forgeScene('CINEMATOGRAPHY TEST — Pine Barron Farms scene lit with ${l.name}. Use case: ${l.use}. Full SORA 9:16 format.')">
-          <div class="cinema-name">💡 ${l.name}</div>
-          <div class="cinema-use">${l.use}</div>
-        </div>`).join('')}
-    </div>
-  </div>
-`;
-
-// ── WINDOW FUNCTIONS ──────────────────────────────────────────────────────────
-window.plTab    = (t)  => { activeTab = t; window.goTo('platforms'); };
-window.plSelect = (id) => { activePlatId = id; window.goTo('platforms'); };
-
-window.forgePlatform = (platId) => {
-  const p = PLATFORMS.find(x => x.id === platId);
-  if (!p) return;
-  window.forgeScene(
-    `Generate a cinematic Pine Barron Farms scene optimized for ${p.name}. ` +
-    `Platform strengths: ${p.best_for}. ` +
-    `Format: ${p.format}. ` +
-    `Apply these techniques: ${p.techniques.slice(0,3).join('; ')}. ` +
-    `Active hacks to use: ${p.hacks.slice(0,2).map(h=>h.replace('🔥 ','')).join('; ')}. ` +
-    `Feature one of: Ken (@kennethwalker479), Randy (@geodudenj), Luna the goat, or Salem (@kennethwa.majorbilli). ` +
-    `Output: full call sheet + clean prompt separately.`
-  );
 };
-
-export const mount = () => {};
