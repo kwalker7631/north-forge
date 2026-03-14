@@ -5,7 +5,8 @@
       "Bash(curl:*)",
       "Bash(kill:*)",
       "Bash(ls:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(firebase deploy:*)"
     ]
   }
 }
