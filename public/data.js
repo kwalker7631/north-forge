@@ -131,3 +131,27 @@ export const SLOT_TEMPLATES = [
   (a,l,r,aud,t) => `Pine Barron Farms random scenario:\n${a} at ${l} arriving by ${r}. Audio: ${aud}. Chaos factor: ${t}\nOpen on the twist already in progress. We drop in mid-scene.`,
   (a,l,r,aud,t) => `Cinematic scene — 30 seconds, vertical:\nSubject: ${a} | Place: ${l} | Transport: ${r} | Sound: ${aud} | Wild card: ${t}\nEvery second earns its place. Viral hook in the first 1.5 seconds.`,
 ];
+
+// ── RANDY'S IDIOMS ────────────────────────────────────────────────────────────
+export const IDIOMS = [
+  { text:"She runs like a diesel in December — loud, mean, and leaving smoke.",             src:"Randy on the Farmall"       },
+  { text:"That cave's darker than Skully's Tuesday morning attitude.",                       src:"Randy, 200 feet down"       },
+  { text:"Moving slower than a tractor in January mud.",                                     src:"Randy at Wall Stadium"      },
+  { text:"That crystal cracked open like it had somewhere to be.",                           src:"Randy's Rock Lab"           },
+  { text:"Quieter than the Pine Barrens at 3AM. Which means something's wrong.",            src:"Randy, always"              },
+  { text:"That plan's got more holes than Route 539 in March.",                              src:"Randy on bad plans"         },
+  { text:"Built tough like NJ clay. Tested underground.",                                    src:"Randy on the crew"          },
+  { text:"That exit came out of nowhere. Like Luna. Every single time.",                     src:"Randy on goats"             },
+  { text:"Running on fumes and pure NJ stubbornness.",                                       src:"Randy, always"              },
+  { text:"That geode's so clean it makes the rest of NJ look embarrassed.",                 src:"Randy's Rock Lab"           },
+  { text:"Cold as a mineshaft in November. Nobody asked for this.",                          src:"Randy underground"          },
+  { text:"She hit that corner sideways and never looked back.",                              src:"Randy on Salem"             },
+  { text:"Locked in like a headlamp on a zeolite wall.",                                     src:"Randy in the zone"          },
+  { text:"More drama than Salem finding the wrong light.",                                    src:"Randy, Rock Lab Ep 3"       },
+  { text:"She came in like a nor'easter and left like a Jersey Devil — fast and unexplained.", src:"Randy on Luna"            },
+  { text:"That's smoother than a zeolite fresh out of the clay.",                            src:"Randy's Rock Lab"           },
+  { text:"We're burning daylight faster than a two-stroke at redline.",                      src:"Randy at the track"         },
+  { text:"Dead quiet. The kind of quiet that means Randy found something.",                  src:"The crew, collectively"     },
+  { text:"That idea's wilder than a hot air balloon over the chicken coop.",                 src:"Randy on Ken's plans"       },
+  { text:"Harder than Route 9 asphalt at noon in August.",                                   src:"Randy, high praise"         },
+];

@@ -113,7 +113,7 @@ const formView = () => `
 
     <div class="pe-field">
       <label class="pe-label">1 · Your Idea</label>
-      <textarea class="pe-textarea" id="pe-idea" placeholder="Randy finds a massive geode underground. Luna somehow escapes and shows up in the cave...">${formData.idea}</textarea>
+      <textarea class="pe-textarea" id="pe-idea" placeholder="Randy finds a massive geode underground. Luna somehow escapes and shows up in the cave..." oninput="peIdeaInput(this.value)">${formData.idea}</textarea>
     </div>
 
     <div class="pe-field">
@@ -165,17 +165,24 @@ const formView = () => `
   </div>
 `;
 
-const chatView = (state) => `
-  <div class="chat-msgs" id="chat-messages">
-    ${state.msgs.map((m,i)=>`
+const chatView = (state) => {
+  let asstIdx = 0;
+  const msgHTML = state.msgs.map(m => {
+    const row = `
       <div class="msg-row ${m.role}">
         <div class="msg-ava">${m.role==='assistant'?'🧠':'👨‍🌾'}</div>
         <div class="msg-bub">
           ${m.role==='assistant'?'<div class="msg-lbl">North · Loft Lab</div>':''}
           <div class="msg-text">${esc(m.content)}</div>
-          ${m.role==='assistant' ? csBlock(m.content, i) : ''}
+          ${m.role==='assistant' ? csBlock(m.content, asstIdx) : ''}
         </div>
-      </div>`).join('')}
+      </div>`;
+    if (m.role === 'assistant') asstIdx++;
+    return row;
+  }).join('');
+  return `
+  <div class="chat-msgs" id="chat-messages">
+    ${msgHTML}
     ${state.loading ? `
       <div class="north-thinking">
         <span style="font-size:1.4em;">🧠</span> North is thinking
@@ -189,7 +196,8 @@ const chatView = (state) => `
       onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendFreeChat();}"></textarea>
     <button class="chat-send" onclick="sendFreeChat()">➤</button>
   </div>
-`;
+  `;
+};
 
 const csBlock = (text, idx) => {
   if (!/CLEAN PROMPT|CALL SHEET|═══/i.test(text)) return '';
@@ -209,19 +217,22 @@ const csBlock = (text, idx) => {
 
 const esc = (s) => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-window.setChatMode = (m) => { chatMode = m; window.goTo('chat'); };
+window.setChatMode = (m) => {
+  const el = document.getElementById('pe-idea');
+  if (el) formData.idea = el.value;
+  chatMode = m;
+  window.goTo('chat');
+};
+window.peIdeaInput = (val) => { formData.idea = val; };
 window.peSet = (f, v) => {
-  // save textarea before re-render wipes it
   const el = document.getElementById('pe-idea');
   if (el) formData.idea = el.value;
   formData[f] = v;
   window.goTo('chat');
 };
 
-window.clearChat = () => { window._northClearMsgs?.();
-  if (window.appState) {
-    window.appState.msgs = [window.appState.msgs[0]];
-  }
+window.clearChat = () => {
+  window._northClearMsgs?.();
   window.goTo('chat');
 };
 
@@ -279,10 +290,10 @@ CLEAN PROMPT
 ═══════════════════════════════════════`;
 
   formStep = 'generating';
+  chatMode = 'chat';  // switch before send so messages appear while North thinks
   window.goTo('chat');
   await window.send(prompt);
   formStep = 'idle';
-  chatMode = 'chat';
   window.goTo('chat');
 };
 

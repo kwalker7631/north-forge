@@ -136,9 +136,9 @@ const ANIMALS = ['🐐','🐕','🛸','👽','🦍','🦊','🐓','🐇'];
 setInterval(() => {
   if (Math.random() < 0.6) {
     const e   = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
-    const css = e === '🛸' ? 'an-ufo' : ['an-peek','an-right','an-run'][Math.floor(Math.random()*3)];
+    const css = e === '🛸' ? 'anim-ufoHover' : ['anim-peek','anim-peekRight','anim-sprintFast'][Math.floor(Math.random()*3)];
     const el  = document.createElement('div');
-    el.className = `nan ${css}`;
+    el.className = `naughty-animal ${css}`;
     el.textContent = e;
     document.getElementById('naughty-layer')?.appendChild(el);
     setTimeout(() => el.remove(), 5000);
@@ -169,14 +169,14 @@ const topbarHTML = () => {
 const peekHTML = () => !state.northPeek ? '' : `
   <div class="north-peek">
     <div class="peek-bubble">
-      <div class="peek-lbl">North says</div>
+      <div class="peek-label">North says</div>
       <div class="peek-msg">${state.northPeek.msg}</div>
-      <div class="peek-acts">
+      <div class="peek-actions">
         <button onclick="goTo('${state.northPeek.tab}')">Let's go</button>
         <button onclick="dismissPeek()">dismiss</button>
       </div>
     </div>
-    <div class="peek-ava">🧠</div>
+    <div class="peek-avatar">🧠</div>
   </div>`;
 
 // ── RENDER ────────────────────────────────────────────────────────────────────

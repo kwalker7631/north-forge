@@ -194,6 +194,7 @@ const hacksView = () => `
 `;
 
 // ── CINEMATOGRAPHY VIEW ───────────────────────────────────────────────────────
+const sq = (s) => s.replace(/'/g, "\\'");
 const cinemaView = () => `
   <div class="panel-desc">
     DP-level craft knowledge. Tap any lens, move, or light to forge a scene using that technique.
@@ -204,7 +205,7 @@ const cinemaView = () => `
     <div class="cinema-grid">
       ${CINEMATOGRAPHY.lenses.map(l => `
         <div class="cinema-card"
-          onclick="forgeScene('CINEMATOGRAPHY TEST — Pine Barron Farms scene shot on ${l.name}. Use case: ${l.use}. Character: Ken (@kennethwalker479) or Luna the goat. Full SORA 9:16 format.')">
+          onclick="forgeScene('CINEMATOGRAPHY TEST — Pine Barron Farms scene shot on ${sq(l.name)}. Use case: ${sq(l.use)}. Character: Ken (@kennethwalker479) or Luna the goat. Full SORA 9:16 format.')">
           <div class="cinema-name">📷 ${l.name}</div>
           <div class="cinema-use">${l.use}</div>
         </div>`).join('')}
@@ -216,7 +217,7 @@ const cinemaView = () => `
     <div class="cinema-grid">
       ${CINEMATOGRAPHY.moves.map(m => `
         <div class="cinema-card"
-          onclick="forgeScene('CINEMATOGRAPHY TEST — Pine Barron Farms scene using ${m.name} camera move. Use case: ${m.use}. Full SORA 9:16 format.')">
+          onclick="forgeScene('CINEMATOGRAPHY TEST — Pine Barron Farms scene using ${sq(m.name)} camera move. Use case: ${sq(m.use)}. Full SORA 9:16 format.')">
           <div class="cinema-name">🎥 ${m.name}</div>
           <div class="cinema-use">${m.use}</div>
         </div>`).join('')}
@@ -228,7 +229,7 @@ const cinemaView = () => `
     <div class="cinema-grid">
       ${CINEMATOGRAPHY.lighting.map(l => `
         <div class="cinema-card"
-          onclick="forgeScene('CINEMATOGRAPHY TEST — Pine Barron Farms scene lit with ${l.name}. Use case: ${l.use}. Full SORA 9:16 format.')">
+          onclick="forgeScene('CINEMATOGRAPHY TEST — Pine Barron Farms scene lit with ${sq(l.name)}. Use case: ${sq(l.use)}. Full SORA 9:16 format.')">
           <div class="cinema-name">💡 ${l.name}</div>
           <div class="cinema-use">${l.use}</div>
         </div>`).join('')}
