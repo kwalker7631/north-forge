@@ -52,7 +52,7 @@ const callAnthropic = async (messages, apiKey, system) => {
         'anthropic-dangerous-allow-browser': 'true',
       },
       body: JSON.stringify({
-        model:      'claude-sonnet-4-5',
+        model:      'claude-sonnet-4-6',
         max_tokens: 2048,
         system:     system,
         messages:   clean.map(m => ({ role: m.role, content: m.content })),
@@ -138,10 +138,12 @@ export const callNorth = async (messages, keys = {}, weather = null) => {
   const fallback = await callGemini(messages, gemini, system);
   if (fallback) return { ok: true, text: fallback, provider: 'gemini' };
 
+  const lastWarn = NorthLog.last(3).filter(e => e.t === 'warn').pop();
+  const hint     = lastWarn ? `\n\nLast error: ${lastWarn.m}` : '';
   NorthLog.error('All providers failed — check API key and network');
   return {
     ok:       false,
-    text:     "North lost the signal. Check your API key in Setup and try again. 🏚️",
+    text:     `North lost the signal. Check your API key in Setup and try again. 🏚️${hint}`,
     provider: 'none',
   };
 };
