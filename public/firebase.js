@@ -79,3 +79,33 @@ export const loadPrompts = async (userId, count = 20) => {
     return [];
   }
 };
+
+// ── EVENT LOG ─────────────────────────────────────────────────────────────────
+// Logs AI calls, failures, and key events to Firestore (per-user, auth-gated).
+export const logEvent = async (userId, event) => {
+  if (!userId) return;
+  try {
+    await addDoc(collection(db, 'users', userId, 'events'), {
+      ...event,
+      ts: new Date().toISOString(),
+    });
+  } catch (e) {
+    console.warn('[North] logEvent failed:', e.message);
+  }
+};
+
+export const loadEvents = async (userId, count = 20) => {
+  if (!userId) return [];
+  try {
+    const q    = query(
+      collection(db, 'users', userId, 'events'),
+      orderBy('ts', 'desc'),
+      limit(count)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) {
+    console.warn('[North] loadEvents failed:', e.message);
+    return [];
+  }
+};

@@ -5,7 +5,8 @@ import { ROOMS, SCENES }           from './data.js';
 import { callNorth, fetchWeather,
          getMoonPhase, NorthLog }   from './api.js';
 import { onAuth, signIn, signOut_,
-         savePrefs, loadPrefs }     from './firebase.js';
+         savePrefs, loadPrefs,
+         logEvent, loadEvents }     from './firebase.js';
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 export const state = {
@@ -49,9 +50,17 @@ window.send = async (text) => {
   state.msgs.push({ role:'user', content:text });
   state.loading = true;
   window.goTo('chat');
-  const result = await callNorth(state.msgs, state.keys);
+  const result = await callNorth(state.msgs, state.keys, state.weather);
   state.msgs.push({ role:'assistant', content:result.text });
   state.loading = false;
+  if (state.user) {
+    logEvent(state.user.uid, {
+      type:     result.ok ? 'success' : 'error',
+      provider: result.provider,
+      chars:    result.text.length,
+      prompt:   text.slice(0, 80),
+    });
+  }
   render();
   setTimeout(() => document.getElementById('chat-bottom')?.scrollIntoView({ behavior:'smooth' }), 120);
 };
@@ -145,9 +154,21 @@ setInterval(() => {
   }
 }, 22000);
 
-// ── WEATHER ───────────────────────────────────────────────────────────────────
+// ── WEATHER AGENT ─────────────────────────────────────────────────────────────
+const weatherToScene = (wx) => {
+  const h    = new Date().getHours();
+  const cond = (wx?.condition || '').toLowerCase();
+  if (cond.includes('rain') || cond.includes('thunder') || cond.includes('drizzle')) return 2;
+  if (cond.includes('overcast') || cond.includes('cloudy'))  return 2;
+  if (h >= 22 || h < 5)  return 3; // night
+  if (h >= 5  && h < 7)  return 4; // dawn
+  if (h >= 7  && h < 20) return 0; // golden/clear
+  return 1;                         // pines (evening)
+};
+
 fetchWeather('Piscataway').then(wx => {
   state.weather = wx;
+  if (wx) state.sceneIdx = weatherToScene(wx);
   NorthLog.info(wx ? `Weather: ${wx.temp} ${wx.condition}` : 'Weather unavailable');
   render();
 });
@@ -219,6 +240,8 @@ export const render = async () => {
 window._northClearMsgs = () => {
   state.msgs = [state.msgs[0]];
 };
+window.loadNorthEvents = (count = 15) =>
+  state.user ? loadEvents(state.user.uid, count) : Promise.resolve([]);
 // ── BOOT ──────────────────────────────────────────────────────────────────────
 NorthLog.info(`North Forge ${NORTH_VERSION.current} starting`);
 render();

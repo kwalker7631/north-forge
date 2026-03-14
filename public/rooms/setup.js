@@ -74,7 +74,7 @@ export const render = (state) => `
     </div>
 
     <!-- STATUS -->
-    <div class="setup-card">
+    <div class="setup-card" style="margin-bottom:18px;">
       <div class="setup-card-title">📡 System Status</div>
       <div style="display:flex;flex-direction:column;gap:10px;">
         <div class="status-row">
@@ -98,10 +98,23 @@ export const render = (state) => `
         <div class="status-row">
           <span class="sdot ${state.weather?'on':'off'}"></span>
           <span style="font-size:0.82em;color:${state.weather?'#22c55e':'#64748b'};font-weight:900;">
-            ${state.weather ? `Weather · ${state.weather.temp} ${state.weather.condition}` : 'Weather · Unavailable'}
+            ${state.weather ? `Weather · ${state.weather.temp} ${state.weather.condition} · sky auto-set` : 'Weather · Unavailable'}
           </span>
         </div>
       </div>
+    </div>
+
+    <!-- EVENT LOG -->
+    <div class="setup-card">
+      <div class="setup-card-title">📋 North Event Log
+        ${!state.user ? `<span style="color:#64748b;font-weight:400;font-size:0.78em;"> — sign in to enable</span>` : ''}
+      </div>
+      <div id="event-log-body" style="font-size:0.72em;color:#64748b;min-height:40px;">
+        ${state.user ? 'Loading…' : 'Sign in with Google to view your event log.'}
+      </div>
+      ${state.user ? `
+        <button class="setup-btn" style="margin-top:14px;font-size:0.72em;padding:10px 18px;"
+                onclick="setupRefreshLog()">↺ Refresh Log</button>` : ''}
     </div>
 
   </div>
@@ -131,6 +144,31 @@ export const render = (state) => `
   </style>
 `;
 
+const renderEventRows = (events) => {
+  if (!events.length) return '<div style="color:#475569;">No events logged yet. Generate a prompt to start.</div>';
+  return events.map(e => {
+    const icon  = e.type === 'error' ? '🔴' : e.type === 'warn' ? '🟡' : '🟢';
+    const time  = e.ts ? new Date(e.ts).toLocaleTimeString() : '—';
+    const label = e.provider ? `[${e.provider}]` : '';
+    const msg   = e.prompt ? `"${e.prompt.slice(0,50)}…"` : (e.msg || '');
+    return `
+      <div style="padding:7px 0;border-bottom:1px solid #1e293b22;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;">
+        <span>${icon}</span>
+        <span style="color:#38bdf8;white-space:nowrap;">${time}</span>
+        <span style="color:#94a3b8;font-weight:900;">${label}</span>
+        <span style="color:#cbd5e1;flex:1;">${msg}</span>
+        ${e.chars ? `<span style="color:#475569;">${e.chars} chars</span>` : ''}
+      </div>`;
+  }).join('');
+};
+
+window.setupRefreshLog = async () => {
+  const el = document.getElementById('event-log-body');
+  if (el) el.innerHTML = '<span style="color:#64748b;">Refreshing…</span>';
+  const events = await window.loadNorthEvents?.(20) || [];
+  if (el) el.innerHTML = renderEventRows(events);
+};
+
 window.saveAnthropicKey = () => {
   const val = document.getElementById('anthropic-key-input')?.value?.trim();
   if (!val) { window.showToast('Paste your key first'); return; }
@@ -145,4 +183,10 @@ window.saveGeminiKey = () => {
   window.showToast('✓ Gemini key saved');
 };
 
-export const mount = () => {};
+export const mount = async (state) => {
+  if (state?.user && window.loadNorthEvents) {
+    const events = await window.loadNorthEvents(20);
+    const el = document.getElementById('event-log-body');
+    if (el) el.innerHTML = renderEventRows(events);
+  }
+};
