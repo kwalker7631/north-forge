@@ -1,143 +1,238 @@
-// rooms/slots.js — Story Slots
-// Pick your star. Pull the lever. North builds the cinematic scene.
+// rooms/slots.js — Madlib Story Slots
+// Spin the reels, lock what you like, forge the scene.
 
-import { SLOT_LOCATIONS, SLOT_RIDES, SLOT_AUDIO, TWISTS, SLOT_TEMPLATES } from '../data.js';
+// ── SLOT DATA ─────────────────────────────────────────────────────────────────
+const REELS = {
+  who: [
+    { val:'ken',      label:'Ken',       icon:'👨‍🌾' },
+    { val:'randy',    label:'Randy',     icon:'🪖'  },
+    { val:'salem',    label:'Salem',     icon:'✨'  },
+    { val:'eleanor',  label:'Eleanor',   icon:'👵'  },
+    { val:'luna',     label:'Luna',      icon:'🐐'  },
+    { val:'marguerite',label:'Marguerite',icon:'👩🏽‍🌾'},
+    { val:'skully',   label:'Skully',    icon:'🌑'  },
+    { val:'tank',     label:'Tank',      icon:'🐕'  },
+    { val:'big',      label:'BigTheSqua',icon:'🦍'  },
+  ],
+  action: [
+    { val:'finds something underground',    label:'Finds something underground',  icon:'⛏️'  },
+    { val:'escapes the pen at 3am',         label:'Escapes at 3am',               icon:'🌙'  },
+    { val:'discovers a Jersey Devil track', label:'Finds JD tracks',              icon:'👣'  },
+    { val:'races down Route 539',           label:'Races Route 539',              icon:'🏁'  },
+    { val:'films a golden hour shot',       label:'Films golden hour',            icon:'🌅'  },
+    { val:'argues with a chicken',          label:'Argues with chicken',          icon:'🐔'  },
+    { val:'finds a glowing geode',          label:'Finds glowing geode',          icon:'💎'  },
+    { val:'gets lost in the pines',         label:'Lost in the pines',            icon:'🌲'  },
+    { val:'sees something in the loft',     label:'Sees something in loft',       icon:'🔭'  },
+    { val:'breaks into the garden at dawn', label:'Garden at dawn',               icon:'🌻'  },
+  ],
+  location: [
+    { val:'Big Red Barn',         label:'Big Red Barn',      icon:'🏚️' },
+    { val:"Randy's Cave #1",      label:"Randy's Cave",      icon:'⛏️' },
+    { val:'Pine Barrens Forest',  label:'Pine Barrens',      icon:'🌲' },
+    { val:'Route 539',            label:'Route 539',         icon:'🛣️' },
+    { val:'Barn Loft',            label:'Barn Loft',         icon:'🔭' },
+    { val:'Chicken Coop',         label:'Chicken Coop',      icon:'🐔' },
+    { val:'Farm Garden',          label:'Farm Garden',       icon:'🌻' },
+    { val:'Assunpink Creek',      label:'Creek at Dusk',     icon:'💧' },
+    { val:'NJ Dirt Track',        label:'Dirt Track',        icon:'🏁' },
+    { val:'Back Field',           label:'Back Field',        icon:'🌾' },
+  ],
+  twist: [
+    { val:'Luna shows up uninvited',             label:'Luna crashes it',         icon:'🐐' },
+    { val:"it's caught on Randy's trail cam",    label:"Randy's trail cam",       icon:'📹' },
+    { val:'North is watching from the loft',     label:'North is watching',       icon:'🧠' },
+    { val:'Eleanor wheels out and takes charge', label:'Eleanor takes charge',    icon:'👵' },
+    { val:'there is no explanation',             label:'No explanation',          icon:'👻' },
+    { val:"the weather turns",                   label:'Weather turns',           icon:'⛈️' },
+    { val:'someone is filming someone filming',  label:'Meta moment',             icon:'🎬' },
+    { val:"it's 3am and nobody sleeps",          label:'3am on the farm',         icon:'🌙' },
+  ],
+  platform: [
+    { val:'sora2',  label:'Sora 2',      icon:'🌀' },
+    { val:'kling',  label:'Kling',        icon:'⚡' },
+    { val:'veo3',   label:'VEO 3',        icon:'🎬' },
+    { val:'grok',   label:'Grok Aurora',  icon:'✖️' },
+  ],
+};
 
-const CAST = [
-  { id:'ken',       name:'Ken',      icon:'👨‍🌾', soraId:'@kennethwalker479'     },
-  { id:'marguerite',name:'Marguerite',icon:'👩🏽‍🌾',soraId:'@prprincess138'        },
-  { id:'randy',     name:'Randy',    icon:'🪖',  soraId:'@geodudenj'            },
-  { id:'salem',     name:'Salem',    icon:'✨',  soraId:'@kennethwa.majorbilli' },
-  { id:'skully',    name:'Skully',   icon:'🌑',  soraId:'@kennethwa.shadowblaz' },
-  { id:'luna',      name:'Luna',     icon:'🐐',  soraId:'@kennethwa.luna'       },
-  { id:'big',       name:'BigTheSqua',icon:'🦍', soraId:'@kennethwa.bigthesqua' },
-  { id:'eleanor',   name:'Eleanor',  icon:'👵',  soraId:'@grandma.eleanor'      },
-];
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let current = {
+  who:      0,
+  action:   0,
+  location: 0,
+  twist:    0,
+  platform: 0,
+};
+let locked = { who:false, action:false, location:false, twist:false, platform:false };
+let spinning = false;
 
-const rnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
-let slotChar  = null;
-let slotResult = null;
-
+// ── RENDER ────────────────────────────────────────────────────────────────────
 export const render = (state) => `
   <div class="room-wrap">
 
     <div class="panel-desc">
-      Pick your star. Pull the lever. North rolls a random location, ride, soundtrack,
-      and a plot twist — then forges the full cinematic scene.
+      Spin the reels. Lock what you like. Forge it into a scene. Every combo is a story waiting to happen on Pine Barron Farms.
     </div>
 
-    <div style="margin-bottom:22px;">
-      <div class="sl-label">1 · Who's the star?</div>
-      <div class="sl-cast-grid">
-        ${CAST.map(c => `
-          <div class="sl-cast-opt ${slotChar===c.id?'sel':''}" onclick="slPickChar('${c.id}')">
-            <div class="sl-cast-icon">${c.icon}</div>
-            <div class="sl-cast-name">${c.name}</div>
-          </div>`).join('')}
+    <!-- SLOT MACHINE -->
+    <div class="slot-machine">
+
+      ${reelHTML('who',      'WHO',      current.who,      locked.who)}
+      ${reelHTML('action',   'DOES',     current.action,   locked.action)}
+      ${reelHTML('location', 'WHERE',    current.location, locked.location)}
+      ${reelHTML('twist',    'TWIST',    current.twist,    locked.twist)}
+      ${reelHTML('platform', 'PLATFORM', current.platform, locked.platform)}
+
+    </div>
+
+    <!-- STORY PREMISE -->
+    <div class="premise-box">
+      <div class="premise-label">📋 YOUR STORY PREMISE</div>
+      <div class="premise-text" id="premise-text">
+        ${getPremise()}
       </div>
     </div>
 
-    <button class="sl-pull-btn" onclick="slPull()">🎰 PULL THE LEVER</button>
-
-    ${slotResult ? `
-      <div style="margin-top:26px;">
-        <div class="sl-label" style="margin-bottom:14px;">2 · North rolled...</div>
-        <div class="sl-result-grid">
-          <div class="sl-result-card" style="border-color:#38bdf844;">
-            <div class="sl-result-icon">${slotResult.loc.icon}</div>
-            <div class="sl-result-type">LOCATION</div>
-            <div class="sl-result-val">${slotResult.loc.label}</div>
-            <div class="sl-result-sub">${slotResult.loc.desc}</div>
-          </div>
-          <div class="sl-result-card" style="border-color:#22c55e44;">
-            <div class="sl-result-icon">${slotResult.ride.icon}</div>
-            <div class="sl-result-type">RIDE</div>
-            <div class="sl-result-val">${slotResult.ride.label}</div>
-            <div class="sl-result-sub">${slotResult.ride.desc}</div>
-          </div>
-          <div class="sl-result-card" style="border-color:#f59e0b44;">
-            <div class="sl-result-icon">${slotResult.audio.icon}</div>
-            <div class="sl-result-type">AUDIO</div>
-            <div class="sl-result-val">${slotResult.audio.label}</div>
-            <div class="sl-result-sub">${slotResult.audio.desc}</div>
-          </div>
-        </div>
-        <div class="sl-twist-card">
-          <div class="sl-twist-label">⚡ PLOT TWIST</div>
-          <div class="sl-twist-text">${slotResult.twist}</div>
-        </div>
-        <button class="sl-forge-btn" onclick="slForge()">🎬 FORGE THIS SCENE</button>
-        <button class="sl-reroll-btn" onclick="slPull()">↺ Re-roll</button>
-      </div>` : ''}
+    <!-- BUTTONS -->
+    <div class="slot-actions">
+      <button class="slot-spin-btn" onclick="slotspin()" id="spin-btn">
+        🎰 SPIN
+      </button>
+      <button class="slot-forge-btn" onclick="slotsForge()">
+        🎬 FORGE THIS SCENE
+      </button>
+    </div>
 
   </div>
 
   <style>
-    .sl-label { font-size:.62em; font-weight:900; color:#38bdf8; letter-spacing:2px;
-                text-transform:uppercase; margin-bottom:12px; display:block; }
-    .sl-cast-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); gap:8px; }
-    .sl-cast-opt  { background:rgba(2,6,23,.9); border:2px solid #1e293b; border-radius:14px;
-                    padding:14px 8px; cursor:pointer; text-align:center; transition:all .2s; }
-    .sl-cast-opt:hover { border-color:#38bdf833; }
-    .sl-cast-opt.sel   { border-color:#38bdf8; background:rgba(56,189,248,.12); }
-    .sl-cast-icon { font-size:1.8em; margin-bottom:5px; }
-    .sl-cast-name { font-size:.65em; font-weight:900; color:#fff; }
-    .sl-pull-btn  { width:100%; background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff;
-                    border:none; border-radius:18px; padding:20px; font-weight:900; font-size:1.1em;
-                    cursor:pointer; font-family:Georgia,serif; transition:all .25s; margin-top:6px;
-                    box-shadow:0 6px 28px rgba(245,158,11,.35); letter-spacing:1px; }
-    .sl-pull-btn:hover { transform:scale(1.02); }
-    .sl-result-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
-    @media(max-width:600px){ .sl-result-grid { grid-template-columns:1fr; } }
-    .sl-result-card { background:rgba(2,6,23,.95); border:2px solid #1e293b; border-radius:16px;
-                      padding:16px; text-align:center; }
-    .sl-result-icon { font-size:2em; margin-bottom:6px; }
-    .sl-result-type { font-size:.54em; font-weight:900; letter-spacing:2px; color:#64748b;
-                      text-transform:uppercase; margin-bottom:4px; }
-    .sl-result-val  { font-weight:900; color:#fff; font-size:.84em; margin-bottom:3px; }
-    .sl-result-sub  { font-size:.66em; color:#64748b; line-height:1.4; }
-    .sl-twist-card  { background:rgba(245,158,11,.08); border:2px solid #f59e0b44; border-radius:16px;
-                      padding:18px 22px; margin-bottom:16px; }
-    .sl-twist-label { font-size:.56em; font-weight:900; letter-spacing:2px; color:#f59e0b;
-                      text-transform:uppercase; margin-bottom:8px; }
-    .sl-twist-text  { color:#fcd34d; font-weight:900; font-size:.9em; line-height:1.6; }
-    .sl-forge-btn   { width:100%; background:linear-gradient(135deg,#0284c7,#0ea5e9); color:#fff;
-                      border:none; border-radius:16px; padding:16px; font-weight:900; font-size:1em;
-                      cursor:pointer; font-family:Georgia,serif; transition:all .25s; margin-bottom:10px; }
-    .sl-forge-btn:hover { transform:scale(1.01); }
-    .sl-reroll-btn  { width:100%; background:none; border:2px solid #1e293b; border-radius:14px;
-                      padding:12px; font-weight:900; font-size:.82em; color:#64748b;
-                      cursor:pointer; font-family:Georgia,serif; transition:all .2s; }
-    .sl-reroll-btn:hover { border-color:#38bdf8; color:#38bdf8; }
+    .slot-machine { display:flex; gap:10px; margin-bottom:22px;
+                    overflow-x:auto; padding-bottom:6px; }
+    .reel  { background:rgba(2,6,23,0.95); border:2px solid #1e293b;
+             border-radius:18px; padding:16px 12px; flex:1; min-width:100px;
+             display:flex; flex-direction:column; align-items:center; gap:10px;
+             transition:border-color .3s; }
+    .reel.locked { border-color:#f59e0b; background:rgba(245,158,11,0.06); }
+    .reel-label  { font-size:0.52em; font-weight:900; color:#475569;
+                   letter-spacing:2px; text-transform:uppercase; }
+    .reel-icon   { font-size:2.4em; line-height:1;
+                   transition:transform .15s; }
+    .reel-val    { font-size:0.64em; font-weight:900; color:#fff;
+                   text-align:center; line-height:1.4; min-height:2.8em;
+                   display:flex; align-items:center; justify-content:center; }
+    .lock-btn    { font-size:0.56em; font-weight:900; padding:5px 12px;
+                   border-radius:8px; border:2px solid #1e293b; cursor:pointer;
+                   font-family:Georgia,serif; transition:all .2s;
+                   background:none; color:#475569; }
+    .lock-btn.on { background:rgba(245,158,11,0.15); border-color:#f59e0b;
+                   color:#f59e0b; }
+    .premise-box { background:rgba(2,6,23,0.95); border:2px solid #38bdf833;
+                   border-radius:18px; padding:22px; margin-bottom:20px; }
+    .premise-label { font-size:0.58em; font-weight:900; color:#38bdf8;
+                     letter-spacing:2px; margin-bottom:10px; }
+    .premise-text  { color:#cbd5e1; font-size:0.92em; line-height:1.7;
+                     font-style:italic; }
+    .slot-actions  { display:flex; gap:12px; flex-wrap:wrap; }
+    .slot-spin-btn { flex:1; background:linear-gradient(135deg,#7c3aed,#9333ea);
+                     color:#fff; border:none; border-radius:14px; padding:16px;
+                     font-weight:900; font-size:1em; cursor:pointer;
+                     font-family:Georgia,serif; transition:all .25s;
+                     box-shadow:0 6px 20px rgba(124,58,237,0.35); }
+    .slot-spin-btn:hover  { transform:scale(1.03); }
+    .slot-spin-btn:active { transform:scale(0.97); }
+    .slot-forge-btn { flex:1; background:linear-gradient(135deg,#0284c7,#0ea5e9);
+                      color:#fff; border:none; border-radius:14px; padding:16px;
+                      font-weight:900; font-size:1em; cursor:pointer;
+                      font-family:Georgia,serif; transition:all .25s;
+                      box-shadow:0 6px 20px rgba(2,132,199,0.35); }
+    .slot-forge-btn:hover { transform:scale(1.03); }
+    @keyframes reelFlash { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .spinning .reel-icon { animation:reelFlash 0.15s ease-in-out 4; }
   </style>
 `;
 
-window.slPickChar = (id) => { slotChar = id; window.goTo('slots'); };
+// ── REEL HTML ─────────────────────────────────────────────────────────────────
+const reelHTML = (key, label, idx, isLocked) => {
+  const item = REELS[key][idx];
+  return `
+    <div class="reel ${isLocked?'locked':''}" id="reel-${key}">
+      <div class="reel-label">${label}</div>
+      <div class="reel-icon">${item.icon}</div>
+      <div class="reel-val">${item.label}</div>
+      <button class="lock-btn ${isLocked?'on':''}"
+              onclick="slotsLock('${key}')">
+        ${isLocked ? '🔒 LOCKED' : '🔓 LOCK'}
+      </button>
+    </div>`;
+};
 
-window.slPull = () => {
-  if (!slotChar) { window.showToast('Pick your star first!'); return; }
-  slotResult = {
-    loc:   rnd(SLOT_LOCATIONS),
-    ride:  rnd(SLOT_RIDES),
-    audio: rnd(SLOT_AUDIO),
-    twist: rnd(TWISTS),
-  };
+// ── PREMISE TEXT ──────────────────────────────────────────────────────────────
+const getPremise = () => {
+  const who  = REELS.who[current.who].label;
+  const act  = REELS.action[current.action].val;
+  const loc  = REELS.location[current.location].val;
+  const twist= REELS.twist[current.twist].val;
+  const plat = REELS.platform[current.platform].label;
+  return `${who} ${act} at ${loc}… and ${twist}. Forge it for <strong style="color:#38bdf8;">${plat}</strong>.`;
+};
+
+// ── WINDOW FUNCTIONS ──────────────────────────────────────────────────────────
+window.slotsLock = (key) => {
+  locked[key] = !locked[key];
   window.goTo('slots');
 };
 
-window.slForge = () => {
-  if (!slotResult || !slotChar) return;
-  const char = CAST.find(c => c.id === slotChar);
-  const tpl  = rnd(SLOT_TEMPLATES);
-  const prompt = tpl(
-    `${char.name} (${char.soraId})`,
-    slotResult.loc.label,
-    slotResult.ride.label,
-    slotResult.audio.label,
-    slotResult.twist
-  );
-  window.forgeScene(prompt);
+window.slotspin = () => {
+  if (spinning) return;
+  spinning = true;
+  const btn = document.getElementById('spin-btn');
+  if (btn) btn.disabled = true;
+
+  // randomize unlocked reels
+  Object.keys(REELS).forEach(key => {
+    if (!locked[key]) {
+      current[key] = Math.floor(Math.random() * REELS[key].length);
+    }
+  });
+
+  // brief visual flash then re-render
+  setTimeout(() => {
+    spinning = false;
+    if (btn) btn.disabled = false;
+    window.goTo('slots');
+  }, 400);
+};
+
+window.slotsForge = () => {
+  const who    = REELS.who[current.who];
+  const action = REELS.action[current.action];
+  const loc    = REELS.location[current.location];
+  const twist  = REELS.twist[current.twist];
+  const plat   = REELS.platform[current.platform];
+
+  const CAST_MAP = {
+    ken:'@kennethwalker479', randy:'@geodudenj', salem:'@kennethwa.majorbilli',
+    eleanor:'@grandma.eleanor', luna:'@kennethwa.luna', marguerite:'@prprincess138',
+    skully:'@kennethwa.shadowblaz', tank:'@kennethwa.bronzedogg', big:'@kennethwa.bigthesqua',
+  };
+
+  const soraId = CAST_MAP[who.val] || '';
+
+  const prompt =
+    `You are North, AI director of Pine Barron Farms. ` +
+    `Generate a FULL PROFESSIONAL CALL SHEET for ${plat.label}.\n\n` +
+    `STORY PREMISE: ${who.label} (${soraId}) ${action.val} at ${loc.val}. Twist: ${twist.val}.\n` +
+    `PLATFORM: ${plat.label}\n` +
+    `FORMAT: 9:16 vertical\n\n` +
+    `Use the character's Sora ID (${soraId}) in the scene. ` +
+    `Make it specific to Pine Barron Farms, Piscataway NJ. ` +
+    `Output the full call sheet with HOOK, SCENE, CAMERA, AUDIO, DIRECTOR'S NOTE, ` +
+    `and a CLEAN PROMPT section at the end with the paste-ready text.`;
+
+  window.showToast('🎬 Forging your scene...');
+  window.goTo('chat');
+  window.send(prompt);
 };
 
 export const mount = () => {};
