@@ -4,7 +4,8 @@
       "Bash(pkill -f \"firebase serve\" 2>/dev/null; echo \"done\")",
       "Bash(curl:*)",
       "Bash(kill:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(cd:*)"
     ]
   }
 }
