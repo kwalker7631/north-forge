@@ -1,0 +1,58 @@
+[debug] [2026-03-14T05:43:48.106Z] ----------------------------------------------------------------------
+[debug] [2026-03-14T05:43:48.108Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\kwalk\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js serve
+[debug] [2026-03-14T05:43:48.108Z] CLI Version:   15.10.0
+[debug] [2026-03-14T05:43:48.108Z] Platform:      win32
+[debug] [2026-03-14T05:43:48.108Z] Node Version:  v24.14.0
+[debug] [2026-03-14T05:43:48.108Z] Time:          Sat Mar 14 2026 01:43:48 GMT-0400 (Eastern Daylight Time)
+[debug] [2026-03-14T05:43:48.108Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-03-14T05:43:48.640Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-14T05:43:48.640Z] > authorizing via signed-in user (kwalker138@gmail.com)
+[debug] [2026-03-14T05:43:48.640Z] [iam] checking project north-forge-ai for permissions ["firebase.projects.get"]
+[debug] [2026-03-14T05:43:48.640Z] Checked if tokens are valid: false, expires at: 1773467924242
+[debug] [2026-03-14T05:43:48.641Z] Checked if tokens are valid: false, expires at: 1773467924242
+[debug] [2026-03-14T05:43:48.641Z] > refreshing access token with scopes: []
+[debug] [2026-03-14T05:43:48.641Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-14T05:43:48.641Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-14T05:43:48.774Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-03-14T05:43:48.774Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-14T05:43:48.777Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/north-forge-ai:testIamPermissions [none]
+[debug] [2026-03-14T05:43:48.777Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/north-forge-ai:testIamPermissions  x-goog-user-project=north-forge-ai
+[debug] [2026-03-14T05:43:48.777Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/north-forge-ai:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2026-03-14T05:43:48.979Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/north-forge-ai:testIamPermissions 200
+[debug] [2026-03-14T05:43:48.979Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/north-forge-ai:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2026-03-14T05:43:48.980Z] Checked if tokens are valid: true, expires at: 1773470627774
+[debug] [2026-03-14T05:43:48.980Z] Checked if tokens are valid: true, expires at: 1773470627774
+[debug] [2026-03-14T05:43:48.980Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/north-forge-ai [none]
+[debug] [2026-03-14T05:43:49.076Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/north-forge-ai 200
+[debug] [2026-03-14T05:43:49.076Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/north-forge-ai {"projectNumber":"943672322270","projectId":"north-forge-ai","lifecycleState":"ACTIVE","name":"North Forge AI ","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-03-08T00:08:29.452490Z"}
+[info] 
+[info] === Serving from 'C:\Users\kwalk\OneDrive\Desktop\northforge'...
+[info] 
+[debug] [2026-03-14T05:43:49.078Z] Checked if tokens are valid: true, expires at: 1773470627774
+[debug] [2026-03-14T05:43:49.078Z] Checked if tokens are valid: true, expires at: 1773470627774
+[debug] [2026-03-14T05:43:49.078Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/north-forge-ai/sites 
+[debug] [2026-03-14T05:43:49.784Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/north-forge-ai/sites 200
+[debug] [2026-03-14T05:43:49.784Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/north-forge-ai/sites {"sites":[{"name":"projects/north-forge-ai/sites/north-forge-ai","defaultUrl":"https://north-forge-ai.web.app","appId":"1:943672322270:web:0d946347d7e9df192cba4f","type":"DEFAULT_SITE"}]}
+[debug] [2026-03-14T05:43:49.784Z] Checked if tokens are valid: true, expires at: 1773470627774
+[debug] [2026-03-14T05:43:49.784Z] Checked if tokens are valid: true, expires at: 1773470627774
+[debug] [2026-03-14T05:43:49.785Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/north-forge-ai/webApps/1:943672322270:web:0d946347d7e9df192cba4f/config [none]
+[debug] [2026-03-14T05:43:50.201Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/north-forge-ai/webApps/1:943672322270:web:0d946347d7e9df192cba4f/config 200
+[debug] [2026-03-14T05:43:50.201Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/north-forge-ai/webApps/1:943672322270:web:0d946347d7e9df192cba4f/config {"projectId":"north-forge-ai","appId":"1:943672322270:web:0d946347d7e9df192cba4f","storageBucket":"north-forge-ai.firebasestorage.app","apiKey":"AIzaSyBFdGNW8sEKxOvEpaWbq0r4FB4aBQ7Xz-I","authDomain":"north-forge-ai.firebaseapp.com","messagingSenderId":"943672322270","measurementId":"G-ZGFKZ4QV21","projectNumber":"943672322270","version":"2"}
+[debug] [2026-03-14T05:43:50.212Z] Checked if tokens are valid: true, expires at: 1773470627774
+[debug] [2026-03-14T05:43:50.213Z] Checked if tokens are valid: true, expires at: 1773470627774
+[debug] [2026-03-14T05:43:50.213Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/north-forge-ai [none]
+[debug] [2026-03-14T05:43:50.393Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/north-forge-ai 200
+[debug] [2026-03-14T05:43:50.394Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/north-forge-ai {"projectId":"north-forge-ai","projectNumber":"943672322270","displayName":"North Forge AI ","name":"projects/north-forge-ai","resources":{"hostingSite":"north-forge-ai"},"state":"ACTIVE","etag":"1_33b215ae-06f9-417a-94a6-cb3d2235ac88"}
+[info] i  hosting[north-forge-ai]: Serving hosting files from: public {"metadata":{"emulator":{"name":"hosting"},"message":"Serving hosting files from: \u001b[1mpublic\u001b[22m"}}
+[info] +  hosting[north-forge-ai]: Local server: http://localhost:5000 {"metadata":{"emulator":{"name":"hosting"},"message":"Local server: \u001b[4m\u001b[1mhttp://localhost:5000\u001b[22m\u001b[24m"}}
+[info] i  hosting: ::1 - - [14/Mar/2026:05:43:54 +0000] "GET / HTTP/1.1" 200 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [14/Mar/2026:05:43:54 +0000] \"GET / HTTP/1.1\" 200 - \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [14/Mar/2026:05:43:54 +0000] "GET /app.js HTTP/1.1" 200 - "http://localhost:5000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [14/Mar/2026:05:43:54 +0000] \"GET /app.js HTTP/1.1\" 200 - \"http://localhost:5000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [14/Mar/2026:05:43:54 +0000] "GET /data.js HTTP/1.1" 200 - "http://localhost:5000/app.js" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [14/Mar/2026:05:43:54 +0000] \"GET /data.js HTTP/1.1\" 200 - \"http://localhost:5000/app.js\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [14/Mar/2026:05:43:54 +0000] "GET /api.js HTTP/1.1" 200 - "http://localhost:5000/app.js" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [14/Mar/2026:05:43:54 +0000] \"GET /api.js HTTP/1.1\" 200 - \"http://localhost:5000/app.js\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [14/Mar/2026:05:43:54 +0000] "GET /firebase.js HTTP/1.1" 200 - "http://localhost:5000/app.js" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [14/Mar/2026:05:43:54 +0000] \"GET /firebase.js HTTP/1.1\" 200 - \"http://localhost:5000/app.js\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [14/Mar/2026:05:43:54 +0000] "GET /favicon.ico HTTP/1.1" 200 - "http://localhost:5000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [14/Mar/2026:05:43:54 +0000] \"GET /favicon.ico HTTP/1.1\" 200 - \"http://localhost:5000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [14/Mar/2026:05:44:01 +0000] "GET /rooms/setup.js HTTP/1.1" 200 - "http://localhost:5000/app.js" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [14/Mar/2026:05:44:01 +0000] \"GET /rooms/setup.js HTTP/1.1\" 200 - \"http://localhost:5000/app.js\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [14/Mar/2026:05:44:30 +0000] "GET /rooms/slots.js HTTP/1.1" 200 - "http://localhost:5000/app.js" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [14/Mar/2026:05:44:30 +0000] \"GET /rooms/slots.js HTTP/1.1\" 200 - \"http://localhost:5000/app.js\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [14/Mar/2026:05:44:37 +0000] "GET /rooms/chat.js HTTP/1.1" 200 - "http://localhost:5000/app.js" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [14/Mar/2026:05:44:37 +0000] \"GET /rooms/chat.js HTTP/1.1\" 200 - \"http://localhost:5000/app.js\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [14/Mar/2026:05:44:46 +0000] "GET /rooms/weird.js HTTP/1.1" 200 - "http://localhost:5000/app.js" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [14/Mar/2026:05:44:46 +0000] \"GET /rooms/weird.js HTTP/1.1\" 200 - \"http://localhost:5000/app.js\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\""}}
