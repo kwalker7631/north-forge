@@ -48,7 +48,8 @@ window.send = async (text) => {
     window.goTo('setup'); return;
   }
   state.msgs.push({ role:'user', content:text });
-  state.loading = true;
+  state.loading        = true;
+  state._forceChatView = true;   // tell chat.js to show chat view, not form
   window.goTo('chat');
   const result = await callNorth(state.msgs, state.keys, state.weather);
   state.msgs.push({ role:'assistant', content:result.text });

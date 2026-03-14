@@ -38,6 +38,8 @@ let formStep  = 'idle';
 
 // ── RENDER ────────────────────────────────────────────────────────────────────
 export const render = (state) => {
+  // If send() was called from another room, force chat view (not form)
+  if (state._forceChatView) { chatMode = 'chat'; state._forceChatView = false; }
   const hasKey = state.keys.anthropic || state.keys.gemini;
   return `
     <div style="height:100%;display:flex;flex-direction:column;">
