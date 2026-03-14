@@ -52,7 +52,6 @@ export const render = (state) => {
       </div>
       ${chatMode === 'form' ? formView() : chatView(state)}
     </div>
-    ${styles()}
   `;
 };
 
@@ -168,79 +167,38 @@ const chatView = (state) => `
   </div>
 `;
 
+// ── VIRAL SCORE EXTRACTOR ─────────────────────────────────────────────────────
+const extractViralScore = (text) => {
+  const m = text.match(/VIRAL SCORE:\s*(\d+)\/10([^\n]*)/i);
+  if (!m) return null;
+  const score = parseInt(m[1]);
+  const color = score >= 7 ? '#22c55e' : score >= 5 ? '#f59e0b' : '#ef4444';
+  return { score, color, note: m[2].trim().replace(/^[·—\s]+/, '') };
+};
+
 // ── CALL SHEET BLOCK ──────────────────────────────────────────────────────────
 const csBlock = (text, idx) => {
   if (!/CLEAN PROMPT|CALL SHEET|═══/i.test(text)) return '';
   const m = text.match(/CLEAN PROMPT[^\n]*\n([\s\S]*?)(?:═══|$)/i);
   const clean = m ? m[1].trim() : '';
   if (!clean) return '';
+  const vs = extractViralScore(text);
   return `
     <div class="callsheet">
-      <div style="color:#38bdf8;font-size:0.6em;font-weight:900;letter-spacing:2px;margin-bottom:10px;">📋 CALL SHEET READY</div>
+      <div style="color:#38bdf8;font-size:0.6em;font-weight:900;letter-spacing:2px;margin-bottom:8px;">📋 CALL SHEET READY</div>
+      ${vs ? `<div class="vs-badge" style="background:${vs.color}18;border:1px solid ${vs.color}55;color:${vs.color};">🔥 ${vs.score}/10 VIRAL SCORE${vs.note ? ` · <span style="font-weight:500;font-size:0.9em;">${esc(vs.note)}</span>` : ''}</div>` : ''}
       <div class="cs-body" id="cs-body-${idx}">${esc(clean)}</div>
       <div class="cs-actions">
         <button class="cs-btn cs-copy" onclick="copyCS('cs-body-${idx}')">📋 Copy Prompt</button>
         <button class="cs-btn cs-full" onclick="copyFull(${idx})">📄 Copy Full Sheet</button>
+        <button class="cs-btn cs-score" onclick="viralCheck(${idx})">🔥 Score Virality</button>
       </div>
     </div>`;
 };
 
 const esc = (s) => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-// ── STYLES ────────────────────────────────────────────────────────────────────
-const styles = () => `<style>
-  .no-key-banner{background:rgba(245,158,11,0.1);border-bottom:2px solid #f59e0b44;padding:10px 20px;font-size:0.76em;color:#fbbf24;font-weight:700;}
-  .chat-mode-bar{display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:2px solid #1e293b;background:rgba(2,6,23,0.98);flex-shrink:0;}
-  .mode-btn{background:rgba(15,23,42,0.9);border:2px solid #1e293b;border-radius:10px;padding:9px 18px;color:#64748b;cursor:pointer;font-weight:900;font-size:0.76em;font-family:Georgia,serif;transition:all .2s;}
-  .mode-btn.active{color:#fff;border-color:#38bdf8;background:rgba(56,189,248,0.12);}
-  .clear-btn{background:none;border:2px solid #1e293b;border-radius:10px;padding:9px 14px;color:#475569;cursor:pointer;font-size:0.76em;font-family:Georgia,serif;transition:all .2s;}
-  .clear-btn:hover{border-color:#ef4444;color:#ef4444;}
-  .pe-wrap{flex:1;overflow-y:auto;padding:20px 24px;}
-  .pe-title{font-weight:900;font-size:1.1em;color:#fff;margin-bottom:4px;}
-  .pe-sub{color:#64748b;font-size:0.76em;margin-bottom:22px;line-height:1.55;}
-  .pe-field{margin-bottom:20px;}
-  .pe-label{font-size:0.62em;font-weight:900;color:#38bdf8;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;display:block;}
-  .pe-textarea{width:100%;background:rgba(15,23,42,0.95);border:2px solid #334155;border-radius:14px;padding:14px 16px;color:#fff;font-family:Georgia,serif;resize:none;outline:none;font-size:0.9em;transition:border-color .3s;min-height:80px;}
-  .pe-textarea:focus{border-color:#38bdf8;}
-  .pe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;}
-  .pe-opt{background:rgba(2,6,23,0.9);border:2px solid #1e293b;border-radius:12px;padding:11px 13px;cursor:pointer;text-align:left;font-family:Georgia,serif;transition:all .2s;display:flex;align-items:center;gap:8px;}
-  .pe-opt:hover:not(.maxed){border-color:#38bdf833;}
-  .pe-opt.sel{border-color:#38bdf8;background:rgba(56,189,248,0.12);}
-  .pe-opt.maxed{opacity:0.4;cursor:not-allowed;}
-  .pe-opt-icon{font-size:1.3em;flex-shrink:0;}
-  .pe-opt-name{font-weight:900;font-size:0.74em;color:#fff;}
-  .pe-opt-sub{font-size:0.6em;color:#64748b;margin-top:1px;}
-  .pe-select{width:100%;background:rgba(15,23,42,0.95);border:2px solid #334155;border-radius:12px;padding:12px 14px;color:#fff;font-family:Georgia,serif;font-size:0.88em;outline:none;cursor:pointer;}
-  .pe-select:focus{border-color:#38bdf8;}
-  option{background:#020617;}
-  .pe-forge-btn{width:100%;background:linear-gradient(135deg,#0284c7,#0ea5e9);color:#fff;border:none;border-radius:16px;padding:18px;font-weight:900;font-size:1.05em;cursor:pointer;font-family:Georgia,serif;transition:all .25s;margin-top:6px;box-shadow:0 6px 24px rgba(2,132,199,0.35);}
-  .pe-forge-btn:hover:not(:disabled){transform:scale(1.02);}
-  .pe-forge-btn:disabled{opacity:0.5;cursor:not-allowed;}
-  .chat-msgs{flex:1;overflow-y:auto;padding:20px 24px 10px;}
-  .msg-row{display:flex;gap:14px;margin-bottom:26px;align-items:flex-start;}
-  .msg-row.user{flex-direction:row-reverse;}
-  .msg-ava{width:46px;height:46px;border-radius:50% 50% 50% 8px;flex-shrink:0;background:linear-gradient(135deg,#0ea5e9,#0284c7);display:flex;align-items:center;justify-content:center;font-size:1.3em;}
-  .msg-row.user .msg-ava{background:linear-gradient(135deg,#166534,#14532d);border-radius:50%;}
-  .msg-bub{max-width:84%;background:rgba(15,23,42,0.95);border:2px solid #1e293b;padding:16px 20px;border-radius:6px 20px 20px 20px;}
-  .msg-row.user .msg-bub{background:rgba(20,83,45,0.92);border-color:#14532d;border-radius:20px 6px 20px 20px;}
-  .msg-lbl{color:#38bdf8;font-size:0.56em;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;}
-  .msg-text{color:#f1f5f9;font-size:0.88em;line-height:1.8;white-space:pre-wrap;}
-  .callsheet{background:#000;border:2px solid #38bdf8;border-radius:14px;padding:18px;margin-top:14px;}
-  .cs-body{font-family:monospace;font-size:0.74em;color:#bae6fd;line-height:1.7;white-space:pre-wrap;max-height:300px;overflow-y:auto;margin-bottom:12px;}
-  .cs-actions{display:flex;gap:10px;flex-wrap:wrap;}
-  .cs-btn{border:none;border-radius:10px;padding:10px 18px;font-weight:900;font-size:0.72em;cursor:pointer;font-family:Georgia,serif;transition:all .2s;}
-  .cs-copy{background:#0284c7;color:#fff;}
-  .cs-full{background:#7c3aed;color:#fff;}
-  .north-thinking{display:flex;align-items:center;gap:12px;padding:12px 0;color:#38bdf8;font-weight:900;font-size:0.82em;}
-  @keyframes pulse{0%,100%{opacity:0.3}50%{opacity:1}}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .tdot{animation:pulse 1.2s ease-in-out infinite;}.tdot:nth-child(2){animation-delay:.2s;}.tdot:nth-child(3){animation-delay:.4s;}
-  .chat-input-bar{padding:12px 20px 16px;background:rgba(2,6,23,0.98);border-top:2px solid #1e293b;display:flex;gap:10px;flex-shrink:0;}
-  .chat-ta{flex:1;background:rgba(15,23,42,0.95);border:2px solid #334155;border-radius:14px;padding:13px 16px;color:#fff;font-family:Georgia,serif;resize:none;outline:none;font-size:0.9em;transition:border-color .3s;}
-  .chat-ta:focus{border-color:#38bdf8;}
-  .chat-send{background:linear-gradient(135deg,#0284c7,#0369a1);border:none;border-radius:14px;width:58px;color:#fff;cursor:pointer;font-size:1.4em;transition:all .25s;}
-  .chat-send:hover{transform:scale(1.06);}
-</style>`;
+// (styles moved to index.html global stylesheet)
 
 // ── WINDOW FUNCTIONS ──────────────────────────────────────────────────────────
 window.setChatMode = (m) => { chatMode = m; window.goTo('chat'); };
@@ -375,6 +333,17 @@ window.copyFull = (idx) => {
   navigator.clipboard.writeText(el.textContent.trim())
     .then(() => window.showToast('✓ Full call sheet copied!'))
     .catch(() => window.showToast('Copy failed'));
+};
+
+window.viralCheck = (idx) => {
+  const el = document.getElementById(`cs-body-${idx}`);
+  if (!el) return;
+  const prompt = el.textContent.trim().slice(0, 500);
+  window.send(
+    `Score this video prompt for viral potential on TikTok / Instagram Reels / YouTube Shorts.\n` +
+    `Give it a score 1–10 and explain: the scroll-stop power of the hook, the emotional hook, ` +
+    `and the single biggest change that would boost the score.\n\nPROMPT:\n${prompt}`
+  );
 };
 
 export const mount = (state) => {

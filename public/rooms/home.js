@@ -15,6 +15,7 @@ export const render = (state) => {
 
       <!-- BIG RED BARN HERO -->
       <div class="barn-hero">
+        ${state.sceneIdx >= 3 ? `<div class="star-layer">${Array.from({length:28},(_,i)=>`<span class="star" style="left:${(i*31+7)%100}%;top:${(i*19+5)%85}%;animation-delay:${((i*0.31)%2).toFixed(1)}s"></span>`).join('')}</div>` : ''}
         ${barnSVG()}
       </div>
 
@@ -48,6 +49,10 @@ export const render = (state) => {
         ${castStrip()}
       </div>
 
+      <!-- WREN'S CREW — photo cutouts -->
+      <div class="cast-strip-label" style="color:#c084fc;">🎨 WREN'S CREW — tap to forge</div>
+      <div class="wren-strip">${wrenStrip()}</div>
+
       <!-- ROOM GRID -->
       <div class="room-grid">
         ${ROOMS.map(r => `
@@ -69,8 +74,23 @@ export const render = (state) => {
 
     <style>
       /* ── BARN HERO ──────────────────────────────────────────────── */
-      .barn-hero { width:100%; max-width:520px; margin:0 auto 24px;
+      .barn-hero { width:100%; max-width:520px; margin:0 auto 24px; position:relative;
                    filter:drop-shadow(0 4px 30px rgba(239,68,68,0.2)); }
+      .star-layer { position:absolute; inset:0; pointer-events:none; z-index:1; }
+      .star { position:absolute; width:2px; height:2px; background:#fff; border-radius:50%;
+              animation:twinkle 2s ease-in-out infinite; }
+      @keyframes twinkle { 0%,100%{opacity:.15} 50%{opacity:.95} }
+      /* ── WREN'S CREW ────────────────────────────────────────────── */
+      .wren-strip { display:flex; gap:14px; overflow-x:auto; margin-bottom:22px;
+                    padding-bottom:6px; scrollbar-width:none; }
+      .wren-chip  { display:flex; flex-direction:column; align-items:center; gap:5px;
+                    cursor:pointer; flex-shrink:0; transition:transform .2s; }
+      .wren-chip:hover { transform:translateY(-5px); }
+      .wren-img   { width:72px; height:88px; object-fit:cover; object-position:top center;
+                    border-radius:8px 8px 4px 4px; border:2px solid #c084fc44;
+                    filter:drop-shadow(0 4px 14px rgba(192,132,252,0.35)); }
+      .wren-name  { font-size:.56em; font-weight:900; color:#e9d5ff; }
+      .wren-forge { font-size:.5em; color:#c084fc; font-weight:900; }
 
       /* ── WELCOME CARD ───────────────────────────────────────────── */
       .welcome-card { display:flex; gap:14px; align-items:flex-start;
@@ -271,3 +291,25 @@ const barnSVG = () => `
     <rect x="0" y="225" width="420" height="12" fill="#2d6a4f" opacity="0.7" rx="2"/>
   </svg>
 `;
+
+// ── WREN'S CREW ──────────────────────────────────────────────────────────────
+const WREN_CHARS = [
+  { name:'Salem',   img:'./images/Salem.png',               soraId:'@kennethwa.majorbilli', role:'The Creative'        },
+  { name:'Eleanor', img:'./images/Grand-Ma%20Eleanor.png',  soraId:'@grandma.eleanor',      role:'The Elder Authority' },
+  { name:'Luna',    img:'./images/Luna.png',                soraId:'@kennethwa.luna',        role:'The Escape Artist'   },
+];
+
+const wrenStrip = () => WREN_CHARS.map((c, i) => `
+  <div class="wren-chip" onclick="forgeChar(${i})">
+    <img class="wren-img" src="${c.img}" alt="${c.name}" onerror="this.parentNode.style.display='none'"/>
+    <div class="wren-name">${c.name}</div>
+    <div class="wren-forge">🎬 Forge →</div>
+  </div>`).join('');
+
+window.forgeChar = (i) => {
+  const c = WREN_CHARS[i];
+  window.forgeScene(`FORGE: ${c.name} (${c.soraId}), ${c.role} at Pine Barron Farms. ` +
+    `Cinematic moment, 9:16 vertical. Full call sheet: HOOK, SCENE, CAMERA, AUDIO, CLEAN PROMPT.`);
+};
+
+export const mount = () => {};
