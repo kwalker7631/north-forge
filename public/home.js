@@ -1,54 +1,100 @@
-// rooms/home.js — The farm landing page. The soul of North Forge.
-// The Big Red Barn lives here. North's welcome lives here.
-// Animals live here. This is the first thing Ken and Wren see.
+// rooms/home.js — Pine Barron Farms home screen
+// Real weather drives real barn image. Wren's cutouts. Crew strip. Room grid.
 
-import { ROOMS }        from '../data.js';
+import { ROOMS }         from '../data.js';
 import { NORTH_VERSION } from '../north.js';
 
+// ── WEATHER → BARN IMAGE MAPPING ─────────────────────────────────────────────
+const getBarnImage = (weather) => {
+  if (!weather) return './images/barn/barn-clear.jpg';
+  const c = (weather.condition || '').toLowerCase();
+  if (c.includes('snow'))                          return './images/barn/barn-snow.jpg';
+  if (c.includes('rain') || c.includes('drizzle')) return './images/barn/barn-rain.jpg';
+  if (c.includes('thunder'))                       return './images/barn/barn-rain.jpg';
+  if (c.includes('overcast') || c.includes('cloudy')) return './images/barn/barn-cloudy.jpg';
+  // time-based fallback for clear conditions
+  const hr = new Date().getHours();
+  if (hr >= 20 || hr < 6)  return './images/barn/barn-night.jpg';
+  if (hr >= 17 && hr < 20) return './images/barn/barn-golden.jpg';
+  return './images/barn/barn-clear.jpg';
+};
+
+const getWeatherOverlay = (weather) => {
+  if (!weather) return '';
+  const c = (weather.condition || '').toLowerCase();
+  if (c.includes('snow'))   return 'snow';
+  if (c.includes('rain') || c.includes('drizzle') || c.includes('thunder')) return 'rain';
+  return 'none';
+};
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
 export const render = (state) => {
-  const wx      = state.weather;
-  const hasKey  = state.keys.anthropic || state.keys.gemini;
-  const user    = state.user;
+  const wx     = state.weather;
+  const hasKey = state.keys.anthropic || state.keys.gemini;
+  const user   = state.user;
+  const barnImg = getBarnImage(wx);
+  const fxType  = getWeatherOverlay(wx);
 
   return `
-    <div class="room-wrap">
+    <div class="home-wrap">
 
-      <!-- BIG RED BARN HERO -->
-      <div class="barn-hero">
-        ${barnSVG()}
-      </div>
+      <!-- BARN HERO -->
+      <div class="barn-hero-wrap">
+        <img src="${barnImg}" class="barn-hero-img" alt="Pine Barron Farms"
+             onerror="this.src='./images/barn/barn-clear.jpg'"/>
 
-      <!-- NORTH WELCOME CARD -->
-      <div class="welcome-card">
-        <div class="welcome-avatar">🧠</div>
-        <div class="welcome-body">
-          <div class="welcome-label">North · From the Loft</div>
-          <div class="welcome-msg">
-            Hey — welcome to the farm. Everything's running.
-            Pick a room below and let's make something.
-            ${!hasKey
-              ? `<span class="warn-inline"> Start with 🔑 <strong>Setup</strong> so I can actually respond.</span>`
-              : ''}
-          </div>
-          <div class="almanac-row">
-            ${wx ? `<span class="almanac-pill">🌡️ ${wx.temp} · ${wx.condition}</span>` : ''}
-            <span class="almanac-pill">${state.moon.icon} ${state.moon.name}</span>
-            <span class="almanac-pill">📍 Piscataway, NJ</span>
-            <span class="almanac-pill">v${NORTH_VERSION.current}</span>
-            ${user
-              ? `<span class="almanac-pill">👤 ${user.displayName.split(' ')[0]}</span>`
-              : `<span class="almanac-pill signin-pill" onclick="handleSignIn()">Sign in with Google</span>`}
-          </div>
+        <!-- WEATHER PARTICLES -->
+        ${fxType === 'snow' ? snowFX() : ''}
+        ${fxType === 'rain' ? rainFX() : ''}
+
+        <!-- WREN'S CUTOUTS -->
+        <div class="cutout-stage">
+          <img src="./images/Luna.jpg"
+               class="cutout cutout-luna" alt="Luna"
+               onerror="this.style.display='none'"/>
+          <img src="./images/Salem.png"
+               class="cutout cutout-salem" alt="Salem"
+               onerror="this.style.display='none'"/>
+          <img src="./images/Grand-Ma_Eleanor.png"
+               class="cutout cutout-eleanor" alt="Grand Ma Eleanor"
+               onerror="this.style.display='none'"/>
+        </div>
+
+        <!-- WEATHER BADGE -->
+        <div class="wx-badge">
+          ${wx
+            ? `${wxIcon(wx.condition)} ${wx.temp} · ${wx.condition} · ${wx.wind}`
+            : `📍 Piscataway, NJ`}
+        </div>
+
+        <!-- NORTH LOFT PEEK -->
+        <div class="loft-peek" onclick="goTo('chat')">
+          <div class="loft-eye">🧠</div>
+          <div class="loft-msg">${getNorthMsg(wx, hasKey)}</div>
         </div>
       </div>
 
-      <!-- CAST ROW -->
-      <div class="cast-strip-label">THE CREW</div>
+      <!-- ALMANAC ROW -->
+      <div class="almanac-row">
+        <span class="almanac-pill">${state.moon.icon} ${state.moon.name}</span>
+        <span class="almanac-pill">📍 Piscataway, NJ</span>
+        <span class="almanac-pill">v${NORTH_VERSION.current}</span>
+        ${user
+          ? `<span class="almanac-pill" style="color:#22c55e;">✓ ${user.displayName.split(' ')[0]}</span>`
+          : `<span class="almanac-pill signin" onclick="handleSignIn()">Sign in</span>`}
+        ${!hasKey
+          ? `<span class="almanac-pill warn" onclick="goTo('setup')">⚠ Add API Key</span>`
+          : `<span class="almanac-pill" style="color:#22c55e;">● NORTH ONLINE</span>`}
+      </div>
+
+      <!-- CREW STRIP -->
+      <div class="section-label">THE CREW</div>
       <div class="cast-strip">
         ${castStrip()}
       </div>
 
       <!-- ROOM GRID -->
+      <div class="section-label">ROOMS</div>
       <div class="room-grid">
         ${ROOMS.map(r => `
           <button class="room-card" onclick="goTo('${r.id}')"
@@ -56,218 +102,208 @@ export const render = (state) => {
             <div class="room-emoji">${r.emoji}</div>
             <div class="room-title">${r.title}</div>
             <div class="room-desc">${r.desc}</div>
-            <div class="room-enter" style="color:${r.color};">TAP TO ENTER →</div>
-            ${r.id === 'setup' && !hasKey
-              ? `<div class="room-badge warn">⚠ Setup needed</div>`  : ''}
-            ${r.id === 'setup' && hasKey
+            <div class="room-enter" style="color:${r.color};">ENTER →</div>
+            ${r.id==='setup' && !hasKey
+              ? `<div class="room-badge warn">⚠ Setup needed</div>` : ''}
+            ${r.id==='setup' && hasKey
               ? `<div class="room-badge ok">✓ Connected</div>` : ''}
-          </button>
-        `).join('')}
+          </button>`).join('')}
       </div>
 
     </div>
 
-    <style>
-      /* ── BARN HERO ──────────────────────────────────────────────── */
-      .barn-hero { width:100%; max-width:520px; margin:0 auto 24px;
-                   filter:drop-shadow(0 4px 30px rgba(239,68,68,0.2)); }
-
-      /* ── WELCOME CARD ───────────────────────────────────────────── */
-      .welcome-card { display:flex; gap:14px; align-items:flex-start;
-                      margin-bottom:22px; background:rgba(14,165,233,0.06);
-                      border:1px solid #38bdf822; border-radius:18px;
-                      padding:18px 20px; }
-      .welcome-avatar { width:48px; height:48px; border-radius:50% 50% 50% 8px;
-                        background:linear-gradient(135deg,#0ea5e9,#0284c7);
-                        display:flex; align-items:center; justify-content:center;
-                        font-size:1.4em; flex-shrink:0;
-                        box-shadow:0 0 20px rgba(56,189,248,0.4); }
-      .welcome-label { color:#38bdf8; font-size:0.6em; font-weight:900;
-                       letter-spacing:2px; text-transform:uppercase; margin-bottom:5px; }
-      .welcome-msg   { color:#cbd5e1; font-size:0.86em; line-height:1.65; }
-      .warn-inline   { color:#f59e0b; }
-      .almanac-row   { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
-      .almanac-pill  { font-size:0.6em; color:#475569; background:rgba(15,23,42,0.8);
-                       border:1px solid #1e293b; border-radius:20px; padding:3px 9px; }
-      .signin-pill   { color:#38bdf8 !important; border-color:#38bdf844 !important;
-                       cursor:pointer; }
-      .signin-pill:hover { background:rgba(56,189,248,0.1) !important; }
-
-      /* ── CAST STRIP ─────────────────────────────────────────────── */
-      .cast-strip-label { font-size:0.55em; font-weight:900; color:#334155;
-                          letter-spacing:2px; text-transform:uppercase;
-                          margin-bottom:8px; }
-      .cast-strip  { display:flex; gap:10px; overflow-x:auto;
-                     padding-bottom:8px; margin-bottom:22px;
-                     scrollbar-width:none; }
-      .cast-chip   { display:flex; flex-direction:column; align-items:center;
-                     gap:4px; background:rgba(15,23,42,0.8);
-                     border:1px solid #1e293b; border-radius:12px;
-                     padding:10px 14px; cursor:pointer; flex-shrink:0;
-                     transition:all 0.2s; min-width:72px; }
-      .cast-chip:hover { border-color:#38bdf8; transform:translateY(-3px); }
-      .cast-icon   { font-size:1.6em; }
-      .cast-name   { font-size:0.52em; font-weight:900; color:#94a3b8;
-                     white-space:nowrap; }
-
-      /* ── ROOM GRID ──────────────────────────────────────────────── */
-      .room-grid   { display:grid;
-                     grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
-                     gap:14px; }
-      .room-card   { background:rgba(15,23,42,0.8); border:1px solid #1e293b;
-                     border-radius:18px; padding:22px; cursor:pointer;
-                     text-align:left; transition:all 0.25s; width:100%;
-                     font-family:Georgia,serif; }
-      .room-card:hover { transform:translateY(-5px);
-                         box-shadow:0 16px 40px rgba(0,0,0,0.5);
-                         border-color:#38bdf8; }
-      .room-emoji  { font-size:2.6em; margin-bottom:10px;
-                     filter:drop-shadow(0 2px 8px rgba(0,0,0,0.4)); }
-      .room-title  { font-weight:900; font-size:1em; color:#fff; margin-bottom:5px; }
-      .room-desc   { color:#64748b; font-size:0.73em; line-height:1.55;
-                     margin-bottom:10px; }
-      .room-enter  { font-size:0.62em; font-weight:900; letter-spacing:1px; }
-      .room-badge  { margin-top:8px; border-radius:8px; padding:4px 10px;
-                     font-size:0.58em; font-weight:900; display:inline-block; }
-      .room-badge.warn { background:rgba(245,158,11,0.12);
-                         border:1px solid #f59e0b44; color:#f59e0b; }
-      .room-badge.ok   { background:rgba(34,197,94,0.1);
-                         border:1px solid #22c55e33; color:#22c55e; }
-    </style>
+    ${homeStyles()}
   `;
+};
+
+// ── NORTH MESSAGES ────────────────────────────────────────────────────────────
+const getNorthMsg = (wx, hasKey) => {
+  if (!hasKey) return "Add your API key in Setup and I'll get to work. 🔑";
+  const hr = new Date().getHours();
+  const msgs = {
+    snow:    "Snow on the farm. Perfect day to stay in the barn and make something.",
+    rain:    "Raining out there. Good light for moody scenes.",
+    clear:   hr < 12
+               ? "Morning on the farm. Good light coming in from the east."
+               : hr < 17
+                 ? "Afternoon at Pine Barron. What are we making today?"
+                 : "Golden hour soon. Best light of the day.",
+    night:   "Stars are out over the back field. I can see everything from up here.",
+    default: "I'm up in the loft. Tell me what's on your mind.",
+  };
+  if (!wx) return msgs.default;
+  const c = (wx.condition||'').toLowerCase();
+  if (c.includes('snow'))  return msgs.snow;
+  if (c.includes('rain') || c.includes('thunder')) return msgs.rain;
+  const hr2 = new Date().getHours();
+  if (hr2 >= 20 || hr2 < 6) return msgs.night;
+  return msgs.clear;
+};
+
+// ── WEATHER ICON ──────────────────────────────────────────────────────────────
+const wxIcon = (condition = '') => {
+  const c = condition.toLowerCase();
+  if (c.includes('snow'))    return '❄️';
+  if (c.includes('rain') || c.includes('drizzle')) return '🌧️';
+  if (c.includes('thunder')) return '⛈️';
+  if (c.includes('cloudy') || c.includes('overcast')) return '☁️';
+  if (c.includes('clear') || c.includes('sunny'))     return '☀️';
+  return '🌤️';
+};
+
+// ── WEATHER FX ────────────────────────────────────────────────────────────────
+const snowFX = () => {
+  const flakes = Array.from({length:18}, (_,i) => {
+    const left  = Math.random() * 100;
+    const delay = Math.random() * 4;
+    const dur   = 3 + Math.random() * 3;
+    const size  = 0.6 + Math.random() * 0.8;
+    return `<div class="flake" style="left:${left}%;animation-delay:${delay}s;animation-duration:${dur}s;font-size:${size}em;">❄️</div>`;
+  });
+  return `<div class="wx-fx">${flakes.join('')}</div>`;
+};
+
+const rainFX = () => {
+  const drops = Array.from({length:24}, (_,i) => {
+    const left  = Math.random() * 100;
+    const delay = Math.random() * 2;
+    const dur   = 0.6 + Math.random() * 0.5;
+    return `<div class="drop" style="left:${left}%;animation-delay:${delay}s;animation-duration:${dur}s;"></div>`;
+  });
+  return `<div class="wx-fx">${drops.join('')}</div>`;
 };
 
 // ── CAST STRIP ────────────────────────────────────────────────────────────────
 const castStrip = () => {
   const crew = [
-    { icon:"👨‍🌾", name:"Ken",      tab:"cast" },
-    { icon:"👩🏽‍🌾", name:"Marguerite",tab:"cast" },
-    { icon:"🪖",  name:"Randy",    tab:"cast" },
-    { icon:"✨",  name:"Salem",    tab:"cast" },
-    { icon:"🌑",  name:"Shadowblaz",tab:"cast"},
-    { icon:"🐕",  name:"Bronzedogg",tab:"cast"},
-    { icon:"🦍",  name:"BigTheSqua",tab:"cast"},
-    { icon:"👵",  name:"Eleanor",  tab:"cast" },
+    { icon:'👨‍🌾', name:'Ken',       photo:null },
+    { icon:'👩🏽‍🌾', name:'Marguerite',photo:null },
+    { icon:'🪖',  name:'Randy',     photo:null },
+    { icon:'✨',  name:'Salem',     photo:'./images/Salem.png' },
+    { icon:'🌑',  name:'Skully',    photo:null },
+    { icon:'🐕',  name:'Tank',      photo:null },
+    { icon:'🦍',  name:'BigTheSqua',photo:null },
+    { icon:'👵',  name:'Eleanor',   photo:'./images/Grand-Ma_Eleanor.png' },
+    { icon:'🐐',  name:'Luna',      photo:'./images/Luna.jpg' },
   ];
   return crew.map(c => `
-    <div class="cast-chip" onclick="goTo('${c.tab}')">
-      <div class="cast-icon">${c.icon}</div>
+    <div class="cast-chip" onclick="goTo('cast')">
+      ${c.photo
+        ? `<img src="${c.photo}" class="chip-photo" alt="${c.name}"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+           <div class="chip-icon" style="display:none;">${c.icon}</div>`
+        : `<div class="chip-icon">${c.icon}</div>`}
       <div class="cast-name">${c.name}</div>
-    </div>
-  `).join('');
+    </div>`).join('');
 };
 
-// ── BIG RED BARN SVG ──────────────────────────────────────────────────────────
-const barnSVG = () => `
-  <svg viewBox="-2 -25 434 262" fill="none" style="width:100%;height:auto;">
-    <defs><style>
-      @keyframes barnWheelSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-      @keyframes vaneSway { 0%,100%{transform:rotate(-12deg)} 50%{transform:rotate(14deg)} }
-      @keyframes northScan { 0%,100%{fill:#38bdf8} 40%{fill:#7dd3fc} 70%{fill:#0ea5e9} }
-      .barn-wheel { transform-box:fill-box; transform-origin:center;
-                    animation:barnWheelSpin 5s linear infinite; }
-      .barn-vane  { transform-box:fill-box; transform-origin:2px 0px;
-                    animation:vaneSway 3.5s ease-in-out infinite; }
-      .north-iris { animation:northScan 4s ease-in-out infinite; }
-    </style></defs>
+// ── STYLES ────────────────────────────────────────────────────────────────────
+const homeStyles = () => `<style>
+  .home-wrap { padding:0 0 36px; }
 
-    <!-- WINDMILL TOWER -->
-    <line x1="5"  y1="226" x2="19" y2="108" stroke="#7a6040" stroke-width="2.2" opacity="0.85"/>
-    <line x1="39" y1="226" x2="25" y2="108" stroke="#7a6040" stroke-width="2.2" opacity="0.85"/>
-    <line x1="8"  y1="215" x2="36" y2="200" stroke="#6a5030" stroke-width="1.1" opacity="0.7"/>
-    <line x1="36" y1="215" x2="8"  y2="200" stroke="#6a5030" stroke-width="1.1" opacity="0.7"/>
-    <line x1="10" y1="190" x2="34" y2="175" stroke="#6a5030" stroke-width="1"   opacity="0.7"/>
-    <line x1="34" y1="190" x2="10" y2="175" stroke="#6a5030" stroke-width="1"   opacity="0.7"/>
-    <ellipse cx="22" cy="226" rx="17" ry="5" fill="#1a3a5c" stroke="#2a5a80" stroke-width="1.2" opacity="0.8"/>
-    <circle cx="22" cy="108" r="5" fill="#9a8060" opacity="0.95"/>
+  /* BARN HERO */
+  .barn-hero-wrap { position:relative; width:100%; height:42vh;
+                    min-height:240px; max-height:400px; overflow:hidden;
+                    margin-bottom:0; }
+  .barn-hero-img  { width:100%; height:100%; object-fit:cover;
+                    object-position:center 60%;
+                    display:block; transition:opacity 1s ease; }
 
-    <!-- SPINNING WHEEL -->
-    <g transform="translate(22,108)">
-      <g class="barn-wheel">
-        <path d="M0 0 L-3-32 L3-32 Z"    fill="#a08860" opacity="0.9"/>
-        <path d="M0 0 L32-3  L32 3   Z"  fill="#a08860" opacity="0.9"/>
-        <path d="M0 0 L-3 32 L3 32   Z"  fill="#a08860" opacity="0.9"/>
-        <path d="M0 0 L-32 3  L-32-3 Z"  fill="#a08860" opacity="0.9"/>
-        <path d="M0 0 L18-26 L22-22 Z"   fill="#a08860" opacity="0.75"/>
-        <path d="M0 0 L26 18 L22 22  Z"  fill="#a08860" opacity="0.75"/>
-        <path d="M0 0 L-18 26 L-22 22 Z" fill="#a08860" opacity="0.75"/>
-        <path d="M0 0 L-26-18 L-22-22 Z" fill="#a08860" opacity="0.75"/>
-        <circle cx="0" cy="0" r="32" fill="none" stroke="#8a7050" stroke-width="1.5" opacity="0.5"/>
-        <circle cx="0" cy="0" r="4"  fill="#7a6040"/>
-      </g>
-    </g>
-    <path d="M 26 108 L 60 95 L 60 122 Z" fill="#6a5030" opacity="0.7"/>
+  /* WEATHER FX */
+  .wx-fx  { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+  .flake  { position:absolute; top:-10%;
+            animation:snowfall linear infinite; opacity:0.85; }
+  .drop   { position:absolute; top:-5%; width:1px; height:14px;
+            background:rgba(180,210,255,0.6); border-radius:2px;
+            animation:rainfall linear infinite; }
+  @keyframes snowfall { to { top:110%; transform:translateX(30px) rotate(360deg); } }
+  @keyframes rainfall { to { top:110%; } }
 
-    <!-- PINE TREES -->
-    <path d="M 5 225 L 30 140 L 55 225 Z"    fill="#061608" opacity="0.75"/>
-    <path d="M 345 225 L 375 135 L 405 225 Z" fill="#061608" opacity="0.75"/>
+  /* CUTOUTS */
+  .cutout-stage   { position:absolute; bottom:0; left:0; right:0;
+                    height:55%; pointer-events:none; }
+  .cutout         { position:absolute; bottom:0; object-fit:contain;
+                    filter:drop-shadow(2px 4px 12px rgba(0,0,0,0.6));
+                    transition:transform .3s; }
+  .cutout-luna    { left:4%;  height:45%; max-height:120px; }
+  .cutout-salem   { left:28%; height:70%; max-height:180px; }
+  .cutout-eleanor { right:5%; height:60%; max-height:155px; }
 
-    <!-- SILO -->
-    <ellipse cx="392" cy="227" rx="28" ry="5.5" fill="#000" opacity="0.22"/>
-    <rect x="366" y="32" width="54" height="195" fill="#c0b8a8" stroke="#9a9288" stroke-width="2"/>
-    <path d="M 366 32 Q 354 130 366 227" fill="#a0988a"/>
-    <path d="M 420 32 Q 432 130 420 227" fill="#dcd4c4"/>
-    <path d="M 361 34 Q 393 -10 425 34 Z" fill="#888078" stroke="#787068" stroke-width="2"/>
-    <ellipse cx="393" cy="34" rx="30" ry="7" fill="#989088" stroke="#787068" stroke-width="1.5"/>
-    <rect x="389" y="-14" width="8" height="16" rx="2" fill="#686058"/>
-    <line x1="415" y1="48"  x2="415" y2="222" stroke="#787068" stroke-width="1.6" opacity="0.8"/>
-    <line x1="420" y1="48"  x2="420" y2="222" stroke="#787068" stroke-width="1.6" opacity="0.8"/>
+  /* WEATHER BADGE */
+  .wx-badge { position:absolute; top:12px; left:14px;
+              background:rgba(2,6,23,0.82); backdrop-filter:blur(8px);
+              border:1px solid #38bdf833; border-radius:20px;
+              padding:6px 14px; font-size:0.62em; color:#cbd5e1;
+              font-weight:700; }
 
-    <!-- MAIN BARN -->
-    <rect x="55" y="95" width="230" height="125" fill="#991b1b" stroke="#450a0a" stroke-width="2.5"/>
-    <polygon points="45,97 170,22 295,97" fill="#7f1d1d" stroke="#450a0a" stroke-width="3"/>
+  /* LOFT PEEK */
+  .loft-peek { position:absolute; top:12px; right:14px; cursor:pointer;
+               background:rgba(2,6,23,0.88); backdrop-filter:blur(8px);
+               border:2px solid #38bdf8; border-radius:16px;
+               padding:10px 14px; max-width:200px;
+               box-shadow:0 0 20px rgba(56,189,248,0.3);
+               transition:all .25s; }
+  .loft-peek:hover { transform:scale(1.03);
+                     box-shadow:0 0 30px rgba(56,189,248,0.5); }
+  .loft-eye { font-size:1.4em; margin-bottom:4px; }
+  .loft-msg { font-size:0.62em; color:#bae6fd; line-height:1.5;
+              font-weight:700; }
 
-    <!-- WIND VANE -->
-    <line x1="170" y1="22" x2="170" y2="4" stroke="#c4901a" stroke-width="2"/>
-    <circle cx="170" cy="4" r="2.5" fill="#d4a017"/>
-    <g transform="translate(170,11)">
-      <g class="barn-vane">
-        <polygon points="0,-6 3,0 0,-2 -3,0" fill="#d4a017"/>
-        <path d="M0-2 L-6 5 L-3 3 L-6 8 L0 4 L6 8 L3 3 L6 5 Z" fill="#c4901a"/>
-      </g>
-    </g>
+  /* ALMANAC */
+  .almanac-row { display:flex; gap:8px; flex-wrap:wrap;
+                 padding:12px 20px; background:rgba(2,6,23,0.95);
+                 border-bottom:1px solid #1e293b; }
+  .almanac-pill { font-size:0.6em; color:#475569; background:rgba(15,23,42,0.8);
+                  border:1px solid #1e293b; border-radius:20px; padding:4px 10px;
+                  font-weight:700; }
+  .almanac-pill.warn   { color:#f59e0b; border-color:#f59e0b44; cursor:pointer; }
+  .almanac-pill.signin { color:#38bdf8; border-color:#38bdf844; cursor:pointer; }
 
-    <!-- NORTH'S LOFT WINDOW -->
-    <rect x="143" y="57" width="54" height="37" rx="4" fill="#020617" stroke="#38bdf8" stroke-width="2.5"/>
-    <circle cx="170" cy="75" r="12" fill="#061228" opacity="0.9"/>
-    <circle cx="170" cy="75" r="6"  fill="#38bdf8" class="north-iris"/>
-    <circle cx="170" cy="75" r="2.5" fill="#010a18"/>
-    <circle cx="172" cy="72" r="1.2" fill="#fff" opacity="0.75"/>
-    <rect x="145" y="46" width="50" height="13" rx="3" fill="#010c1e" stroke="#38bdf833" stroke-width="1"/>
-    <text x="170" y="56.5" text-anchor="middle" font-size="7" font-weight="900"
-          font-family="Georgia,serif" fill="#38bdf8" letter-spacing="2">NORTH</text>
+  /* SECTIONS */
+  .section-label { font-size:0.55em; font-weight:900; color:#334155;
+                   letter-spacing:2px; text-transform:uppercase;
+                   padding:16px 20px 8px; }
 
-    <!-- BARN DOORS -->
-    <rect x="132" y="152" width="76" height="68" fill="#450a0a"/>
-    <line x1="132" y1="152" x2="208" y2="220" stroke="#7f1d1d" stroke-width="1.5"/>
-    <line x1="208" y1="152" x2="132" y2="220" stroke="#7f1d1d" stroke-width="1.5"/>
+  /* CAST STRIP */
+  .cast-strip  { display:flex; gap:10px; overflow-x:auto;
+                 padding:0 20px 10px; scrollbar-width:none; }
+  .cast-chip   { display:flex; flex-direction:column; align-items:center;
+                 gap:5px; background:rgba(15,23,42,0.8);
+                 border:1px solid #1e293b; border-radius:14px;
+                 padding:10px 12px; cursor:pointer; flex-shrink:0;
+                 transition:all .2s; min-width:68px; }
+  .cast-chip:hover { border-color:#38bdf8; transform:translateY(-3px); }
+  .chip-photo  { width:44px; height:44px; border-radius:10px;
+                 object-fit:cover; object-position:top; }
+  .chip-icon   { width:44px; height:44px; border-radius:10px;
+                 background:rgba(56,189,248,0.08);
+                 display:flex; align-items:center; justify-content:center;
+                 font-size:1.6em; }
+  .cast-name   { font-size:0.52em; font-weight:900; color:#94a3b8;
+                 white-space:nowrap; }
 
-    <!-- BARN SIGN -->
-    <rect x="112" y="134" width="116" height="17" rx="3" fill="#2a0606" stroke="#7a1a1a" stroke-width="1.5"/>
-    <text x="170" y="146" text-anchor="middle" font-size="8.5" font-weight="900"
-          font-family="Georgia,serif" fill="#fca5a5" letter-spacing="1.2">BIG RED BARN</text>
+  /* ROOM GRID */
+  .room-grid { display:grid;
+               grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+               gap:12px; padding:0 20px; }
+  .room-card { background:rgba(15,23,42,0.8); border:1px solid #1e293b;
+               border-radius:18px; padding:20px; cursor:pointer;
+               text-align:left; transition:all .25s; width:100%;
+               font-family:Georgia,serif; }
+  .room-card:hover { transform:translateY(-4px);
+                     box-shadow:0 14px 35px rgba(0,0,0,0.5);
+                     border-color:#38bdf8; }
+  .room-emoji { font-size:2.4em; margin-bottom:8px; }
+  .room-title { font-weight:900; font-size:0.95em; color:#fff; margin-bottom:4px; }
+  .room-desc  { color:#64748b; font-size:0.7em; line-height:1.55;
+                margin-bottom:8px; }
+  .room-enter { font-size:0.6em; font-weight:900; letter-spacing:1px; }
+  .room-badge { margin-top:8px; border-radius:8px; padding:3px 9px;
+                font-size:0.56em; font-weight:900; display:inline-block; }
+  .room-badge.warn { background:rgba(245,158,11,0.12);
+                     border:1px solid #f59e0b44; color:#f59e0b; }
+  .room-badge.ok   { background:rgba(34,197,94,0.1);
+                     border:1px solid #22c55e33; color:#22c55e; }
+</style>`;
 
-    <!-- SHED -->
-    <rect x="305" y="158" width="95" height="62" fill="#78350f" stroke="#451a03" stroke-width="2"/>
-    <polygon points="300,158 352,127 404,158" fill="#451a03"/>
-
-    <!-- LUNA THE GOAT -->
-    <ellipse cx="90" cy="213" rx="19" ry="10" fill="#e8ddc8" stroke="#b8a880" stroke-width="1"/>
-    <path d="M 106 209 Q 110 205 111 200" stroke="#e8ddc8" stroke-width="6" stroke-linecap="round" fill="none"/>
-    <ellipse cx="113" cy="198" rx="9" ry="7" fill="#e8ddc8" stroke="#b8a880" stroke-width="1"/>
-    <circle cx="115" cy="197" r="2" fill="#2d1a08"/>
-    <circle cx="115" cy="197" r="0.8" fill="#fff" opacity="0.6"/>
-    <ellipse cx="121" cy="203" rx="3" ry="2" fill="#d4a098"/>
-    <line x1="78"  y1="222" x2="76"  y2="231" stroke="#b8a880" stroke-width="2.8" stroke-linecap="round"/>
-    <line x1="87"  y1="223" x2="86"  y2="231" stroke="#b8a880" stroke-width="2.8" stroke-linecap="round"/>
-    <line x1="97"  y1="223" x2="97"  y2="231" stroke="#b8a880" stroke-width="2.8" stroke-linecap="round"/>
-    <line x1="106" y1="221" x2="107" y2="231" stroke="#b8a880" stroke-width="2.8" stroke-linecap="round"/>
-    <path d="M 107 204 Q 114 209 119 205" stroke="#d97706" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-    <rect x="104" y="215" width="18" height="10" rx="3" fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
-    <text x="113" y="222.5" text-anchor="middle" font-size="5.5" font-weight="900"
-          font-family="Georgia,serif" fill="#92400e" letter-spacing="0.5">LUNA</text>
-
-    <!-- GROUND -->
-    <rect x="0" y="225" width="420" height="12" fill="#2d6a4f" opacity="0.7" rx="2"/>
-  </svg>
-`;
+export const mount = () => {};
