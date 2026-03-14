@@ -33,7 +33,7 @@ export const render = (state) => `
       <div class="setup-card-title">🤖 Anthropic API Key <span style="color:#22c55e;font-size:0.8em;">(PRIMARY)</span></div>
       <div style="color:#64748b;font-size:0.74em;margin-bottom:14px;line-height:1.6;">
         Powers all of North's prompt generation and call sheet output.
-        Get your key at <span style="color:#38bdf8;">console.anthropic.com</span>
+        Get your key at <a href="https://console.anthropic.com" target="_blank" rel="noopener" style="color:#38bdf8;">console.anthropic.com ↗</a>
       </div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
         <input type="password"
@@ -58,7 +58,7 @@ export const render = (state) => `
       <div class="setup-card-title">✨ Google Gemini API Key <span style="color:#64748b;font-size:0.8em;">(FALLBACK)</span></div>
       <div style="color:#64748b;font-size:0.74em;margin-bottom:14px;line-height:1.6;">
         Optional backup if Anthropic is unavailable.
-        Get your key at <span style="color:#38bdf8;">aistudio.google.com</span>
+        Get your key at <a href="https://aistudio.google.com" target="_blank" rel="noopener" style="color:#38bdf8;">aistudio.google.com ↗</a>
       </div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
         <input type="password"
