@@ -138,12 +138,15 @@ export const callNorth = async (messages, keys = {}, weather = null) => {
   const fallback = await callGemini(messages, gemini, system);
   if (fallback) return { ok: true, text: fallback, provider: 'gemini' };
 
-  const lastWarn = NorthLog.last(3).filter(e => e.t === 'warn').pop();
-  const hint     = lastWarn ? `\n\nLast error: ${lastWarn.m}` : '';
   NorthLog.error('All providers failed — check API key and network');
+  const warns     = NorthLog.last(6).filter(e => e.t === 'warn');
+  const aErr      = warns.find(e => e.m.startsWith('Anthropic'));
+  const gErr      = warns.find(e => e.m.startsWith('Gemini'));
+  const lines     = [aErr && `Anthropic: ${aErr.m}`, gErr && `Gemini: ${gErr.m}`].filter(Boolean);
+  const hint      = lines.length ? `\n\n${lines.join('\n')}` : '';
   return {
     ok:       false,
-    text:     `North lost the signal. Check your API key in Setup and try again. 🏚️${hint}`,
+    text:     `North lost the signal. 🏚️${hint}`,
     provider: 'none',
   };
 };
