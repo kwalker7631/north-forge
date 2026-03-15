@@ -8,6 +8,7 @@ import { onAuth, signIn, signOut_,
          savePrefs, loadPrefs,
          logEvent, loadEvents }     from './firebase.js';
 import { logDiag, installDiagListeners } from './diagnostics.mjs';
+import { createRenderGuard } from './render-guard.mjs';
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 export const state = {
@@ -205,7 +206,10 @@ const peekHTML = () => !state.northPeek ? '' : `
   </div>`;
 
 // ── RENDER ────────────────────────────────────────────────────────────────────
+const renderGuard = createRenderGuard();
+
 export const render = async () => {
+  const renderToken = renderGuard.next();
   const ts = document.getElementById('topbar-status');
   if (ts) ts.innerHTML = topbarHTML();
 
@@ -222,12 +226,18 @@ export const render = async () => {
   if (!rc) return;
 
   try {
-    logDiag('nav_load_start', { tab: state.tab });
-    const mod = await import(`./rooms/${state.tab}.js`);
-    logDiag('nav_load_success', { tab: state.tab });
+    const tab = state.tab;
+    logDiag('nav_load_start', { tab });
+    const mod = await import(`./rooms/${tab}.js`);
+    if (!renderGuard.isCurrent(renderToken)) {
+      logDiag('render_stale_drop', { tab });
+      return;
+    }
+    logDiag('nav_load_success', { tab });
     rc.innerHTML = mod.render(state);
     mod.mount?.(state);
   } catch(e) {
+    if (!renderGuard.isCurrent(renderToken)) return;
     logDiag('nav_load_error', {
       tab: state.tab,
       message: e?.message || String(e),
