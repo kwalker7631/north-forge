@@ -296,6 +296,36 @@ const cinemaView = () => `
 window.plTab    = (t)  => { activeTab = t; window.goTo('platforms'); };
 window.plSelect = (id) => { activePlatId = id; window.goTo('platforms'); };
 
+const SCOUT_PROMPTS = {
+  latest:
+    `You are a Sora 2 expert embedded at Pine Barron Farms. Share your current best-practice knowledge: ` +
+    `optimal duration tips (10s/15s/20s), character locking techniques using Sora IDs (@username), ` +
+    `prompt patterns that produce cinematic results, and any advanced techniques for consistent ` +
+    `character appearances across multiple shots. Be practical, specific, and direct. Bullet points preferred.`,
+  week:
+    `As North, the AI director at Pine Barron Farms: what are the most valuable Sora 2 techniques ` +
+    `to know right now? Focus on anything that has meaningfully improved in recent versions — ` +
+    `motion quality, lighting, character consistency, prompt structure. ` +
+    `Give 5-7 actionable tips a creator would want to know today. Be direct and specific.`,
+};
+
+window.scoutSora = async (mode) => {
+  if (scoutLoading) return;
+  scoutLoading = true;
+  scoutResult  = null;
+  window.goTo('platforms');
+
+  const text = await window.callNorthDirect([{
+    role: 'user', content: SCOUT_PROMPTS[mode] || SCOUT_PROMPTS.latest,
+  }]);
+
+  scoutResult  = text || 'North couldn\'t reach the signal. Try again.';
+  scoutLoading = false;
+  window.goTo('platforms');
+};
+
+window.scoutClear = () => { scoutResult = null; window.goTo('platforms'); };
+
 window.forgePlatform = (platId) => {
   const p = PLATFORMS.find(x => x.id === platId);
   if (!p) return;
