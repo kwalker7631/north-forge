@@ -3,12 +3,6 @@
 
 import { NORTH_SYSTEM } from './north.js';
 
-// ── WEATHER SYSTEM INJECTION ───────────────────────────────────────────────────
-const buildSystem = (weather) => {
-  if (!weather) return NORTH_SYSTEM;
-  return `${NORTH_SYSTEM}\n\nCURRENT FARM CONDITIONS: ${weather.temp}, ${weather.condition}, wind ${weather.wind} — weave this real sky into scene descriptions when it fits.`;
-};
-
 // ── NORTHLOG ──────────────────────────────────────────────────────────────────
 export const NorthLog = {
   _entries: [],
@@ -32,7 +26,7 @@ const sanitizeMessages = (messages) => {
 };
 
 // ── ANTHROPIC (PRIMARY) ───────────────────────────────────────────────────────
-const callAnthropic = async (messages, apiKey, system) => {
+const callAnthropic = async (messages, apiKey) => {
   if (!apiKey) return null;
   NorthLog.info('Calling Anthropic Claude...');
 
@@ -52,9 +46,9 @@ const callAnthropic = async (messages, apiKey, system) => {
         'anthropic-dangerous-allow-browser': 'true',
       },
       body: JSON.stringify({
-        model:      'claude-sonnet-4-6',
-        max_tokens: 2048,
-        system:     system,
+        model:      'claude-sonnet-4-5',
+        max_tokens: 1500,
+        system:     NORTH_SYSTEM,
         messages:   clean.map(m => ({ role: m.role, content: m.content })),
       }),
     });
@@ -78,7 +72,7 @@ const callAnthropic = async (messages, apiKey, system) => {
 };
 
 // ── GEMINI (FALLBACK) ─────────────────────────────────────────────────────────
-const callGemini = async (messages, apiKey, system) => {
+const callGemini = async (messages, apiKey) => {
   if (!apiKey) return null;
   NorthLog.info('Falling back to Gemini...');
 
@@ -104,7 +98,7 @@ const callGemini = async (messages, apiKey, system) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents:          formatted,
-        systemInstruction: { parts: [{ text: system }] },
+        systemInstruction: { parts: [{ text: NORTH_SYSTEM }] },
         generationConfig:  { temperature: 0.85, topK: 64, topP: 0.95 },
       }),
     });
@@ -128,25 +122,19 @@ const callGemini = async (messages, apiKey, system) => {
 };
 
 // ── CALL NORTH (main entry point) ─────────────────────────────────────────────
-export const callNorth = async (messages, keys = {}, weather = null) => {
-  const system = buildSystem(weather);
+export const callNorth = async (messages, keys = {}) => {
   const { anthropic, gemini } = keys;
 
-  const primary = await callAnthropic(messages, anthropic, system);
+  const primary = await callAnthropic(messages, anthropic);
   if (primary) return { ok: true, text: primary, provider: 'anthropic' };
 
-  const fallback = await callGemini(messages, gemini, system);
+  const fallback = await callGemini(messages, gemini);
   if (fallback) return { ok: true, text: fallback, provider: 'gemini' };
 
   NorthLog.error('All providers failed — check API key and network');
-  const warns     = NorthLog.last(6).filter(e => e.t === 'warn');
-  const aErr      = warns.find(e => e.m.startsWith('Anthropic'));
-  const gErr      = warns.find(e => e.m.startsWith('Gemini'));
-  const lines     = [aErr && `Anthropic: ${aErr.m}`, gErr && `Gemini: ${gErr.m}`].filter(Boolean);
-  const hint      = lines.length ? `\n\n${lines.join('\n')}` : '';
   return {
     ok:       false,
-    text:     `North lost the signal. 🏚️${hint}`,
+    text:     "North lost the signal. Check your API key in Setup and try again. 🏚️",
     provider: 'none',
   };
 };

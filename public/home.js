@@ -49,13 +49,13 @@ export const render = (state) => {
 
         <!-- WREN'S CUTOUTS -->
         <div class="cutout-stage">
-          <img src="./images/Luna.jpg"
+          <img src="./images/characters/Luna.jpg"
                class="cutout cutout-luna" alt="Luna"
                onerror="this.style.display='none'"/>
-          <img src="./images/Salem.png"
+          <img src="./images/characters/Salem.png"
                class="cutout cutout-salem" alt="Salem"
                onerror="this.style.display='none'"/>
-          <img src="./images/Grand-Ma_Eleanor.png"
+          <img src="./images/characters/Grand-Ma_Eleanor.png"
                class="cutout cutout-eleanor" alt="Grand Ma Eleanor"
                onerror="this.style.display='none'"/>
         </div>
@@ -179,12 +179,12 @@ const castStrip = () => {
     { icon:'👨‍🌾', name:'Ken',       photo:null },
     { icon:'👩🏽‍🌾', name:'Marguerite',photo:null },
     { icon:'🪖',  name:'Randy',     photo:null },
-    { icon:'✨',  name:'Salem',     photo:'./images/Salem.png' },
+    { icon:'✨',  name:'Salem',     photo:'./images/characters/Salem.png' },
     { icon:'🌑',  name:'Skully',    photo:null },
     { icon:'🐕',  name:'Tank',      photo:null },
     { icon:'🦍',  name:'BigTheSqua',photo:null },
-    { icon:'👵',  name:'Eleanor',   photo:'./images/Grand-Ma_Eleanor.png' },
-    { icon:'🐐',  name:'Luna',      photo:'./images/Luna.jpg' },
+    { icon:'👵',  name:'Eleanor',   photo:'./images/characters/Grand-Ma_Eleanor.png' },
+    { icon:'🐐',  name:'Luna',      photo:'./images/characters/Luna.jpg' },
   ];
   return crew.map(c => `
     <div class="cast-chip" onclick="goTo('cast')">
