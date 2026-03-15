@@ -7,6 +7,7 @@ import { callNorth, fetchWeather,
 import { onAuth, signIn, signOut_,
          savePrefs, loadPrefs,
          logEvent, loadEvents }     from './firebase.js';
+import { logDiag, installDiagListeners } from './diagnostics.mjs';
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 export const state = {
@@ -28,6 +29,7 @@ export const state = {
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
 window.goTo = (id) => {
+  logDiag('nav_click', { from: state.tab, to: id });
   state.tab = id;
   state.northPeek = null;
   render();
@@ -86,6 +88,7 @@ const applyScene = () => {
 window.changeScene = () => {
   state.sceneIdx = (state.sceneIdx + 1) % SCENES.length;
   applyScene();
+  if (state.user) savePrefs(state.user.uid, { sceneIdx: state.sceneIdx });
 };
 
 // ── FONT ──────────────────────────────────────────────────────────────────────
@@ -107,7 +110,7 @@ onAuth(async (user) => {
       if (prefs.anthropicKey) state.keys.anthropic = prefs.anthropicKey;
       if (prefs.geminiKey)    state.keys.gemini    = prefs.geminiKey;
       if (prefs.fontSize)     state.fontSize       = prefs.fontSize;
-      if (prefs.sceneIdx)     state.sceneIdx       = prefs.sceneIdx;
+      if (prefs.sceneIdx !== undefined) state.sceneIdx = prefs.sceneIdx;
       document.documentElement.style.fontSize = state.fontSize + 'px';
     }
   }
@@ -219,15 +222,23 @@ export const render = async () => {
   if (!rc) return;
 
   try {
+    logDiag('nav_load_start', { tab: state.tab });
     const mod = await import(`./rooms/${state.tab}.js`);
+    logDiag('nav_load_success', { tab: state.tab });
     rc.innerHTML = mod.render(state);
     mod.mount?.(state);
   } catch(e) {
+    logDiag('nav_load_error', {
+      tab: state.tab,
+      message: e?.message || String(e),
+      stack: e?.stack || null,
+    });
+    console.error(`Room load failed for "${state.tab}"`, e);
     rc.innerHTML = `
       <div class="error-room">
         <div style="font-size:3em;margin-bottom:16px;">🏚️</div>
-        <div style="color:#ef4444;font-weight:900;margin-bottom:8px;">Room not built yet</div>
-        <div style="font-size:0.7em;color:#475569;">${e.message}</div>
+        <div style="color:#ef4444;font-weight:900;margin-bottom:8px;">Room failed to load</div>
+        <div style="font-size:0.7em;color:#475569;">${e?.message || 'Unknown error'}</div>
         <button onclick="goHome()" style="margin-top:20px;background:#0284c7;color:#fff;
           border:none;padding:12px 28px;border-radius:12px;font-weight:900;
           cursor:pointer;font-family:Georgia,serif;font-size:0.9em;">← Back to Farm</button>
@@ -243,6 +254,11 @@ window._northClearMsgs = () => {
 };
 window.loadNorthEvents = (count = 15) =>
   state.user ? loadEvents(state.user.uid, count) : Promise.resolve([]);
+
+window.render = render;
+window.logDiag = logDiag;
+installDiagListeners();
+
 // ── BOOT ──────────────────────────────────────────────────────────────────────
 NorthLog.info(`North Forge ${NORTH_VERSION.current} starting`);
 render();
