@@ -56,20 +56,25 @@ northforge/
     ├── north.js            ← North's voice, NORTH_SYSTEM prompt, CAST array, NORTH_VERSION
     ├── data.js             ← ROOMS array, SCENES array, all static content
     ├── api.js              ← callNorth(), callAnthropic(), callGemini(), fetchWeather(), getMoonPhase(), NorthLog
-    ├── firebase.js         ← onAuth(), signIn(), signOut_(), savePrefs(), loadPrefs()
+    ├── firebase.js         ← onAuth(), signIn(), signOut_(), savePrefs(), loadPrefs(), saveProfile(), loadProfile(), saveChatHistory(), loadChatHistory()
     ├── platforms.js        ← PLATFORMS array, CINEMATOGRAPHY object, getPlatformContext()
+    ├── render-guard.mjs    ← createRenderGuard() — prevents stale async renders
+    ├── logs/
+    │   └── logger.js       ← NorthLog, logDiag, installDiagListeners (single logging source)
     └── rooms/
         ├── home.js         ← Barn photos, Wren's cutouts, weather sky, crew strip, room grid
         ├── chat.js         ← Prompt Engine (form mode) + Free Chat mode
         ├── cast.js         ← Character + Props Manager, Locations DB
-        ├── platforms.js    ← Platform Lab room (browses platforms.js data)
-        ├── setup.js        ← API keys, Google Sign-In, system status
+        ├── platforms.js    ← Platform Lab room + Sora Scout card
+        ├── setup.js        ← API keys, Google Sign-In, system status, event log
         ├── slots.js        ← Madlib story slots
         ├── rocklab.js      ← Geode types, cave episodes
         ├── racing.js       ← Racing cards
         ├── weird.js        ← Weird NJ cards
         ├── jeeb.js         ← Dreamcore / psychedelic content
-        └── idioms.js       ← Random idiom generator
+        ├── idioms.js       ← Randy's Idioms + location picker + Forge This Scene
+        ├── digest.js       ← North Digest: weekly content calendar of forged call sheets
+        └── profile.js      ← User Character Profile: Sora appearance + IDs
 ```
 
 ---
@@ -99,6 +104,7 @@ state = {
   toast:     null,
   northPeek: null,
   fontSize:  28,
+  profile:   null,          // user character profile { age, build, hair, eyes, style, soraIds[], preferredDuration, profileComplete }
 }
 ```
 
@@ -113,6 +119,10 @@ state = {
 - `window._northClearMsgs()` — clear chat messages keeping first welcome msg
 - `window.getFilmingCondition(wx)` — returns `{ label, icon, color }` for weather
 - `window.callNorthDirect(messages)` — raw AI call, returns text or null
+- `window.saveUserProfile(data)` — save user character profile to state + Firestore
+- `window.loadNorthPrompts(count)` — load forged call sheets from Firestore
+- `window.loadNorthEvents(count)` — load event log from Firestore
+- `window.logDiag(type, data)` — write diagnostic entry to localStorage
 
 ---
 
@@ -182,6 +192,12 @@ All data lives in `public/platforms.js`:
 - Failure + Event Log (Firestore logging, event log in Setup room)
 - Weather Agent (real sky FX, farm almanac, filming condition, golden hour countdown)
 - Viral Video Checker (score badge on every call sheet)
+- Chat History Persistence (Firestore, survives refresh — last 50 msgs)
+- North Digest (`rooms/digest.js`) — weekly content calendar of all forged call sheets
+- User Character Profile (`rooms/profile.js`) — age/build/hair/eyes/style + up to 3 Sora IDs + preferred duration; auto-injected into every North prompt
+- Sora Scout (card in Platforms room) — North surfaces live Sora 2 tips on demand
+- Render Guard (`render-guard.mjs`) — prevents stale async renders on fast navigation
+- Unified Logging (`logs/logger.js`) — NorthLog + localStorage diagnostics
 - HOLD: Map Agent, web analytics, local news feeds
 
 ---
@@ -197,11 +213,16 @@ All data lives in `public/platforms.js`:
 7. ✅ Viral Checker
 8. ✅ home.js polish (barn photos, Wren's cutouts, weather sky, cameos, seasonal overlays)
 9. ✅ Room content (slots, rocklab, racing, weird, jeeb, idioms — all fully built)
+10. ✅ Call Sheet History — saved to Firestore, viewable in Digest + Setup
+11. ✅ Idioms upgrade — Randy reactions with location picker + Forge This Scene
+12. ✅ North Digest — weekly content calendar of all forged call sheets
+13. ✅ User Character Profile — Sora appearance + IDs auto-injected into prompts
+14. ✅ Sora Scout — North surfaces Sora 2 tips on demand (Platforms room)
+15. ✅ Chat history persistence — survives refresh via Firestore
+16. ✅ Render Guard — prevents stale renders on fast tab switching
+17. ✅ Unified logging — logs/logger.js replaces scattered console calls
 
-**All Layer 1–3 items complete. Next priorities:**
-- 🔲 Call Sheet History — save forged sheets to Firestore, viewable in Setup
-- 🔲 Idioms upgrade — Randy reactions with full Sora ID context + "Forge This Scene" button
-- 🔲 North Digest — weekly summary of what was forged (content calendar view)
+**All layers complete. HOLD items:**
 - HOLD: Map Agent, web analytics, local news feeds
 
 ---
@@ -209,9 +230,10 @@ All data lives in `public/platforms.js`:
 ## KNOWN BUGS / ACTIVE ISSUES
 
 No active bugs. If something breaks, check:
-- Hard refresh (`Ctrl+Shift+R`) for JS module cache issues
+- Hard refresh (`Ctrl+Shift+R`) for JS module cache issues — firebase.json now sets `no-cache` on all JS files to prevent this
 - DevTools Network tab for 404s on image paths
 - Setup room event log for API error reason codes
+- NorthLog entries via browser console: `[North ✓]` info, `[North ⚠]` warn, `[North ✗]` error
 
 ---
 
@@ -283,4 +305,4 @@ Live URL: `https://north-forge-ai.firebaseapp.com`
 
 ---
 
-*Last updated: March 2026 · North Forge v1.0.0 · All 9 build orders complete*
+*Last updated: March 2026 · North Forge v1.0.0 · All 17 build orders complete · All 3 layers shipped*
