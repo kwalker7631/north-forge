@@ -119,6 +119,7 @@ const callGemini = async (messages, apiKey, weather = null) => {
 
     const err = await res.text();
     NorthLog.warn(`Gemini error ${res.status}: ${err.slice(0, 200)}`);
+    if (res.status === 429) return '__QUOTA__';
     return null;
 
   } catch (e) {
@@ -135,12 +136,20 @@ export const callNorth = async (messages, keys = {}, weather = null) => {
   if (primary) return { ok: true, text: primary, provider: 'anthropic' };
 
   const fallback = await callGemini(messages, gemini, weather);
+  if (fallback === '__QUOTA__') {
+    NorthLog.error('Gemini quota exceeded (429) — Anthropic key also failed');
+    return {
+      ok:       false,
+      text:     "North's Anthropic key isn't working and Gemini hit its free quota limit. Go to Setup and check your Anthropic API key.",
+      provider: 'none',
+    };
+  }
   if (fallback) return { ok: true, text: fallback, provider: 'gemini' };
 
-  NorthLog.error('All providers failed — check API key and network');
+  NorthLog.error('All providers failed — check API keys and network');
   return {
     ok:       false,
-    text:     "North lost the signal. Check your API key in Setup and try again. 🏚️",
+    text:     "North lost the signal. Check your API keys in Setup and try again. 🏚️",
     provider: 'none',
   };
 };
