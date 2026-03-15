@@ -27,6 +27,9 @@ North doesn't do generic. Every prompt he writes is anchored to real people and 
 - **Explore Platforms** — compare Sora 2, Kling, VEO 3, and Grok Aurora side-by-side to pick the right tool for the shot
 - **Chat with North** — free-form conversation with your AI director, anytime
 - **Rock Lab, Racing, Weird NJ** — dedicated rooms for Pine Barron Farms' signature content categories
+- **North Digest** — weekly content calendar of every scene you've forged, grouped by week with viral scores
+- **My Profile** — define how you appear in Sora 2 videos: age range, build, hair, eyes, style, up to 3 Sora IDs, and preferred duration
+- **Sora Scout** — ask North for the latest Sora 2 tips, techniques, and best practices on demand
 
 ---
 

@@ -16,7 +16,7 @@ global.window = {
   },
 };
 
-const { logDiag, getDiagLogs, clearDiagLogs, installDiagListeners } = await import('../public/diagnostics.mjs');
+const { logDiag, getDiagLogs, clearDiagLogs, installDiagListeners } = await import('../public/logs/logger.js');
 
 test('logDiag persists and bounds entries', () => {
   clearDiagLogs();

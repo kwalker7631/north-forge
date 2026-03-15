@@ -7,8 +7,10 @@ import { callNorth, fetchWeather,
 import { onAuth, signIn, signOut_,
          savePrefs, loadPrefs,
          logEvent, loadEvents,
-         savePrompt, loadPrompts }  from './firebase.js';
-import { logDiag, installDiagListeners } from './diagnostics.mjs';
+         savePrompt, loadPrompts,
+         saveChatHistory, loadChatHistory,
+         saveProfile, loadProfile } from './firebase.js';
+import { logDiag, installDiagListeners } from './logs/logger.js';
 import { createRenderGuard } from './render-guard.mjs';
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
@@ -27,6 +29,7 @@ export const state = {
   toast:    null,
   northPeek:null,
   fontSize: 28,
+  profile:  null,
 };
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
@@ -55,10 +58,11 @@ window.send = async (text) => {
   state.loading   = true;
   state.chatMode  = 'chat';   // tell chat.js to show chat view, consumed on render
   window.goTo('chat');
-  const result = await callNorth(state.msgs, state.keys, state.weather);
+  const result = await callNorth(state.msgs, state.keys, state.weather, state.profile);
   state.msgs.push({ role:'assistant', content:result.text });
   state.loading = false;
   if (state.user) {
+    saveChatHistory(state.user.uid, state.msgs);
     logEvent(state.user.uid, {
       type:     result.ok ? 'success' : 'error',
       provider: result.provider,
@@ -120,13 +124,28 @@ onAuth(async (user) => {
   state.user = user;
   if (user) {
     NorthLog.info(`Signed in: ${user.displayName}`);
-    const prefs = await loadPrefs(user.uid);
+    const [prefs, history, profile] = await Promise.all([
+      loadPrefs(user.uid),
+      loadChatHistory(user.uid),
+      loadProfile(user.uid),
+    ]);
     if (prefs) {
       if (prefs.anthropicKey) state.keys.anthropic = prefs.anthropicKey;
       if (prefs.geminiKey)    state.keys.gemini    = prefs.geminiKey;
       if (prefs.fontSize)     state.fontSize       = prefs.fontSize;
       if (prefs.sceneIdx !== undefined) state.sceneIdx = prefs.sceneIdx;
       document.documentElement.style.fontSize = state.fontSize + 'px';
+    }
+    if (history && history.length > 1) {
+      state.msgs = history;
+      NorthLog.info(`Chat history restored: ${history.length} messages`);
+    }
+    if (profile) {
+      state.profile = profile;
+      NorthLog.info('Character profile loaded');
+    } else {
+      // Onboarding: prompt user to set up their profile on first sign-in
+      setTimeout(() => window.showToast('🎭 Set up your character profile to appear in Sora scenes!'), 1800);
     }
   }
   render();
@@ -274,7 +293,7 @@ export const render = async () => {
       message: e?.message || String(e),
       stack: e?.stack || null,
     });
-    console.error(`Room load failed for "${state.tab}"`, e);
+    NorthLog.error(`Room load failed for "${state.tab}": ${e?.message || e}`);
     rc.innerHTML = `
       <div class="error-room">
         <div style="font-size:3em;margin-bottom:16px;">🏚️</div>
@@ -292,6 +311,7 @@ export const render = async () => {
 // ── GLOBAL HOOKS FOR ROOMS ────────────────────────────────────────────────────
 window._northClearMsgs = () => {
   state.msgs = [state.msgs[0]];
+  if (state.user) saveChatHistory(state.user.uid, state.msgs);
 };
 window.loadNorthEvents  = (count = 15) =>
   state.user ? loadEvents(state.user.uid, count)  : Promise.resolve([]);
@@ -301,6 +321,13 @@ window.loadNorthPrompts = (count = 20) =>
 window.render = render;
 window.logDiag = logDiag;
 installDiagListeners();
+
+window.saveUserProfile = async (data) => {
+  state.profile = { ...data, profileComplete: true };
+  if (state.user) await saveProfile(state.user.uid, state.profile);
+  window.showToast('🎭 Profile saved!');
+  window.goTo('home');
+};
 
 // ── BOOT ──────────────────────────────────────────────────────────────────────
 NorthLog.info(`North Forge ${NORTH_VERSION.current} starting`);

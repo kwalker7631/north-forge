@@ -80,20 +80,24 @@ northforge/
     ├── north.js            ← North's voice, system prompt, cast array, version
     ├── data.js             ← rooms, scenes, all static content
     ├── api.js              ← callNorth(), callAnthropic(), callGemini(), fetchWeather(), NorthLog
-    ├── firebase.js         ← auth, Firestore prefs
+    ├── firebase.js         ← auth, Firestore prefs, chat history, prompts, events, profile
     ├── platforms.js        ← platform data, cinematography knowledge, hacks
+    ├── logs/
+    │   └── logger.js       ← NorthLog, logDiag, installDiagListeners (single logging source)
     └── rooms/
         ├── home.js         ← Big Red Barn SVG, Wren's cutouts, crew strip
         ├── chat.js         ← Prompt Engine (form mode) + Free Chat mode
         ├── cast.js         ← Character + Props Manager, Locations DB
-        ├── platforms.js    ← Platform Lab (browse platform data)
+        ├── platforms.js    ← Platform Lab (browse platform data) + Sora Scout
         ├── setup.js        ← API keys, Google Sign-In, system status
         ├── slots.js        ← Madlib story slots
         ├── rocklab.js      ← Geode types, cave episodes
         ├── racing.js       ← Racing cards
         ├── weird.js        ← Weird NJ cards
         ├── jeeb.js         ← Dreamcore / psychedelic content
-        └── idioms.js       ← Random idiom generator
+        ├── idioms.js       ← Randy's Idioms + location picker + Forge This Scene
+        ├── digest.js       ← North Digest: weekly content calendar of forged call sheets
+        └── profile.js      ← User Character Profile: Sora appearance + IDs
 ```
 
 ---
@@ -106,10 +110,14 @@ Character + Props Manager, Locations Database, full cast with locked Sora IDs.
 ### Layer 2 — Craft Engine
 Platform knowledge base, hack library, cinematography guide, Platform Lab room, and the Prompt Engine — a structured form that outputs a complete call sheet.
 
-### Layer 3 — Intelligence Engine *(in progress)*
-- Failure + Event Log (Firestore logging)
-- Weather Agent (real sky FX, farm almanac)
+### Layer 3 — Intelligence Engine ✅ Complete
+- Failure + Event Log (Firestore logging, real-time event stream)
+- Weather Agent (real sky FX, farm almanac, golden hour detection)
 - Viral Video Checker (scores prompts vs. trending formats)
+- Chat History Persistence (Firestore, survives refresh)
+- North Digest (weekly content calendar — all forged call sheets)
+- User Character Profile (Sora appearance + IDs auto-injected into every prompt)
+- Sora Scout (North surfaces live Sora 2 tips, tricks, and techniques on demand)
 
 ---
 

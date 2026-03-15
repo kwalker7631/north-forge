@@ -14,7 +14,13 @@
       "Bash(for div:*)",
       "Bash(for class:*)",
       "Bash(__NEW_LINE_694cfa812e654dc5__ echo:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(python3:*)",
+      "Bash(pip install:*)",
+      "Bash(py:*)",
+      "Bash(wc:*)",
+      "Bash(grep:*)",
+      "Bash(for func:*)"
     ]
   }
 }

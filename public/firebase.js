@@ -9,6 +9,7 @@ import { getFirestore, doc,
          setDoc, getDoc, collection,
          addDoc, query, orderBy,
          limit, getDocs }                       from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { NorthLog }                             from './logs/logger.js';
 
 // ── YOUR PROJECT CONFIG ───────────────────────────────────────────────────────
 const firebaseConfig = {
@@ -38,7 +39,7 @@ export const savePrefs = async (userId, prefs) => {
   try {
     await setDoc(doc(db, 'users', userId, 'data', 'prefs'), prefs, { merge: true });
   } catch (e) {
-    console.warn('[North] savePrefs failed:', e.message);
+    NorthLog.warn(`savePrefs failed: ${e.message}`);
   }
 };
 
@@ -47,7 +48,7 @@ export const loadPrefs = async (userId) => {
     const snap = await getDoc(doc(db, 'users', userId, 'data', 'prefs'));
     return snap.exists() ? snap.data() : null;
   } catch (e) {
-    console.warn('[North] loadPrefs failed:', e.message);
+    NorthLog.warn(`loadPrefs failed: ${e.message}`);
     return null;
   }
 };
@@ -61,7 +62,7 @@ export const savePrompt = async (userId, prompt) => {
       savedAt: new Date().toISOString(),
     });
   } catch (e) {
-    console.warn('[North] savePrompt failed:', e.message);
+    NorthLog.warn(`savePrompt failed: ${e.message}`);
   }
 };
 
@@ -75,7 +76,7 @@ export const loadPrompts = async (userId, count = 20) => {
     const snap = await getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
   } catch (e) {
-    console.warn('[North] loadPrompts failed:', e.message);
+    NorthLog.warn(`loadPrompts failed: ${e.message}`);
     return [];
   }
 };
@@ -90,7 +91,50 @@ export const logEvent = async (userId, event) => {
       ts: new Date().toISOString(),
     });
   } catch (e) {
-    console.warn('[North] logEvent failed:', e.message);
+    NorthLog.warn(`logEvent failed: ${e.message}`);
+  }
+};
+
+// ── CHAT HISTORY ──────────────────────────────────────────────────────────────
+// Persists the last 50 messages so the conversation survives refresh & revisits.
+export const saveChatHistory = async (userId, msgs) => {
+  try {
+    await setDoc(doc(db, 'users', userId, 'data', 'chat'), {
+      msgs:    msgs.slice(-50),
+      savedAt: new Date().toISOString(),
+    });
+  } catch (e) {
+    NorthLog.warn(`saveChatHistory failed: ${e.message}`);
+  }
+};
+
+export const loadChatHistory = async (userId) => {
+  try {
+    const snap = await getDoc(doc(db, 'users', userId, 'data', 'chat'));
+    return snap.exists() ? snap.data().msgs : null;
+  } catch (e) {
+    NorthLog.warn(`loadChatHistory failed: ${e.message}`);
+    return null;
+  }
+};
+
+// ── USER CHARACTER PROFILE ────────────────────────────────────────────────────
+// Sora appearance info: age, build, hair, eyes, style, soraIds, preferredDuration
+export const saveProfile = async (userId, profile) => {
+  try {
+    await setDoc(doc(db, 'users', userId, 'data', 'profile'), profile, { merge: true });
+  } catch (e) {
+    NorthLog.warn(`saveProfile failed: ${e.message}`);
+  }
+};
+
+export const loadProfile = async (userId) => {
+  try {
+    const snap = await getDoc(doc(db, 'users', userId, 'data', 'profile'));
+    return snap.exists() ? snap.data() : null;
+  } catch (e) {
+    NorthLog.warn(`loadProfile failed: ${e.message}`);
+    return null;
   }
 };
 
@@ -105,7 +149,7 @@ export const loadEvents = async (userId, count = 20) => {
     const snap = await getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
   } catch (e) {
-    console.warn('[North] loadEvents failed:', e.message);
+    NorthLog.warn(`loadEvents failed: ${e.message}`);
     return [];
   }
 };

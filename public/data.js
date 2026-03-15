@@ -21,6 +21,8 @@ export const ROOMS = [
   { id:"jeeb",    emoji:"🍄", title:"The Jeeb",         color:"#c084fc", desc:"The psychedelic, dreamlike side of the Pine Barrens."                },
   { id:"idioms",  emoji:"🤬", title:"Randy's Idioms",   color:"#d97706", desc:"North generates a random idiom. Randy reacts. Chaos ensues."         },
   { id:"cast",    emoji:"🧠", title:"The Cast",         color:"#22c55e", desc:"Everyone on the farm. Tap any character to generate their scene."    },
+  { id:"digest",  emoji:"📅", title:"North Digest",      color:"#38bdf8", desc:"Weekly recap of every scene forged at Pine Barron Farms."          },
+  { id:"profile", emoji:"🎭", title:"My Profile",        color:"#c084fc", desc:"Define how you appear in Sora 2 videos. Set your character and Sora IDs." },
   { id:"setup",   emoji:"🔑", title:"Setup",            color:"#94a3b8", desc:"Connect your API keys and configure North Forge."                    },
 ];
 
@@ -154,4 +156,14 @@ export const IDIOMS = [
   { text:"Dead quiet. The kind of quiet that means Randy found something.",                  src:"The crew, collectively"     },
   { text:"That idea's wilder than a hot air balloon over the chicken coop.",                 src:"Randy on Ken's plans"       },
   { text:"Harder than Route 9 asphalt at noon in August.",                                   src:"Randy, high praise"         },
+  { text:"That's tighter than a cave passage after a NJ rainstorm.",                         src:"Randy underground"          },
+  { text:"She came at it like a sprint car on the outside lane — committed and loud.",        src:"Randy at Wall Stadium"      },
+  { text:"That story's got more layers than a zeolite cluster. None of them make sense.",     src:"Randy's Rock Lab"           },
+  { text:"You can't steer parked. Ask Luna — she never parks.",                               src:"Randy on decisiveness"      },
+  { text:"Bright as a UV flashlight on a fluorite seam at midnight.",                         src:"Randy, rare compliment"     },
+  { text:"Solid as the Piscataway clay under the Big Red Barn.",                              src:"Randy on the crew"          },
+  { text:"That hit like finding a geode the size of a basketball. You don't expect it.",      src:"Randy's Rock Lab EP 7"      },
+  { text:"Moving faster than the rumors that follow Ken through the chicken coop.",           src:"Randy on farm gossip"       },
+  { text:"That plan holds together about as well as NJ road construction.",                   src:"Randy, skeptical"           },
+  { text:"Clean as a freshly split calcite face. No argument possible.",                      src:"Randy, settled"             },
 ];

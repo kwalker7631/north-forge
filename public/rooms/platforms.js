@@ -3,11 +3,36 @@
 
 import { PLATFORMS, CINEMATOGRAPHY } from '../platforms.js';
 
-let activeTab    = 'platforms';  // 'platforms' | 'cinema' | 'hacks'
-let activePlatId = 'sora2';
+let activeTab     = 'platforms';  // 'platforms' | 'cinema' | 'hacks'
+let activePlatId  = 'sora2';
+let scoutResult   = null;
+let scoutLoading  = false;
 
 export const render = (state) => `
   <div class="room-wrap">
+
+    <!-- SORA SCOUT ---------------------------------------------------------->
+    <div class="scout-card">
+      <div class="scout-header">
+        <div>
+          <div class="scout-label">🛰️ SORA SCOUT</div>
+          <div class="scout-sub">Ask North for the latest Sora 2 tips, tricks, and techniques</div>
+        </div>
+        <div class="scout-btns">
+          <button class="scout-btn ${scoutLoading?'disabled':''}"
+                  onclick="scoutSora('latest')" ${scoutLoading?'disabled':''}>
+            ${scoutLoading ? '⏳ Scouting…' : '🔭 Scout Sora 2 Now'}
+          </button>
+          <button class="scout-btn-alt ${scoutLoading?'disabled':''}"
+                  onclick="scoutSora('week')" ${scoutLoading?'disabled':''}>
+            📆 What's new this week?
+          </button>
+        </div>
+      </div>
+      ${scoutResult ? `
+        <div class="scout-result">${scoutResult}</div>
+        <button class="scout-clear" onclick="scoutClear()">✕ Clear</button>` : ''}
+    </div>
 
     <div class="pl-tabs">
       <button class="pl-tab ${activeTab==='platforms'?'active':''}"
