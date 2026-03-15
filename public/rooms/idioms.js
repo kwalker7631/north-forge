@@ -44,6 +44,7 @@ export const render = (state) => {
       <div class="id-reaction-card">
         <div class="id-react-label">🪖 RANDY'S REACTION</div>
         <div class="id-react-text">${esc(reaction)}</div>
+        <button class="id-forge-btn" onclick="idForgeScene()">🎬 Forge Randy's Scene</button>
       </div>` : ''}
 
   </div>
@@ -73,6 +74,11 @@ export const render = (state) => {
     .id-react-label { font-size:.56em; font-weight:900; letter-spacing:2px; color:#d97706;
                       text-transform:uppercase; margin-bottom:12px; }
     .id-react-text  { color:#fef3c7; font-size:.9em; line-height:1.8; font-weight:700; }
+    .id-forge-btn   { background:linear-gradient(135deg,#0284c7,#0ea5e9); color:#fff;
+                      border:none; border-radius:10px; padding:10px 20px; font-weight:900;
+                      font-size:0.72em; cursor:pointer; font-family:Georgia,serif;
+                      margin-top:14px; transition:all .2s; width:100%; }
+    .id-forge-btn:hover { transform:scale(1.02); }
   </style>
   `;
 };
@@ -92,11 +98,22 @@ window.idReact = async () => {
   const idiom = IDIOMS[idiomIdx];
   const text  = await window.callNorthDirect([{
     role: 'user',
-    content: `Randy "Sarge" just heard this expression: "${idiom.text}"\n\nWrite his in-character reaction. Randy is ex-military, NJ-tough, underground cave hunter, obsessed with racing. Keep it under 3 sentences. Pure Randy energy. No labels — just his voice.`,
+    content: `Randy "Sarge" (@geodudenj) at Pine Barron Farms just heard: "${idiom.text}"\n\nWrite his raw in-character reaction. Ex-military, NJ dirt track racer, underground cave hunter — Piscataway born. 3 sentences max, first person, no labels, pure Randy. Reference the farm, the cave, or the track if it fits.`,
   }]);
   reaction = text || "...Randy stares at you for a long moment. Says nothing. Walks away.";
   reacting = false;
   window.goTo('idioms');
+};
+
+window.idForgeScene = () => {
+  if (!reaction) return;
+  const idiom = IDIOMS[idiomIdx];
+  window.forgeScene(
+    `Randy "Sarge" (@geodudenj) at Pine Barron Farms. He just said: "${reaction}" ` +
+    `Triggered by hearing: "${idiom.text}". ` +
+    `Frame this as a tight cinematic reaction shot — close on Randy's face at the cave entrance or barn, ` +
+    `raw NJ energy, real emotion.`
+  );
 };
 
 export const mount = () => {};

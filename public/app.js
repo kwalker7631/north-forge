@@ -6,7 +6,8 @@ import { callNorth, fetchWeather,
          getMoonPhase, NorthLog }   from './api.js';
 import { onAuth, signIn, signOut_,
          savePrefs, loadPrefs,
-         logEvent, loadEvents }     from './firebase.js';
+         logEvent, loadEvents,
+         savePrompt, loadPrompts }  from './firebase.js';
 import { logDiag, installDiagListeners } from './diagnostics.mjs';
 import { createRenderGuard } from './render-guard.mjs';
 
@@ -51,8 +52,8 @@ window.send = async (text) => {
     window.goTo('setup'); return;
   }
   state.msgs.push({ role:'user', content:text });
-  state.loading        = true;
-  state._forceChatView = true;   // tell chat.js to show chat view, not form
+  state.loading   = true;
+  state.chatMode  = 'chat';   // tell chat.js to show chat view, consumed on render
   window.goTo('chat');
   const result = await callNorth(state.msgs, state.keys, state.weather);
   state.msgs.push({ role:'assistant', content:result.text });
@@ -63,7 +64,20 @@ window.send = async (text) => {
       provider: result.provider,
       chars:    result.text.length,
       prompt:   text.slice(0, 80),
+      ...(result.reason ? { reason: result.reason } : {}),
     });
+    // Auto-save call sheets to Firestore
+    if (result.ok && /CLEAN PROMPT|═══/i.test(result.text)) {
+      const pm = result.text.match(/CLEAN PROMPT[^\n]*\n([\s\S]*?)(?:═══|$)/i);
+      const vs = result.text.match(/VIRAL SCORE:\s*(\d+)\/10/i);
+      const clean = pm ? pm[1].trim() : '';
+      if (clean) savePrompt(state.user.uid, {
+        clean,
+        score:    vs ? parseInt(vs[1]) : null,
+        provider: result.provider,
+        idea:     text.slice(0, 80),
+      });
+    }
   }
   render();
   setTimeout(() => document.getElementById('chat-bottom')?.scrollIntoView({ behavior:'smooth' }), 120);
@@ -171,12 +185,29 @@ const weatherToScene = (wx) => {
   return 1;                         // pines (evening)
 };
 
-fetchWeather('Piscataway').then(wx => {
-  state.weather = wx;
-  if (wx) state.sceneIdx = weatherToScene(wx);
-  NorthLog.info(wx ? `Weather: ${wx.temp} ${wx.condition}` : 'Weather unavailable');
-  render();
-});
+window.getFilmingCondition = (wx) => {
+  if (!wx) return { label:'No Data', icon:'❓', color:'#64748b' };
+  const cond = wx.condition.toLowerCase();
+  const wind = parseInt(wx.wind) || 0;
+  if (cond.includes('rain') || cond.includes('thunder') || cond.includes('snow'))
+    return { label:'Stay Inside', icon:'🌧️', color:'#ef4444' };
+  if (cond.includes('overcast'))
+    return { label:'Soft Light',  icon:'☁️',  color:'#38bdf8' };
+  if ((cond.includes('clear') || cond.includes('mostly clear')) && wind < 15)
+    return { label:'Great Light', icon:'🎬', color:'#22c55e' };
+  return { label:'Workable', icon:'⚠️', color:'#f59e0b' };
+};
+
+const refreshWeather = () =>
+  fetchWeather('Piscataway').then(wx => {
+    state.weather = wx;
+    if (wx) state.sceneIdx = weatherToScene(wx);
+    NorthLog.info(wx ? `Weather: ${wx.temp} ${wx.condition}` : 'Weather unavailable');
+    render();
+  });
+
+refreshWeather();
+setInterval(refreshWeather, 30 * 60 * 1000);   // refresh every 30 min
 
 // ── TOPBAR STATUS ─────────────────────────────────────────────────────────────
 const topbarHTML = () => {
@@ -262,8 +293,10 @@ export const render = async () => {
 window._northClearMsgs = () => {
   state.msgs = [state.msgs[0]];
 };
-window.loadNorthEvents = (count = 15) =>
-  state.user ? loadEvents(state.user.uid, count) : Promise.resolve([]);
+window.loadNorthEvents  = (count = 15) =>
+  state.user ? loadEvents(state.user.uid, count)  : Promise.resolve([]);
+window.loadNorthPrompts = (count = 20) =>
+  state.user ? loadPrompts(state.user.uid, count) : Promise.resolve([]);
 
 window.render = render;
 window.logDiag = logDiag;

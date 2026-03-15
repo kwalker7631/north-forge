@@ -39,16 +39,19 @@ let formStep  = 'idle';
 // ── RENDER ────────────────────────────────────────────────────────────────────
 export const render = (state) => {
   const hasKey = state.keys.anthropic || state.keys.gemini;
+  // Consume one-shot chatMode signal from app.js (forge from Cast/Platforms/Home)
+  if (state.chatMode) { chatMode = state.chatMode; state.chatMode = null; }
+  const showChat = chatMode === 'chat' || state.loading;
   return `
     <div style="height:100%;display:flex;flex-direction:column;">
       ${!hasKey ? `<div class="no-key-banner">🔑 No API key — <span onclick="goTo('setup')" style="color:#38bdf8;cursor:pointer;text-decoration:underline;">go to Setup</span></div>` : ''}
       <div class="chat-mode-bar">
-        <button class="mode-btn ${chatMode==='form'?'active':''}" onclick="setChatMode('form')">📋 Prompt Engine</button>
-        <button class="mode-btn ${chatMode==='chat'?'active':''}" onclick="setChatMode('chat')">💬 Free Chat</button>
+        <button class="mode-btn ${!showChat?'active':''}" onclick="setChatMode('form')">📋 Prompt Engine</button>
+        <button class="mode-btn ${showChat?'active':''}" onclick="setChatMode('chat')">💬 Free Chat</button>
         <div style="flex:1;"></div>
         <button class="clear-btn" onclick="clearChat()">🗑 Clear</button>
       </div>
-      ${chatMode === 'form' ? formView() : chatView(state)}
+      ${!showChat ? formView() : chatView(state)}
     </div>
     ${styles()}
   `;
@@ -172,9 +175,21 @@ const csBlock = (text, idx) => {
   const m = text.match(/CLEAN PROMPT[^\n]*\n([\s\S]*?)(?:═══|$)/i);
   const clean = m ? m[1].trim() : '';
   if (!clean) return '';
+
+  // Extract viral score from North's response
+  const vs = text.match(/VIRAL SCORE:\s*(\d+)\/10\s*[—\-]\s*(.+)/i);
+  const score = vs ? parseInt(vs[1]) : null;
+  const reason = vs ? vs[2].trim() : null;
+  const vsColor = score >= 8 ? '#22c55e' : score >= 5 ? '#d97706' : score ? '#ef4444' : null;
+  const vsBadge = score ? `
+    <div class="vs-badge cs-score" style="background:${vsColor};">
+      🔥 VIRAL SCORE: ${score}/10 — ${esc(reason)}
+    </div>` : '';
+
   return `
     <div class="callsheet">
       <div style="color:#38bdf8;font-size:0.6em;font-weight:900;letter-spacing:2px;margin-bottom:10px;">📋 CALL SHEET READY</div>
+      ${vsBadge}
       <div class="cs-body" id="cs-body-${idx}">${esc(clean)}</div>
       <div class="cs-actions">
         <button class="cs-btn cs-copy" onclick="copyCS('cs-body-${idx}')">📋 Copy Prompt</button>
@@ -346,7 +361,7 @@ CLEAN PROMPT
     await window.send(prompt);
   } finally {
     formStep = 'idle';
-    window.goTo('chat');
+    window.render?.();
   }
 };
 
@@ -366,9 +381,11 @@ window.copyCS = (id) => {
     .catch(() => window.showToast('Copy failed — select and copy manually'));
 };
 
-window.copyFull = (idx) => {
-  const rows = document.querySelectorAll('.msg-row:not(.user) .msg-text');
-  const el = rows[idx];
+window.copyFull = (msgIdx) => {
+  // msgIdx is the index into state.msgs (all messages).
+  // We need the matching .msg-text inside that specific message bubble.
+  const rows = document.querySelectorAll('.msg-row .msg-text');
+  const el = rows[msgIdx];
   if (!el) return;
   navigator.clipboard.writeText(el.textContent.trim())
     .then(() => window.showToast('✓ Full call sheet copied!'))
@@ -376,6 +393,8 @@ window.copyFull = (idx) => {
 };
 
 export const mount = (state) => {
+  // Reset stuck formStep if user navigated away mid-forge
+  if (formStep === 'generating') formStep = 'idle';
   if (chatMode === 'chat') {
     setTimeout(() => document.getElementById('chat-bottom')
       ?.scrollIntoView({ behavior:'smooth' }), 100);

@@ -59,7 +59,7 @@ northforge/
     ├── firebase.js         ← onAuth(), signIn(), signOut_(), savePrefs(), loadPrefs()
     ├── platforms.js        ← PLATFORMS array, CINEMATOGRAPHY object, getPlatformContext()
     └── rooms/
-        ├── home.js         ← Big Red Barn SVG, Wren's cutouts, crew strip, room grid
+        ├── home.js         ← Barn photos, Wren's cutouts, weather sky, crew strip, room grid
         ├── chat.js         ← Prompt Engine (form mode) + Free Chat mode
         ├── cast.js         ← Character + Props Manager, Locations DB
         ├── platforms.js    ← Platform Lab room (browses platforms.js data)
@@ -93,7 +93,7 @@ state = {
   keys:      { anthropic:'', gemini:'' },
   msgs:      [],            // chat message array [{role, content}]
   loading:   false,
-  weather:   null,          // { temp, condition, wind, location }
+  weather:   null,          // { temp, condition, wind, location, sunrise, sunset }
   moon:      {},            // { name, icon }
   sceneIdx:  0,
   toast:     null,
@@ -111,6 +111,8 @@ state = {
 - `window.handleSignIn()` — trigger Google sign-in
 - `window.handleSignOut()` — sign out
 - `window._northClearMsgs()` — clear chat messages keeping first welcome msg
+- `window.getFilmingCondition(wx)` — returns `{ label, icon, color }` for weather
+- `window.callNorthDirect(messages)` — raw AI call, returns text or null
 
 ---
 
@@ -128,10 +130,16 @@ state = {
 | Grand Ma Eleanor | @grandma.eleanor | The Elder Authority | 👵 | #fb7185 |
 | Luna | @kennethwa.luna | The Escape Artist | 🐐 | #fbbf24 |
 
-**Wren's photo cutouts** (South Park style, live in `public/images/`):
+**Wren's photo cutouts** (South Park style, live in `public/images/characters/`):
 - `Salem.png`
-- `Grand-Ma_Eleanor.png`
-- `Luna.jpg`
+- `Grand-Ma Eleanor.png`
+- `Luna.png`
+
+**Other image assets** (live in `public/images/`):
+- `barn/` — barn-clear, barn-cloudy, barn-golden, barn-night, barn-rain, barn-snow (weather-matched)
+- `moon/` — all 8 moon phase photos (matched to `state.moon.name`)
+- `cameos/` — bigfoot, bigfoot-run, jersey-devil, ufo, ufo-hover (random home tab appearances)
+- `overlays/` — seasonal overlays (halloween, christmas, thanksgiving, july4, spring, winter, newyear)
 
 ---
 
@@ -170,10 +178,10 @@ All data lives in `public/platforms.js`:
 - Platform Lab room (`rooms/platforms.js`)
 - Prompt Engine (`rooms/chat.js`) — form mode → full call sheet output
 
-### Layer 3 — Intelligence Engine 🔲 IN PROGRESS
-- **Failure + Event Log** ← BUILD NEXT (Firestore logging)
-- Weather Agent (real sky FX, farm almanac)
-- Viral Video Checker (scores prompts vs trending)
+### Layer 3 — Intelligence Engine ✅ BUILT
+- Failure + Event Log (Firestore logging, event log in Setup room)
+- Weather Agent (real sky FX, farm almanac, filming condition, golden hour countdown)
+- Viral Video Checker (score badge on every call sheet)
 - HOLD: Map Agent, web analytics, local news feeds
 
 ---
@@ -184,23 +192,26 @@ All data lives in `public/platforms.js`:
 2. ✅ Platform Knowledge Base
 3. ✅ Prompt Engine
 4. ✅ Setup room
-5. 🔲 **Failure + Event Log** ← NEXT
-6. 🔲 Weather Agent
-7. 🔲 Viral Checker
-8. 🔲 home.js polish (Wren's cutouts, animated weather, stars)
-9. 🔲 Remaining room stubs (slots, rocklab, racing, weird, jeeb, idioms)
+5. ✅ Failure + Event Log
+6. ✅ Weather Agent
+7. ✅ Viral Checker
+8. ✅ home.js polish (barn photos, Wren's cutouts, weather sky, cameos, seasonal overlays)
+9. ✅ Room content (slots, rocklab, racing, weird, jeeb, idioms — all fully built)
+
+**All Layer 1–3 items complete. Next priorities:**
+- 🔲 Call Sheet History — save forged sheets to Firestore, viewable in Setup
+- 🔲 Idioms upgrade — Randy reactions with full Sora ID context + "Forge This Scene" button
+- 🔲 North Digest — weekly summary of what was forged (content calendar view)
+- HOLD: Map Agent, web analytics, local news feeds
 
 ---
 
 ## KNOWN BUGS / ACTIVE ISSUES
 
-- `rooms/chat.js` textarea loses focus on button click → fix: save textarea value
-  before calling `window.goTo()` in `peSet()`
-- `window._northClearMsgs` hook must exist in `app.js` for clearChat to work
-- Browser cache issues with `platforms.js` — hard refresh (`Ctrl+Shift+R`) if
-  CINEMATOGRAPHY export error appears
-- `rooms/chat.js` should switch `chatMode = 'chat'` BEFORE calling `window.send()`
-  in `peForge()` so messages appear as they stream in
+No active bugs. If something breaks, check:
+- Hard refresh (`Ctrl+Shift+R`) for JS module cache issues
+- DevTools Network tab for 404s on image paths
+- Setup room event log for API error reason codes
 
 ---
 
@@ -272,4 +283,4 @@ Live URL: `https://north-forge-ai.firebaseapp.com`
 
 ---
 
-*Last updated: March 2026 · North Forge v1.0.0*
+*Last updated: March 2026 · North Forge v1.0.0 · All 9 build orders complete*
