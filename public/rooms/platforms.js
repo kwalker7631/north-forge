@@ -124,6 +124,36 @@ export const render = (state) => `
                       font-size:0.82em; font-family:Georgia,serif;
                       transition:all .2s; margin-top:14px; width:100%; }
     .forge-plat-btn:hover { transform:scale(1.02); }
+
+    /* SORA SCOUT */
+    .scout-card     { background:rgba(2,6,23,.95); border:2px solid #7c3aed44;
+                      border-radius:20px; padding:22px 24px; margin-bottom:22px; }
+    .scout-header   { display:flex; align-items:flex-start; justify-content:space-between;
+                      flex-wrap:wrap; gap:14px; }
+    .scout-label    { font-size:.58em; font-weight:900; letter-spacing:2px; color:#a78bfa;
+                      text-transform:uppercase; margin-bottom:5px; }
+    .scout-sub      { font-size:.72em; color:#64748b; line-height:1.5; }
+    .scout-btns     { display:flex; flex-direction:column; gap:8px; flex-shrink:0; }
+    .scout-btn      { background:linear-gradient(135deg,#7c3aed,#a78bfa); color:#fff;
+                      border:none; border-radius:12px; padding:11px 18px; font-weight:900;
+                      font-size:.72em; cursor:pointer; font-family:Georgia,serif;
+                      transition:all .2s; white-space:nowrap; }
+    .scout-btn:hover:not(.disabled) { transform:scale(1.02); }
+    .scout-btn.disabled { opacity:.5; cursor:not-allowed; }
+    .scout-btn-alt  { background:rgba(124,58,237,.15); border:2px solid #7c3aed44;
+                      color:#a78bfa; border-radius:12px; padding:9px 18px; font-weight:900;
+                      font-size:.72em; cursor:pointer; font-family:Georgia,serif;
+                      transition:all .2s; white-space:nowrap; }
+    .scout-btn-alt:hover:not(.disabled) { border-color:#a78bfa; }
+    .scout-btn-alt.disabled { opacity:.5; cursor:not-allowed; }
+    .scout-result   { margin-top:18px; padding:18px; background:rgba(124,58,237,.08);
+                      border:1px solid #7c3aed33; border-radius:14px;
+                      color:#e2e8f0; font-size:.8em; line-height:1.8; white-space:pre-wrap; }
+    .scout-clear    { background:none; border:1px solid #1e293b; border-radius:8px;
+                      color:#475569; padding:6px 14px; font-size:.62em; font-weight:900;
+                      cursor:pointer; font-family:Georgia,serif; margin-top:10px;
+                      transition:all .2s; }
+    .scout-clear:hover { border-color:#ef4444; color:#ef4444; }
   </style>
 `;
 
