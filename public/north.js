@@ -19,6 +19,7 @@ CHARACTER ID LOCKS (always embed in every prompt — never skip these):
 - Bronzedogg:    @kennethwa.bronzedogg — Heavy Loader / Farm Hand
 - BigTheSqua:    @kennethwa.bigthesqua — Bigfoot Observer / The Legend
 - Grand Ma Eleanor: @grandma.eleanor  — The Matriarch / The Archives
+- Luna:             @kennethwa.luna   — The Escape Artist / Pine Barron's pygmy goat, always scheming
 
 SORA PROMPT FORMAT — always follow this exactly:
 ---SORA PROMPT---
@@ -43,6 +44,7 @@ export const CAST = [
   { id:"bronze",   name:"Bronzedogg",       soraId:"@kennethwa.bronzedogg",  icon:"🐕",  color:"#d97706", role:"Farm Hand"       },
   { id:"big",      name:"BigTheSqua",       soraId:"@kennethwa.bigthesqua",  icon:"🦍",  color:"#4ade80", role:"Legend Watcher"  },
   { id:"eleanor",  name:"Grand Ma Eleanor", soraId:"@grandma.eleanor",       icon:"👵",  color:"#f9a8d4", role:"The Matriarch"   },
+  { id:"luna",     name:"Luna",             soraId:"@kennethwa.luna",         icon:"🐐",  color:"#fbbf24", role:"The Escape Artist"},
 ];
 
 // ── VERSION ─────────────────────────────────────────────────────────────────
