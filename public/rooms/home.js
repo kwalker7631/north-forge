@@ -105,7 +105,7 @@ export const render = (state) => {
       <div class="room-grid">
         ${ROOMS.map(r => `
           <button class="room-card" onclick="goTo('${r.id}')"
-                  style="--rc:#{r.color || '#38bdf8'};border-color:${r.color}44;">
+                  style="--rc:${r.color || '#38bdf8'};border-color:${r.color}44;">
             <div class="rc-emoji">${r.emoji}</div>
             <div class="rc-title">${r.title}</div>
             <div class="rc-desc">${r.desc}</div>
