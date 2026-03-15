@@ -6,7 +6,11 @@
       "Bash(kill:*)",
       "Bash(ls:*)",
       "Bash(cd:*)",
-      "Bash(firebase deploy:*)"
+      "Bash(firebase deploy:*)",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Read(//c/Users/kwalk/OneDrive/Desktop/northforge/**)",
+      "Bash(done)"
     ]
   }
 }
