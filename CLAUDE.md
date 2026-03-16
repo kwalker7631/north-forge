@@ -227,6 +227,29 @@ All data lives in `public/platforms.js`:
 
 ---
 
+## OUTPUT & EXPORT — added 2026-03-15
+
+Every call sheet output now has three actions:
+- `📋 Copy Prompt` — copies only the CLEAN PROMPT section to clipboard
+- `📄 Copy Full Sheet` — copies the entire North response to clipboard
+- `💾 Save MD` — downloads a structured `.md` file with proper headers (HOOK, SCENE, CAMERA, AUDIO, DIRECTOR'S NOTE, Clean Prompt)
+
+These buttons appear on every assistant message in the Chat room that contains a call sheet.
+
+**Digest** — each row has `⬇ Read` (inline expand), `📋 Copy`, and `💾 MD`.
+**Idioms** — Randy's reaction card has `📋 Copy Reaction`.
+**Prompt Engine** — `↺ New` button resets all form fields for a fresh scene.
+
+### `copyFull()` fix
+Previously used a fragile DOM index scan. Now uses `id="msg-text-{idx}"` directly — always grabs the correct message bubble.
+
+### `seasonalOverlay()` fix
+Was hardcoded to return `null` — overlays never loaded. Fixed to return correct overlay image by month/date:
+- Oct → halloween, Nov → thanksgiving, Dec → christmas, Jan 1 → newyear
+- Jul 1–7 → july4, Mar–May → spring, Jan–Feb → winter
+
+---
+
 ## KNOWN BUGS / ACTIVE ISSUES
 
 No active bugs. If something breaks, check:
@@ -305,4 +328,4 @@ Live URL: `https://north-forge-ai.firebaseapp.com`
 
 ---
 
-*Last updated: March 2026 · North Forge v1.0.0 · All 17 build orders complete · All 3 layers shipped*
+*Last updated: 2026-03-15 · North Forge v1.0.1 · All 17 build orders complete · All 3 layers shipped · Output/Export system complete*
