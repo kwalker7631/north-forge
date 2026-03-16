@@ -20,7 +20,9 @@
       "Bash(py:*)",
       "Bash(wc:*)",
       "Bash(grep:*)",
-      "Bash(for func:*)"
+      "Bash(for func:*)",
+      "Bash(node:*)",
+      "Bash(head:*)"
     ]
   }
 }

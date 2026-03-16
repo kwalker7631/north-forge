@@ -68,6 +68,8 @@ const renderWeeks = (sheets) => {
             <span class="dg-preview">${preview}…</span>
             <button class="dg-copy"
               onclick="digestCopy(${i}, '${key}')">📋 Copy</button>
+            <button class="dg-save"
+              onclick="digestSaveMD(${i}, '${key}')">💾 MD</button>
           </div>`;
       }).join('');
 
@@ -143,6 +145,10 @@ export const render = (state) => `
                    padding:5px 12px; font-size:0.62em; font-weight:900; cursor:pointer;
                    font-family:Georgia,serif; flex-shrink:0; transition:all .2s; }
     .dg-copy:hover { background:#0369a1; }
+    .dg-save     { background:#065f46; color:#fff; border:none; border-radius:8px;
+                   padding:5px 12px; font-size:0.62em; font-weight:900; cursor:pointer;
+                   font-family:Georgia,serif; flex-shrink:0; transition:all .2s; }
+    .dg-save:hover { background:#047857; }
   </style>
 `;
 
@@ -172,6 +178,42 @@ const digestLoad = async () => {
 };
 
 window.digestRefresh = () => digestLoad();
+
+window.digestSaveMD = (idx, weekKey) => {
+  const items = _weekData[weekKey];
+  if (!items) return;
+  const s = items[idx];
+  if (!s) return;
+
+  const date  = new Date(s.savedAt || Date.now()).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+  const idea  = s.idea  || 'Pine Barron Farms Scene';
+  const clean = s.clean || '';
+  const score = s.score != null ? `**Viral Score:** ${s.score}/10` : '';
+
+  const md = [
+    '# North Forge Call Sheet',
+    `**Generated:** ${date}`,
+    '**Pine Barron Farms Production — Piscataway NJ**',
+    idea  ? `**Scene Idea:** ${idea}` : '',
+    score,
+    '',
+    '---',
+    '',
+    '## Clean Prompt (paste-ready into Sora / Kling / VEO 3 / Grok)',
+    '',
+    clean,
+    '',
+  ].filter(l => l !== null).join('\n');
+
+  const blob = new Blob([md], { type: 'text/markdown' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `north-forge-${Date.now()}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+  window.showToast('✓ Saved as .md!');
+};
 
 window.digestCopy = (idx, weekKey) => {
   const items = _weekData[weekKey];

@@ -5,6 +5,9 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
+  "functions": {
+    "source": "functions"
+  },
   "hosting": {
     "public": "public",
     "ignore": [
@@ -27,6 +30,10 @@
       }
     ],
     "rewrites": [
+      {
+        "source": "/api/north",
+        "function": "northProxy"
+      },
       {
         "source": "**",
         "destination": "/index.html"

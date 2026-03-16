@@ -78,9 +78,9 @@ export const render = (state) => {
       <!-- ANIMATED SKY -->
       <div class="sky-scene">
         ${starField()}
-        ${moonHTML(state.moon)}
         ${isRain  ? rainHTML()  : ''}
         ${isSnow  ? snowHTML()  : ''}
+        ${seasonalParticles()}
       </div>
 
       <!-- NORTH PEEK TIP -->
@@ -92,6 +92,17 @@ export const render = (state) => {
         </div>` : ''}
 
       <!-- BIG RED BARN SCENE -->
+      <svg width="0" height="0" style="position:absolute;overflow:hidden;">
+        <defs>
+          <filter id="north-remove-white" color-interpolation-filters="sRGB">
+            <feColorMatrix type="matrix"
+              values="1 0 0 0 0
+                      0 1 0 0 0
+                      0 0 1 0 0
+                     -4 -4 -4 1 10"/>
+          </filter>
+        </defs>
+      </svg>
       <div class="barn-scene">
         <img class="barn-img" src="${barnPhoto(wx)}" alt="Big Red Barn"/>
         ${seasonalOverlay() ? `<img class="barn-overlay" src="${seasonalOverlay()}" alt=""/>` : ''}
@@ -123,6 +134,12 @@ export const render = (state) => {
           ? `<span class="alm user-pill">👤 ${user.displayName.split(' ')[0]}</span>`
           : `<span class="alm signin-pill" onclick="handleSignIn()">🔐 Sign In</span>`}
         ${!hasKey ? `<span class="alm warn-pill" onclick="goTo('setup')">⚠ Add API Key</span>` : ''}
+      </div>
+
+      <!-- MOON PHASE -->
+      <div class="moon-center">
+        ${moonHTML(state.moon)}
+        <div class="moon-label">${state.moon.icon} ${state.moon.name}</div>
       </div>
 
       <!-- NORTH WELCOME -->
@@ -169,10 +186,14 @@ export const render = (state) => {
         0%,100% { opacity:var(--op,.3); transform:scale(1); }
         50%      { opacity:1;           transform:scale(1.4); } }
 
-      .moon-photo { position:fixed; top:14px; right:20px; z-index:2;
-                   width:54px; height:54px; border-radius:50%; object-fit:cover;
-                   box-shadow:0 0 20px rgba(249,168,37,.4);
-                   animation:moonPulse 6s ease-in-out infinite; }
+      .moon-center { text-align:center; padding:16px 0 18px;
+                     border-bottom:1px solid #1e293b; margin-bottom:4px; }
+      .moon-photo  { display:block; width:100px; height:100px; border-radius:50%;
+                     object-fit:cover; margin:0 auto;
+                     box-shadow:0 0 32px rgba(249,168,37,.6);
+                     animation:moonPulse 6s ease-in-out infinite; }
+      .moon-label  { font-size:.65em; font-weight:800; color:#fcd34d;
+                     letter-spacing:2px; text-transform:uppercase; margin-top:9px; }
       @keyframes moonPulse {
         0%,100% { box-shadow:0 0 20px rgba(249,168,37,.4); }
         50%      { box-shadow:0 0 44px rgba(249,168,37,.75); } }
@@ -185,6 +206,9 @@ export const render = (state) => {
       .snow-flake { position:fixed; top:-20px; color:#fff; font-size:.9em;
                      animation:snowFall var(--sd,4s) var(--sd2,0s) linear infinite; z-index:3; pointer-events:none; opacity:.7; }
       @keyframes snowFall { to { transform:translateY(110vh) rotate(360deg); } }
+      .season-particle { position:fixed; top:-30px; pointer-events:none; z-index:3; opacity:0.85;
+                          animation:seasonFall var(--sd,6s) var(--sd2,0s) linear infinite; }
+      @keyframes seasonFall { to { transform:translateY(110vh) rotate(540deg); } }
 
       /* ── NORTH TIP ──────────────────────────────────────────── */
       .north-tip-bar { display:flex; align-items:center; gap:14px;
@@ -206,8 +230,8 @@ export const render = (state) => {
       .barn-img    { width:100%; border-radius:18px 18px 0 0; display:block;
                      object-fit:cover; max-height:340px; }
       .barn-overlay{ position:absolute; top:16px; left:0; width:100%; height:calc(100% - 16px);
-                     object-fit:cover; border-radius:18px 18px 0 0;
-                     pointer-events:none; opacity:0.35; }
+                     object-fit:cover; border-radius:18px 18px 0 0; pointer-events:none;
+                     filter:url(#north-remove-white); opacity:0.9; }
 
       /* ── CUTOUTS ────────────────────────────────────────────── */
       .cutout { position:absolute; bottom:8%; z-index:10; }
@@ -237,9 +261,9 @@ export const render = (state) => {
       /* ── ALMANAC ────────────────────────────────────────────── */
       .almanac-strip { display:flex; gap:8px; flex-wrap:wrap; padding:14px 22px 10px;
                         align-items:center; }
-      .alm { font-size:.62em; font-weight:800; color:#94a3b8;
+      .alm { font-size:.66em; font-weight:800; color:#94a3b8;
                background:rgba(15,23,42,0.85); border:1px solid #1e293b;
-               border-radius:20px; padding:5px 13px; white-space:nowrap; }
+               border-radius:20px; padding:7px 15px; white-space:nowrap; }
       .wx-pill   { color:#7dd3fc; border-color:#0284c733; }
       .moon-pill { color:#fcd34d; border-color:#f59e0b33; }
       .loc-pill  { color:#86efac; border-color:#22c55e33; }
@@ -260,7 +284,7 @@ export const render = (state) => {
                      animation:northGlow 4s ease-in-out infinite; }
       @keyframes northGlow {
         0%,100% { box-shadow:0 0 18px rgba(56,189,248,.4); }
-        50%      { box-shadow:0 0 36px rgba(56,189,248,.8); } }
+        50%      { box-shadow:0 0 44px rgba(56,189,248,.8); } }
       .wel-label { color:#38bdf8; font-size:.6em; font-weight:900;
                     letter-spacing:2px; text-transform:uppercase; margin-bottom:6px; }
       .wel-msg   { color:#cbd5e1; font-size:.88em; line-height:1.7; }
@@ -269,7 +293,7 @@ export const render = (state) => {
       .crew-label { font-size:.58em; font-weight:900; color:#334155;
                      letter-spacing:2px; text-transform:uppercase;
                      padding:0 22px; margin-bottom:10px; }
-      .crew-strip { display:flex; gap:11px; overflow-x:auto; padding:0 22px 10px;
+      .crew-strip { display:flex; gap:12px; overflow-x:auto; padding:0 22px 10px;
                      margin-bottom:24px; scrollbar-width:none; }
       .crew-strip::-webkit-scrollbar { display:none; }
       .crew-chip  { display:flex; flex-direction:column; align-items:center; gap:5px;
@@ -283,12 +307,12 @@ export const render = (state) => {
 
       /* ── ROOM GRID ──────────────────────────────────────────── */
       .room-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
-                    gap:15px; padding:0 22px; }
+                    gap:16px; padding:0 22px; }
       .room-card { background:rgba(15,23,42,0.9); border:2px solid #1e293b;
                     border-radius:20px; padding:22px; cursor:pointer; text-align:left;
                     width:100%; font-family:Georgia,serif; transition:all .25s; }
       .room-card:hover { transform:translateY(-5px); border-color:#38bdf8;
-                          box-shadow:0 18px 44px rgba(0,0,0,.55); }
+                          box-shadow:0 18px 44px rgba(0,0,0,.55), 0 0 0 1px var(--rc); }
       .rc-emoji { font-size:2.8em; margin-bottom:11px; }
       .rc-title { font-weight:900; font-size:1.05em; color:#fff; margin-bottom:6px; }
       .rc-desc  { color:#64748b; font-size:.76em; line-height:1.6; margin-bottom:12px; }
@@ -301,22 +325,22 @@ export const mount = (state) => {
   // Start North tip cycle
   if (northTipTimer) clearInterval(northTipTimer);
   tipDismissed = false;
-  // First tip after 12 seconds
+  // First tip after 2 minutes of idle
   setTimeout(() => {
     if (state.tab === 'home') {
       currentTip = getWeatherTip(state);
       tipDismissed = false;
       if (typeof window.render === 'function') window.render();
     }
-  }, 12000);
-  // Then every 30s
+  }, 120000);
+  // Then every 5 minutes
   northTipTimer = setInterval(() => {
     if (state.tab === 'home') {
       currentTip = getWeatherTip(state);
       tipDismissed = false;
       if (typeof window.render === 'function') window.render();
     }
-  }, 30000);
+  }, 300000);
 
   // Cameo appearances — bigfoot, UFO, jersey devil via naughty-layer
   const CAMEOS = [
@@ -419,15 +443,28 @@ const barnPhoto = (wx) => {
   return '/images/barn/barn-clear.jpg';
 };
 
-const seasonalOverlay = () => {
+// SEASONAL PARTICLES — emoji-based, no image files needed
+const seasonalParticles = () => {
   const m = new Date().getMonth() + 1, d = new Date().getDate();
-  if (m === 12)             return '/images/overlays/overlay-christmas.png';
-  if (m === 1  && d === 1) return '/images/overlays/overlay-newyear.png';
-  if (m === 10)             return '/images/overlays/overlay-halloween.png';
-  if (m === 11)             return '/images/overlays/overlay-thanksgiving.png';
-  if (m === 7  && d <= 7)  return '/images/overlays/overlay-july4.png';
-  if (m >= 3  && m <= 5)   return '/images/overlays/overlay-spring.png';
-  if (m >= 12 || m <= 2)   return '/images/overlays/overlay-winter.png';
-  return null;
+  let emojis = [];
+  if (m === 3 || m === 4 || m === 5)            emojis = ['🌸','🌸','🌸','🌿','🦋','🌼'];
+  else if (m === 10)                             emojis = ['🎃','🎃','🍂','🕷️','🦇','🍁'];
+  else if (m === 11)                             emojis = ['🍂','🍁','🌽','🍂','🌾','🍁'];
+  else if (m === 12)                             emojis = ['❄️','❄️','⭐','🎄','❄️','✨'];
+  else if (m === 1 && d === 1)                   emojis = ['🎉','✨','🎊','⭐','🎆','🥂'];
+  else if (m === 7 && d <= 7)                    emojis = ['🎆','🎇','🇺🇸','✨','🎆','⭐'];
+  else if (m === 1 || m === 2)                   emojis = ['❄️','❄️','🌨️','❄️','🌨️','❄️'];
+  if (!emojis.length) return '';
+  let html = '';
+  for (let i = 0; i < 18; i++) {
+    const x   = Math.random() * 100;
+    const sd  = (Math.random() * 5 + 4).toFixed(1);
+    const sd2 = (Math.random() * 6).toFixed(1);
+    const sz  = (Math.random() * 0.6 + 0.7).toFixed(2);
+    const e   = emojis[Math.floor(Math.random() * emojis.length)];
+    html += `<div class="season-particle" style="left:${x}%;--sd:${sd}s;--sd2:${sd2}s;font-size:${sz}em;">${e}</div>`;
+  }
+  return html;
 };
+const seasonalOverlay = () => null;
 

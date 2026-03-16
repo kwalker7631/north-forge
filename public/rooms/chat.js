@@ -150,8 +150,9 @@ const chatView = (state) => `
         <div class="msg-ava">${m.role==='assistant'?'🧠':'👨‍🌾'}</div>
         <div class="msg-bub">
           ${m.role==='assistant'?'<div class="msg-lbl">North · Loft Lab</div>':''}
-          <div class="msg-text">${esc(m.content)}</div>
+          <div class="msg-text" id="msg-text-${i}">${esc(m.content)}</div>
           ${m.role==='assistant' ? csBlock(m.content, i) : ''}
+          ${m.role==='assistant' ? `<button class="msg-copy-btn" onclick="copyMsgText(${i})" title="Copy message">📋 Copy</button>` : ''}
         </div>
       </div>`).join('')}
     ${state.loading ? `
@@ -194,6 +195,7 @@ const csBlock = (text, idx) => {
       <div class="cs-actions">
         <button class="cs-btn cs-copy" onclick="copyCS('cs-body-${idx}')">📋 Copy Prompt</button>
         <button class="cs-btn cs-full" onclick="copyFull(${idx})">📄 Copy Full Sheet</button>
+        <button class="cs-btn cs-save" onclick="saveMD(${idx})">💾 Save MD</button>
       </div>
     </div>`;
 };
@@ -244,6 +246,9 @@ const styles = () => `<style>
   .cs-btn{border:none;border-radius:10px;padding:10px 18px;font-weight:900;font-size:0.72em;cursor:pointer;font-family:Georgia,serif;transition:all .2s;}
   .cs-copy{background:#0284c7;color:#fff;}
   .cs-full{background:#7c3aed;color:#fff;}
+  .cs-save{background:#065f46;color:#fff;}
+  .msg-copy-btn{background:none;border:1px solid #1e293b;border-radius:8px;padding:5px 12px;color:#475569;cursor:pointer;font-size:0.65em;font-family:Georgia,serif;margin-top:8px;transition:all .2s;}
+  .msg-copy-btn:hover{border-color:#38bdf8;color:#38bdf8;}
   .north-thinking{display:flex;align-items:center;gap:12px;padding:12px 0;color:#38bdf8;font-weight:900;font-size:0.82em;}
   @keyframes pulse{0%,100%{opacity:0.3}50%{opacity:1}}
   @keyframes spin{to{transform:rotate(360deg)}}
@@ -373,6 +378,14 @@ window.sendFreeChat = () => {
   window.send(text);
 };
 
+window.copyMsgText = (idx) => {
+  const el = document.getElementById(`msg-text-${idx}`);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent.trim())
+    .then(() => window.showToast('✓ Copied!'))
+    .catch(() => window.showToast('Copy failed'));
+};
+
 window.copyCS = (id) => {
   const el = document.getElementById(id);
   if (!el) return;
@@ -382,14 +395,54 @@ window.copyCS = (id) => {
 };
 
 window.copyFull = (msgIdx) => {
-  // msgIdx is the index into state.msgs (all messages).
-  // We need the matching .msg-text inside that specific message bubble.
-  const rows = document.querySelectorAll('.msg-row .msg-text');
-  const el = rows[msgIdx];
+  // Use id="msg-text-{msgIdx}" set directly on each bubble — no index guessing.
+  const el = document.getElementById(`msg-text-${msgIdx}`);
   if (!el) return;
   navigator.clipboard.writeText(el.textContent.trim())
     .then(() => window.showToast('✓ Full call sheet copied!'))
     .catch(() => window.showToast('Copy failed'));
+};
+
+window.saveMD = (msgIdx) => {
+  const fullEl  = document.getElementById(`msg-text-${msgIdx}`);
+  const cleanEl = document.getElementById(`cs-body-${msgIdx}`);
+  if (!fullEl) return;
+
+  const fullText  = fullEl.textContent.trim();
+  const cleanText = cleanEl ? cleanEl.textContent.trim() : '';
+  const date = new Date().toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+
+  const md = [
+    '# North Forge Call Sheet',
+    `**Generated:** ${date}`,
+    '**Pine Barron Farms Production — Piscataway NJ**',
+    '',
+    '---',
+    '',
+    '## Full Call Sheet',
+    '',
+    '```',
+    fullText,
+    '```',
+    ...(cleanText ? [
+      '',
+      '---',
+      '',
+      '## Clean Prompt (paste-ready into Sora / Kling / VEO 3 / Grok)',
+      '',
+      cleanText,
+      '',
+    ] : []),
+  ].join('\n');
+
+  const blob = new Blob([md], { type: 'text/markdown' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `north-forge-${Date.now()}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+  window.showToast('✓ Saved as .md!');
 };
 
 export const mount = (state) => {

@@ -90,7 +90,10 @@ export const render = (state) => {
           <div class="id-nearby">
             Nearby: ${nearby.map(c => `${c.icon} ${c.name} <span class="id-soraid">${c.soraId}</span>`).join(' · ')}
           </div>` : ''}
-        <div class="id-react-text">${esc(reaction)}</div>
+        <div class="id-react-text" id="id-react-text">${esc(reaction)}</div>
+        <div style="display:flex;gap:10px;margin-bottom:10px;">
+          <button class="id-copy-btn" onclick="idCopyReaction()">📋 Copy Reaction</button>
+        </div>
         <button class="id-forge-btn" onclick="idForgeScene()">
           🎬 Forge This Scene → Sora 2
         </button>
@@ -141,6 +144,11 @@ export const render = (state) => {
     .id-soraid      { color:#38bdf8; font-family:monospace; }
     .id-react-text  { color:#fef3c7; font-size:.9em; line-height:1.8;
                       font-weight:700; margin-bottom:16px; }
+    .id-copy-btn    { flex:1; background:rgba(15,23,42,.9); border:2px solid #1e293b;
+                      border-radius:10px; padding:10px 16px; font-weight:900;
+                      font-size:0.72em; color:#94a3b8; cursor:pointer;
+                      font-family:Georgia,serif; transition:all .2s; }
+    .id-copy-btn:hover { border-color:#38bdf8; color:#38bdf8; }
     .id-forge-btn   { background:linear-gradient(135deg,#0284c7,#0ea5e9); color:#fff;
                       border:none; border-radius:10px; padding:12px 20px; font-weight:900;
                       font-size:0.76em; cursor:pointer; font-family:Georgia,serif;
@@ -190,6 +198,14 @@ window.idReact = async () => {
   reaction = text || '...Randy stares at you. Reaches into his vest pocket. Pulls out a zeolite chip and says nothing.';
   reacting = false;
   window.goTo('idioms');
+};
+
+window.idCopyReaction = () => {
+  const el = document.getElementById('id-react-text');
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent.trim())
+    .then(() => window.showToast('✓ Randy copied!'))
+    .catch(() => window.showToast('Copy failed'));
 };
 
 window.idForgeScene = () => {

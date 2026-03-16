@@ -1,5 +1,5 @@
 // api.js — North Forge AI calls, weather, logging
-// PRIMARY:  Anthropic Claude (claude-sonnet-4-5)
+// PRIMARY:  Anthropic Claude (claude-sonnet-4-6)
 // FALLBACK: Google Gemini (gemini-2.0-flash)
 
 import { NORTH_SYSTEM } from './north.js';
@@ -15,28 +15,22 @@ const sanitizeMessages = (messages) => {
   return filtered.slice(start);
 };
 
-// ── ANTHROPIC (PRIMARY) ───────────────────────────────────────────────────────
+// ── ANTHROPIC via server proxy (avoids browser CORS) ─────────────────────────
 const callAnthropic = async (messages, apiKey, systemPrompt) => {
-  if (!apiKey) return null;
+  if (!apiKey) return { error: 'no_anthropic_key' };
   NorthLog.info('Calling Anthropic...');
 
   const clean = sanitizeMessages(messages);
-  if (!clean.length) { NorthLog.warn('No valid messages'); return null; }
+  if (!clean.length) { NorthLog.warn('No valid messages'); return { error: 'no_valid_messages' }; }
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('/api/north', {
       method: 'POST',
-      headers: {
-        'content-type':                      'application/json',
-        'x-api-key':                         apiKey,
-        'anthropic-version':                 '2023-06-01',
-        'anthropic-dangerous-allow-browser': 'true',
-      },
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
-        model:      'claude-sonnet-4-5',
-        max_tokens: 1500,
-        system:     systemPrompt,
-        messages:   clean.map(m => ({ role: m.role, content: m.content })),
+        apiKey,
+        systemPrompt,
+        messages: clean.map(m => ({ role: m.role, content: m.content })),
       }),
     });
 
@@ -45,30 +39,30 @@ const callAnthropic = async (messages, apiKey, systemPrompt) => {
       const text = data.content?.[0]?.text ?? null;
       if (text) { NorthLog.info('Anthropic responded OK'); return { text, provider: 'anthropic' }; }
       NorthLog.warn('Anthropic returned empty content');
-      return null;
+      return { error: 'empty_response' };
     }
 
     const err = await res.text();
-    NorthLog.warn(`Anthropic error ${res.status}: ${err.slice(0, 200)}`);
-    return null;
+    NorthLog.warn(`Anthropic proxy error ${res.status}: ${err.slice(0, 200)}`);
+    return { error: `anthropic_${res.status}` };
 
   } catch (e) {
-    NorthLog.warn(`Anthropic network error: ${e.message}`);
-    return null;
+    NorthLog.warn(`Anthropic proxy error: ${e.message}`);
+    return { error: `network: ${e.message}` };
   }
 };
 
 // ── GEMINI (FALLBACK) ─────────────────────────────────────────────────────────
 const callGemini = async (messages, apiKey, systemPrompt) => {
-  if (!apiKey) return null;
+  if (!apiKey) return { error: 'no_gemini_key' };
   NorthLog.info('Calling Gemini fallback...');
 
   const clean = sanitizeMessages(messages);
-  if (!clean.length) return null;
+  if (!clean.length) return { error: 'no_valid_messages' };
 
   try {
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -87,16 +81,16 @@ const callGemini = async (messages, apiKey, systemPrompt) => {
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? null;
       if (text) { NorthLog.info('Gemini responded OK'); return { text, provider: 'gemini' }; }
       NorthLog.warn('Gemini returned empty content');
-      return null;
+      return { error: 'empty_response' };
     }
 
     const err = await res.text();
     NorthLog.warn(`Gemini error ${res.status}: ${err.slice(0, 200)}`);
-    return null;
+    return { error: `gemini_${res.status}` };
 
   } catch (e) {
     NorthLog.warn(`Gemini network error: ${e.message}`);
-    return null;
+    return { error: `network: ${e.message}` };
   }
 };
 
@@ -119,17 +113,18 @@ export const callNorth = async (messages, keys = {}, weather = null, profile = n
   const systemPrompt = NORTH_SYSTEM + wxContext + profileContext;
 
   const reply = await callAnthropic(messages, keys.anthropic, systemPrompt);
-  if (reply) return { ok: true, ...reply };
+  if (reply.text) return { ok: true, ...reply };
 
   const fallback = await callGemini(messages, keys.gemini, systemPrompt);
-  if (fallback) return { ok: true, ...fallback };
+  if (fallback.text) return { ok: true, ...fallback };
 
-  NorthLog.error('All providers failed — check API keys in Setup');
+  const lastError = reply.error || fallback.error || 'unknown';
+  NorthLog.error(`All providers failed — ${lastError}`);
   return {
     ok:       false,
-    text:     "North lost the signal. Check your API key in Setup and try again. 🏚️",
+    text:     `North lost the signal. Error: ${lastError}. Check your API key in Setup and try again. 🏚️`,
     provider: 'none',
-    reason:   'all_providers_failed',
+    reason:   lastError,
   };
 };
 

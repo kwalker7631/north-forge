@@ -31,7 +31,7 @@ That specificity is the competitive advantage no other tool has.
 - **Firebase Hosting** — project: `north-forge-ai`
 - **Firestore** — user prefs, event logs
 - **Firebase Auth** — Google Sign-In only
-- **Primary AI** — Anthropic Claude (`claude-sonnet-4-5`)
+- **Primary AI** — Anthropic Claude (`claude-sonnet-4-6`)
 - **Fallback AI** — Google Gemini (`gemini-2.0-flash`)
 - **Weather** — Open-Meteo (free, no key needed)
 - **Files stay under 300 lines** — if a file grows past 300 lines, split it
