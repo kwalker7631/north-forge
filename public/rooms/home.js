@@ -466,5 +466,16 @@ const seasonalParticles = () => {
   }
   return html;
 };
-const seasonalOverlay = () => null;
+const seasonalOverlay = () => {
+  const m = new Date().getMonth() + 1;
+  const d = new Date().getDate();
+  if (m === 10)                        return '/images/overlays/overlay-halloween.png';
+  if (m === 11)                        return '/images/overlays/overlay-thanksgiving.png';
+  if (m === 12)                        return '/images/overlays/overlay-christmas.png';
+  if (m === 1  && d === 1)             return '/images/overlays/overlay-newyear..png';
+  if (m === 7  && d <= 7)              return '/images/overlays/overlay-july4.png';
+  if (m === 3  || m === 4 || m === 5)  return '/images/overlays/overlay-spring.png';
+  if (m === 1  || m === 2)             return '/images/overlays/overlay-winter.png';
+  return null;
+};
 

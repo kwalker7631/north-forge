@@ -134,11 +134,14 @@ const formView = () => `
       </div>
     </div>
 
-    <button class="pe-forge-btn" onclick="peForge()" ${formStep==='generating'?'disabled':''}>
-      ${formStep==='generating'
-        ? '<span style="animation:spin 1s linear infinite;display:inline-block;">⏳</span> North is building your call sheet...'
-        : '🎬 FORGE FULL CALL SHEET'}
-    </button>
+    <div style="display:flex;gap:10px;margin-top:6px;">
+      <button class="pe-forge-btn" onclick="peForge()" ${formStep==='generating'?'disabled':''} style="flex:1;margin-top:0;">
+        ${formStep==='generating'
+          ? '<span style="animation:spin 1s linear infinite;display:inline-block;">⏳</span> North is building...'
+          : '🎬 FORGE FULL CALL SHEET'}
+      </button>
+      <button class="pe-reset-btn" onclick="peReset()" title="Clear all selections" ${formStep==='generating'?'disabled':''}>↺ New</button>
+    </div>
   </div>
 `;
 
@@ -231,6 +234,9 @@ const styles = () => `<style>
   .pe-forge-btn{width:100%;background:linear-gradient(135deg,#0284c7,#0ea5e9);color:#fff;border:none;border-radius:16px;padding:18px;font-weight:900;font-size:1.05em;cursor:pointer;font-family:Georgia,serif;transition:all .25s;margin-top:6px;box-shadow:0 6px 24px rgba(2,132,199,0.35);}
   .pe-forge-btn:hover:not(:disabled){transform:scale(1.02);}
   .pe-forge-btn:disabled{opacity:0.5;cursor:not-allowed;}
+  .pe-reset-btn{background:none;border:2px solid #334155;border-radius:16px;padding:18px 20px;color:#475569;cursor:pointer;font-size:.86em;font-weight:900;font-family:Georgia,serif;transition:all .2s;white-space:nowrap;flex-shrink:0;}
+  .pe-reset-btn:hover:not(:disabled){border-color:#38bdf8;color:#38bdf8;}
+  .pe-reset-btn:disabled{opacity:0.4;cursor:not-allowed;}
   .chat-msgs{flex:1;overflow-y:auto;padding:20px 24px 10px;}
   .msg-row{display:flex;gap:14px;margin-bottom:26px;align-items:flex-start;}
   .msg-row.user{flex-direction:row-reverse;}
@@ -262,6 +268,12 @@ const styles = () => `<style>
 
 // ── WINDOW FUNCTIONS ──────────────────────────────────────────────────────────
 window.setChatMode = (m) => { chatMode = m; window.goTo('chat'); };
+
+window.peReset = () => {
+  formData = { idea:'', characters:[], location:'', tone:'', platform:'' };
+  chatMode = 'form';
+  window.goTo('chat');
+};
 
 window.peSet = (f, v) => {
   // always save textarea before ANY re-render
@@ -412,30 +424,62 @@ window.saveMD = (msgIdx) => {
   const cleanText = cleanEl ? cleanEl.textContent.trim() : '';
   const date = new Date().toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
 
-  const md = [
+  // Pull single-line metadata fields
+  const meta = (rx) => fullText.match(rx)?.[1]?.trim() ?? '';
+  const format   = meta(/^FORMAT:\s*(.+)/im);
+  const location = meta(/^LOCATION:\s*(.+)/im);
+  const cast     = meta(/^CAST:\s*(.+)/im);
+  const props    = meta(/^PROPS:\s*(.+)/im);
+  const tone     = meta(/^TONE:\s*(.+)/im);
+  const vsMatch  = fullText.match(/VIRAL SCORE:\s*(\d+)\/10\s*[—\-]\s*(.+)/i);
+
+  // Pull multi-line sections — grab everything after the header until next separator or all-caps header
+  const block = (label) => {
+    const rx = new RegExp(
+      `\\n${label}[^\\n]*\\n([\\s\\S]+?)(?=\\n[A-Z][A-Z' ]{2,}\\n|\\n[─═]{4}|$)`, 'i'
+    );
+    return fullText.match(rx)?.[1]?.trim() ?? null;
+  };
+
+  const hook    = block('HOOK');
+  const scene   = block('SCENE');
+  const camera  = block('CAMERA');
+  const audio   = block('AUDIO');
+  const dirNote = block("DIRECTOR.S NOTE");
+
+  const lines = [
     '# North Forge Call Sheet',
     `**Generated:** ${date}`,
     '**Pine Barron Farms Production — Piscataway NJ**',
     '',
-    '---',
-    '',
-    '## Full Call Sheet',
-    '',
-    '```',
-    fullText,
-    '```',
-    ...(cleanText ? [
-      '',
-      '---',
-      '',
-      '## Clean Prompt (paste-ready into Sora / Kling / VEO 3 / Grok)',
-      '',
-      cleanText,
-      '',
-    ] : []),
-  ].join('\n');
+  ];
 
-  const blob = new Blob([md], { type: 'text/markdown' });
+  if (vsMatch) lines.push(`> 🔥 **Viral Score: ${vsMatch[1]}/10** — ${vsMatch[2]}`, '');
+
+  [
+    format   && `**Format:** ${format}`,
+    location && `**Location:** ${location}`,
+    cast     && `**Cast:** ${cast}`,
+    props    && `**Props:** ${props}`,
+    tone     && `**Tone:** ${tone}`,
+  ].filter(Boolean).forEach(l => lines.push(l));
+
+  lines.push('', '---', '');
+
+  if (hook)    lines.push('## Hook (0–1.5s)', '', hook, '');
+  if (scene)   lines.push('## Scene', '', scene, '');
+  if (camera)  lines.push('## Camera', '', camera, '');
+  if (audio)   lines.push('## Audio', '', audio, '');
+  if (dirNote) lines.push("## Director's Note", '', dirNote, '');
+
+  if (cleanText) {
+    lines.push('---', '', '## Clean Prompt', '_Paste directly into Sora · Kling · VEO 3 · Grok_', '', cleanText, '');
+  } else if (!hook && !scene) {
+    // Freeform North response — no structured sections found
+    lines.push('## Full Response', '', fullText, '');
+  }
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/markdown' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href     = url;

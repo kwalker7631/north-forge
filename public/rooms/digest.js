@@ -58,19 +58,21 @@ const renderWeeks = (sheets) => {
       ).join('');
 
       const rows = items.map((s, i) => {
-        const preview = esc((s.idea || s.clean || '').slice(0, 70));
+        const preview  = esc((s.idea || s.clean || '').slice(0, 70));
+        const fullText = esc(s.clean || '');
         const sc = scoreColor(s.score);
         const sl = scoreLabel(s.score);
-        const safeClean = (s.clean || '').replace(/\\/g, '\\\\').replace(/`/g, '\\`');
         return `
           <div class="dg-row">
             <span class="dg-score" style="color:${sc};">${sl}</span>
             <span class="dg-preview">${preview}…</span>
+            <button class="dg-expand" onclick="digestExpand(this)">⬇ Read</button>
             <button class="dg-copy"
               onclick="digestCopy(${i}, '${key}')">📋 Copy</button>
             <button class="dg-save"
               onclick="digestSaveMD(${i}, '${key}')">💾 MD</button>
-          </div>`;
+          </div>
+          <div class="dg-expand-body">${fullText}</div>`;
       }).join('');
 
       return `
@@ -149,6 +151,14 @@ export const render = (state) => `
                    padding:5px 12px; font-size:0.62em; font-weight:900; cursor:pointer;
                    font-family:Georgia,serif; flex-shrink:0; transition:all .2s; }
     .dg-save:hover { background:#047857; }
+    .dg-expand   { background:rgba(15,23,42,.8); color:#64748b; border:1px solid #1e293b;
+                   border-radius:8px; padding:5px 10px; font-size:0.62em; font-weight:900;
+                   cursor:pointer; font-family:Georgia,serif; flex-shrink:0; transition:all .2s; }
+    .dg-expand:hover { border-color:#38bdf8; color:#38bdf8; }
+    .dg-expand-body { display:none; font-size:0.74em; color:#bae6fd; font-family:monospace;
+                      line-height:1.7; white-space:pre-wrap; padding:12px 16px;
+                      background:rgba(0,0,0,0.5); border:1px solid #1e293b; border-top:none;
+                      border-radius:0 0 10px 10px; margin-bottom:8px; }
   </style>
 `;
 
@@ -178,6 +188,14 @@ const digestLoad = async () => {
 };
 
 window.digestRefresh = () => digestLoad();
+
+window.digestExpand = (btn) => {
+  const body = btn.closest('.dg-row').nextElementSibling;
+  if (!body) return;
+  const open = body.style.display === 'block';
+  body.style.display = open ? 'none' : 'block';
+  btn.textContent = open ? '⬇ Read' : '⬆ Close';
+};
 
 window.digestSaveMD = (idx, weekKey) => {
   const items = _weekData[weekKey];
