@@ -109,24 +109,26 @@ export const render = (state) => `
   <style>
     .slot-machine { display:flex; gap:10px; margin-bottom:22px;
                     overflow-x:auto; padding-bottom:6px; }
-    .reel  { background:rgba(2,6,23,0.95); border:2px solid #1e293b;
+    .reel  { background:rgba(2,6,23,0.95); border:2px solid #334155;
              border-radius:18px; padding:16px 12px; flex:1; min-width:100px;
              display:flex; flex-direction:column; align-items:center; gap:10px;
-             transition:border-color .3s; }
-    .reel.locked { border-color:#f59e0b; background:rgba(245,158,11,0.06); }
-    .reel-label  { font-size:0.52em; font-weight:900; color:#475569;
+             transition:all .3s; }
+    .reel.locked { border-color:#f59e0b; background:rgba(245,158,11,0.08);
+                   box-shadow:0 0 14px rgba(245,158,11,0.2); }
+    .reel-label  { font-size:0.52em; font-weight:900; color:#94a3b8;
                    letter-spacing:2px; text-transform:uppercase; }
     .reel-icon   { font-size:2.4em; line-height:1;
                    transition:transform .15s; }
     .reel-val    { font-size:0.64em; font-weight:900; color:#fff;
                    text-align:center; line-height:1.4; min-height:2.8em;
                    display:flex; align-items:center; justify-content:center; }
-    .lock-btn    { font-size:0.56em; font-weight:900; padding:5px 12px;
-                   border-radius:8px; border:2px solid #1e293b; cursor:pointer;
+    .lock-btn    { font-size:0.58em; font-weight:900; padding:6px 14px;
+                   border-radius:8px; border:2px solid #334155; cursor:pointer;
                    font-family:Georgia,serif; transition:all .2s;
-                   background:none; color:#475569; }
-    .lock-btn.on { background:rgba(245,158,11,0.15); border-color:#f59e0b;
-                   color:#f59e0b; }
+                   background:rgba(15,23,42,0.8); color:#94a3b8; }
+    .lock-btn:hover:not(.on) { border-color:#f59e0b66; color:#fcd34d; }
+    .lock-btn.on { background:rgba(245,158,11,0.2); border-color:#f59e0b;
+                   color:#fcd34d; box-shadow:0 0 10px rgba(245,158,11,0.3); }
     .premise-box { background:rgba(2,6,23,0.95); border:2px solid #38bdf833;
                    border-radius:18px; padding:22px; margin-bottom:20px; }
     .premise-label { font-size:0.58em; font-weight:900; color:#38bdf8;
@@ -134,11 +136,11 @@ export const render = (state) => `
     .premise-text  { color:#cbd5e1; font-size:0.92em; line-height:1.7;
                      font-style:italic; }
     .slot-actions  { display:flex; gap:12px; flex-wrap:wrap; }
-    .slot-spin-btn { flex:1; background:linear-gradient(135deg,#7c3aed,#9333ea);
+    .slot-spin-btn { flex:1; background:linear-gradient(135deg,#6d28d9,#9333ea);
                      color:#fff; border:none; border-radius:14px; padding:16px;
-                     font-weight:900; font-size:1em; cursor:pointer;
+                     font-weight:900; font-size:1em; cursor:pointer; letter-spacing:1px;
                      font-family:Georgia,serif; transition:all .25s;
-                     box-shadow:0 6px 20px rgba(124,58,237,0.35); }
+                     box-shadow:0 6px 24px rgba(124,58,237,0.5),0 0 0 1px rgba(147,51,234,0.3); }
     .slot-spin-btn:hover  { transform:scale(1.03); }
     .slot-spin-btn:active { transform:scale(0.97); }
     .slot-forge-btn { flex:1; background:linear-gradient(135deg,#0284c7,#0ea5e9);

@@ -148,8 +148,8 @@ export const render = (state) => `
                  cursor:pointer; font-family:Georgia,serif; transition:all .2s;
                  white-space:nowrap; }
     .setup-btn:hover { transform:scale(1.03); }
-    .setup-btn.outline { background:none; border:2px solid #334155; color:#94a3b8; }
-    .setup-btn.outline:hover { border-color:#ef4444; color:#ef4444; transform:none; }
+    .setup-btn.outline { background:rgba(15,23,42,0.7); border:2px solid #334155; color:#cbd5e1; }
+    .setup-btn.outline:hover { border-color:#ef4444; color:#ef4444; background:rgba(239,68,68,0.06); transform:none; }
     .status-row { display:flex; align-items:center; gap:10px; }
     .sdot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
     .sdot.on  { background:#22c55e; box-shadow:0 0 8px #22c55e; }

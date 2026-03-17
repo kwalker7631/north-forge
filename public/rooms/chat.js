@@ -21,6 +21,23 @@ const LOCATIONS = [
   'Route 539','NJ Dirt Track','Back Field','Pine Barrens Forest',
 ];
 
+// ── PLATFORM RECOMMENDER ──────────────────────────────────────────────────────
+const PLATFORM_REASONS = {
+  sora:   'Cinematic realism — character consistency locks in your Sora IDs perfectly.',
+  kling:  'Physics & texture — fluid motion and material detail are Kling\'s signature.',
+  veo:    'Native audio generation — dialogue, ambient sound, and music built in.',
+  aurora: 'Stylized surreal output — Grok Aurora handles the weird and dreamcore.',
+};
+
+const recommendPlatform = (idea) => {
+  if (!idea?.trim()) return null;
+  const t = idea.toLowerCase();
+  if (/dialogue|speaks|says|conversat|audio|voice|sing|talk/i.test(t))           return 'veo';
+  if (/fluid|water|fire|rain|smoke|fabric|texture|physics|splash|cloth|pour/i.test(t)) return 'kling';
+  if (/weird|surreal|dream|psyche|strange|supernat|horror|jersey devil|cryptid|ufo|paranormal|jeeb/i.test(t)) return 'aurora';
+  return 'sora';
+};
+
 const TONES = [
   { id:'cinematic',   label:'🎬 Cinematic',      desc:'Epic, dramatic, film quality' },
   { id:'documentary', label:'📹 Documentary',    desc:'Real, raw, observational' },
@@ -120,6 +137,18 @@ const formView = () => `
 
     <div class="pe-field">
       <label class="pe-label">5 · Platform</label>
+      ${(() => {
+        const rec = recommendPlatform(formData.idea);
+        const p   = rec ? PLATFORMS.find(x => x.id === rec) : null;
+        return p ? `
+          <div class="pe-rec">
+            <span class="pe-rec-label">North suggests</span>
+            <span class="pe-rec-icon">${p.icon}</span>
+            <span class="pe-rec-name" style="color:${p.color};">${p.name}</span>
+            <span class="pe-rec-why">${PLATFORM_REASONS[rec]}</span>
+            <button class="pe-rec-use" onclick="peSet('platform','${p.id}')" style="border-color:${p.color}44;color:${p.color};">Use ${p.name} →</button>
+          </div>` : '';
+      })()}
       <div class="pe-grid">
         ${PLATFORMS.map(p=>`
           <div class="pe-opt ${formData.platform===p.id?'sel':''}"
@@ -200,6 +229,8 @@ const csBlock = (text, idx) => {
         <button class="cs-btn cs-full" onclick="copyFull(${idx})">📄 Copy Full Sheet</button>
         <button class="cs-btn cs-save" onclick="saveMD(${idx})">💾 Save MD</button>
         <button class="cs-btn cs-save" onclick="saveTXT(${idx})">📝 Save TXT</button>
+        <button class="cs-btn cs-pin"  onclick="pinMsg(${idx})">⭐ Pin</button>
+        <button class="cs-btn cs-share" onclick="shareCS(${idx})">🔗 Share</button>
       </div>
     </div>`;
 };
@@ -238,6 +269,14 @@ const styles = () => `<style>
   .pe-reset-btn{background:none;border:2px solid #334155;border-radius:16px;padding:18px 20px;color:#475569;cursor:pointer;font-size:.86em;font-weight:900;font-family:Georgia,serif;transition:all .2s;white-space:nowrap;flex-shrink:0;}
   .pe-reset-btn:hover:not(:disabled){border-color:#38bdf8;color:#38bdf8;}
   .pe-reset-btn:disabled{opacity:0.4;cursor:not-allowed;}
+  .pe-rec{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:rgba(15,23,42,0.9);border:1px solid #1e293b;border-radius:12px;padding:11px 16px;margin-bottom:10px;}
+  .pe-rec-label{font-size:.6em;font-weight:900;color:#38bdf8;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
+  .pe-rec-icon{font-size:1.2em;}
+  .pe-rec-name{font-size:.78em;font-weight:900;}
+  .pe-rec-why{flex:1;font-size:.66em;color:#64748b;line-height:1.4;min-width:0;}
+  .pe-rec-use{background:none;border:1px solid #334155;border-radius:8px;padding:5px 12px;font-size:.66em;font-weight:900;cursor:pointer;font-family:Georgia,serif;white-space:nowrap;flex-shrink:0;transition:all .2s;}
+  .pe-rec-use:hover{opacity:0.8;}
+  .vs-badge{display:block;border-radius:10px;padding:10px 16px;font-size:.72em;font-weight:900;color:#fff;margin-bottom:10px;}
   .chat-msgs{flex:1;overflow-y:auto;padding:20px 24px 10px;}
   .msg-row{display:flex;gap:14px;margin-bottom:26px;align-items:flex-start;}
   .msg-row.user{flex-direction:row-reverse;}
@@ -254,8 +293,10 @@ const styles = () => `<style>
   .cs-copy{background:#0284c7;color:#fff;}
   .cs-full{background:#7c3aed;color:#fff;}
   .cs-save{background:#065f46;color:#fff;}
-  .msg-copy-btn{background:none;border:1px solid #1e293b;border-radius:8px;padding:5px 12px;color:#475569;cursor:pointer;font-size:0.65em;font-family:Georgia,serif;margin-top:8px;transition:all .2s;}
-  .msg-copy-btn:hover{border-color:#38bdf8;color:#38bdf8;}
+  .cs-pin{background:#92400e;color:#fff;}
+  .cs-share{background:#1e3a5f;color:#38bdf8;border:1px solid #38bdf844;}
+  .msg-copy-btn{background:rgba(15,23,42,0.7);border:1px solid #334155;border-radius:8px;padding:5px 12px;color:#94a3b8;cursor:pointer;font-size:0.65em;font-family:Georgia,serif;margin-top:8px;transition:all .2s;}
+  .msg-copy-btn:hover{border-color:#38bdf8;color:#38bdf8;background:rgba(56,189,248,0.06);}
   .north-thinking{display:flex;align-items:center;gap:12px;padding:12px 0;color:#38bdf8;font-weight:900;font-size:0.82em;}
   @keyframes pulse{0%,100%{opacity:0.3}50%{opacity:1}}
   @keyframes spin{to{transform:rotate(360deg)}}

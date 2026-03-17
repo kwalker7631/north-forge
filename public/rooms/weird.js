@@ -39,11 +39,11 @@ export const render = (state) => `
                     font-weight:900; font-size:.76em; cursor:pointer; font-family:Georgia,serif;
                     transition:all .2s; margin-top:4px; }
     .wn-forge-btn:hover { transform:scale(1.03); }
-    .wn-big-btn   { width:100%; background:linear-gradient(135deg,#7e22ce,#a855f7); color:#fff;
+    .wn-big-btn   { width:100%; background:linear-gradient(135deg,#6b21a8,#a855f7); color:#fff;
                     border:none; border-radius:16px; padding:18px; font-weight:900; font-size:1em;
-                    cursor:pointer; font-family:Georgia,serif; transition:all .25s;
-                    box-shadow:0 6px 24px rgba(168,85,247,.3); }
-    .wn-big-btn:hover { transform:scale(1.01); }
+                    cursor:pointer; font-family:Georgia,serif; transition:all .25s; letter-spacing:0.5px;
+                    box-shadow:0 6px 28px rgba(168,85,247,.5),0 0 0 1px rgba(168,85,247,0.25); }
+    .wn-big-btn:hover { transform:scale(1.02); filter:brightness(1.1); }
   </style>
 `;
 

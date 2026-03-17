@@ -8,7 +8,7 @@ import { getAuth, GoogleAuthProvider,
 import { getFirestore, doc,
          setDoc, getDoc, collection,
          addDoc, query, orderBy,
-         limit, getDocs }                       from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+         limit, getDocs, deleteDoc }            from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { NorthLog }                             from './logs/logger.js';
 
 // ── YOUR PROJECT CONFIG ───────────────────────────────────────────────────────
@@ -138,6 +138,41 @@ export const loadProfile = async (userId) => {
   }
 };
 
+// ── NOTES (pinned scenes) ──────────────────────────────────────────────────────
+export const saveNote = async (userId, text) => {
+  try {
+    await addDoc(collection(db, 'users', userId, 'notes'), {
+      text,
+      savedAt: new Date().toISOString(),
+    });
+  } catch (e) {
+    NorthLog.warn(`saveNote failed: ${e.message}`);
+  }
+};
+
+export const loadNotes = async (userId, count = 30) => {
+  try {
+    const q    = query(
+      collection(db, 'users', userId, 'notes'),
+      orderBy('savedAt', 'desc'),
+      limit(count)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) {
+    NorthLog.warn(`loadNotes failed: ${e.message}`);
+    return [];
+  }
+};
+
+export const deleteNote = async (userId, noteId) => {
+  try {
+    await deleteDoc(doc(db, 'users', userId, 'notes', noteId));
+  } catch (e) {
+    NorthLog.warn(`deleteNote failed: ${e.message}`);
+  }
+};
+
 export const loadEvents = async (userId, count = 20) => {
   if (!userId) return [];
   try {
@@ -151,5 +186,51 @@ export const loadEvents = async (userId, count = 20) => {
   } catch (e) {
     NorthLog.warn(`loadEvents failed: ${e.message}`);
     return [];
+  }
+};
+
+// ── CREW SHARE (public call sheet links) ──────────────────────────────────────
+// token is a UUID; payload = { clean, idea, score, provider, sharedBy, sharedAt }
+export const saveShare = async (token, payload) => {
+  try {
+    await setDoc(doc(db, 'shares', token), {
+      ...payload,
+      sharedAt: new Date().toISOString(),
+    });
+  } catch (e) {
+    NorthLog.warn(`saveShare failed: ${e.message}`);
+  }
+};
+
+export const loadShare = async (token) => {
+  try {
+    const snap = await getDoc(doc(db, 'shares', token));
+    return snap.exists() ? snap.data() : null;
+  } catch (e) {
+    NorthLog.warn(`loadShare failed: ${e.message}`);
+    return null;
+  }
+};
+
+// ── WEEKLY BRIEF ──────────────────────────────────────────────────────────────
+// weekKey format: "2026-W12"
+export const saveWeeklyBrief = async (userId, weekKey, brief) => {
+  try {
+    await setDoc(doc(db, 'users', userId, 'weekly', weekKey), {
+      ...brief,
+      savedAt: new Date().toISOString(),
+    });
+  } catch (e) {
+    NorthLog.warn(`saveWeeklyBrief failed: ${e.message}`);
+  }
+};
+
+export const loadWeeklyBrief = async (userId, weekKey) => {
+  try {
+    const snap = await getDoc(doc(db, 'users', userId, 'weekly', weekKey));
+    return snap.exists() ? snap.data() : null;
+  } catch (e) {
+    NorthLog.warn(`loadWeeklyBrief failed: ${e.message}`);
+    return null;
   }
 };

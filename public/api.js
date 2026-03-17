@@ -158,6 +158,36 @@ export const fetchWeather = async (location = 'Piscataway') => {
   }
 };
 
+// ── 7-DAY FORECAST ────────────────────────────────────────────────────────────
+export const fetchForecast = async (location = 'Piscataway') => {
+  try {
+    const geoRes  = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1`);
+    const geoData = await geoRes.json();
+    const place   = geoData.results?.[0];
+    if (!place) return [];
+    const wxRes  = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}` +
+      `&daily=weathercode,temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit` +
+      `&timezone=America%2FNew_York&forecast_days=7`
+    );
+    const wxData = await wxRes.json();
+    const daily  = wxData.daily;
+    if (!daily?.time) return [];
+    const conditions = { 0:'Clear',1:'Mostly Clear',2:'Partly Cloudy',3:'Overcast',51:'Drizzle',61:'Rain',71:'Snow',80:'Showers',95:'Storm' };
+    const icons      = { 0:'☀️',1:'🌤️',2:'⛅',3:'☁️',51:'🌦️',61:'🌧️',71:'❄️',80:'🌧️',95:'⛈️' };
+    return daily.time.map((date, i) => ({
+      date,
+      condition: conditions[daily.weathercode[i]] ?? 'Mixed',
+      icon:      icons[daily.weathercode[i]] ?? '🌤️',
+      high:      Math.round(daily.temperature_2m_max[i]),
+      low:       Math.round(daily.temperature_2m_min[i]),
+    }));
+  } catch (e) {
+    NorthLog.warn(`Forecast fetch failed: ${e.message}`);
+    return [];
+  }
+};
+
 // ── MOON PHASE ────────────────────────────────────────────────────────────────
 export const getMoonPhase = (d = new Date()) => {
   const days = (((d.getTime() - new Date('1970-01-07T20:35:00Z').getTime()) / 1000) % 2551443) / 86400;

@@ -44,11 +44,11 @@ export const render = (state) => `
                     border-radius:12px; padding:12px 18px; font-weight:900; font-size:.76em;
                     cursor:pointer; font-family:Georgia,serif; transition:all .2s; margin-top:4px; }
     .rc-forge-btn:hover { transform:scale(1.03); }
-    .rc-big-btn   { width:100%; background:linear-gradient(135deg,#b91c1c,#ef4444); color:#fff;
+    .rc-big-btn   { width:100%; background:linear-gradient(135deg,#991b1b,#ef4444); color:#fff;
                     border:none; border-radius:16px; padding:18px; font-weight:900; font-size:1em;
-                    cursor:pointer; font-family:Georgia,serif; transition:all .25s;
-                    box-shadow:0 6px 24px rgba(239,68,68,.3); }
-    .rc-big-btn:hover { transform:scale(1.01); }
+                    cursor:pointer; font-family:Georgia,serif; transition:all .25s; letter-spacing:0.5px;
+                    box-shadow:0 6px 28px rgba(239,68,68,.5),0 0 0 1px rgba(239,68,68,0.25); }
+    .rc-big-btn:hover { transform:scale(1.02); filter:brightness(1.1); }
   </style>
 `;
 

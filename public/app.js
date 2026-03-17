@@ -9,7 +9,10 @@ import { onAuth, signIn, signOut_,
          logEvent, loadEvents,
          savePrompt, loadPrompts,
          saveChatHistory, loadChatHistory,
-         saveProfile, loadProfile } from './firebase.js';
+         saveProfile, loadProfile,
+         saveNote, loadNotes, deleteNote,
+         saveShare, loadShare,
+         loadWeeklyBrief } from './firebase.js';
 import { logDiag, installDiagListeners } from './logs/logger.js';
 import { createRenderGuard } from './render-guard.mjs';
 
@@ -148,6 +151,23 @@ onAuth(async (user) => {
       // Onboarding: prompt user to set up their profile on first sign-in
       setTimeout(() => window.showToast('🎭 Set up your character profile to appear in Sora scenes!'), 1800);
     }
+
+    // Weekly Brief — surface as North Peek if available this week
+    const _weekKey = (() => {
+      const d = new Date(); d.setUTCHours(0,0,0,0);
+      d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+      const yr = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+      const wk = Math.ceil((((d - yr) / 86400000) + 1) / 7);
+      return `${d.getUTCFullYear()}-W${String(wk).padStart(2,'0')}`;
+    })();
+    loadWeeklyBrief(user.uid, _weekKey).then(brief => {
+      if (brief?.summary) {
+        setTimeout(() => {
+          state.northPeek = { msg: brief.summary, tab: 'digest' };
+          render();
+        }, 3000);
+      }
+    });
   }
   render();
 });
@@ -338,6 +358,39 @@ window.loadNorthEvents  = (count = 15) =>
   state.user ? loadEvents(state.user.uid, count)  : Promise.resolve([]);
 window.loadNorthPrompts = (count = 20) =>
   state.user ? loadPrompts(state.user.uid, count) : Promise.resolve([]);
+window.loadNorthNotes   = (count = 30) =>
+  state.user ? loadNotes(state.user.uid, count)   : Promise.resolve([]);
+window.deleteNorthNote  = (noteId) =>
+  state.user ? deleteNote(state.user.uid, noteId) : Promise.resolve();
+
+window.pinMsg = async (msgIdx) => {
+  if (!state.user) { window.showToast('Sign in to pin scenes'); return; }
+  const msg = state.msgs[msgIdx];
+  if (!msg) return;
+  await saveNote(state.user.uid, msg.content);
+  window.showToast('⭐ Pinned to Notes!');
+};
+
+window.shareCS = async (msgIdx) => {
+  const msg = state.msgs[msgIdx];
+  if (!msg) return;
+  const text = msg.content;
+  const pm   = text.match(/CLEAN PROMPT[^\n]*\n([\s\S]*?)(?:═══|$)/i);
+  const clean = pm ? pm[1].trim() : text.trim();
+  const vs    = text.match(/VIRAL SCORE:\s*(\d+)\/10/i);
+  const token = crypto.randomUUID();
+  await saveShare(token, {
+    clean,
+    idea:     (state.msgs[msgIdx - 1]?.content || '').slice(0, 80),
+    score:    vs ? parseInt(vs[1]) : null,
+    provider: 'north-forge',
+    sharedBy: state.user?.uid || null,
+  });
+  const url = `https://north-forge-ai.web.app/s/${token}`;
+  navigator.clipboard.writeText(url)
+    .then(() => window.showToast('🔗 Share link copied!'))
+    .catch(() => window.showToast(`Link: ${url}`));
+};
 
 window.render = render;
 window.logDiag = logDiag;
@@ -349,6 +402,19 @@ window.saveUserProfile = async (data) => {
   window.showToast('🎭 Profile saved!');
   window.goTo('home');
 };
+
+// ── SHARE URL BOOT ────────────────────────────────────────────────────────────
+const _shareMatch = window.location.pathname.match(/^\/s\/([a-z0-9-]+)$/i);
+if (_shareMatch) {
+  const token = _shareMatch[1];
+  loadShare(token).then(data => {
+    if (data) {
+      state.shareData = data;
+      state.tab = 'share';
+    }
+    render();
+  });
+}
 
 // ── BOOT ──────────────────────────────────────────────────────────────────────
 NorthLog.info(`North Forge ${NORTH_VERSION.current} starting`);

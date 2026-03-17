@@ -1,8 +1,9 @@
 // rooms/home.js — The farm landing page. Soul of North Forge.
 // Wren's cutouts, real weather sky, stars, North peek, full vibrancy.
 
-import { ROOMS }        from '../data.js';
-import { NORTH_VERSION } from '../north.js';
+import { ROOMS }           from '../data.js';
+import { NORTH_VERSION }   from '../north.js';
+import { fetchForecast }   from '../api.js';
 
 // ── CHARACTER CUTOUTS (Wren's artwork) ───────────────────────────────────────
 const LUNA_IMG    = "/images/characters/Luna.png";
@@ -125,6 +126,9 @@ export const render = (state) => {
         ${!hasKey ? `<span class="alm warn-pill" onclick="goTo('setup')">⚠ Add API Key</span>` : ''}
       </div>
 
+      <!-- FILMING ALMANAC — 7-DAY FORECAST -->
+      <div id="forecast-strip" class="fc-strip"></div>
+
       <!-- MOON PHASE -->
       <div class="moon-center">
         ${moonHTML(state.moon)}
@@ -209,9 +213,10 @@ export const render = (state) => {
                          animation:eyePulse 3s ease-in-out infinite; }
       @keyframes eyePulse { 0%,100%{filter:drop-shadow(0 0 4px #38bdf8)} 50%{filter:drop-shadow(0 0 14px #38bdf8)} }
       .north-tip-text { flex:1; color:#e0f2fe; font-size:.84em; font-weight:600; line-height:1.5; }
-      .north-tip-close{ background:none; border:none; color:#475569; cursor:pointer;
-                         font-size:1.1em; padding:4px 8px; flex-shrink:0; }
-      .north-tip-close:hover { color:#fff; }
+      .north-tip-close{ background:rgba(255,255,255,0.06); border:1px solid #334155;
+                         border-radius:6px; color:#94a3b8; cursor:pointer;
+                         font-size:1em; padding:4px 9px; flex-shrink:0; transition:all .2s; }
+      .north-tip-close:hover { color:#fff; background:rgba(255,255,255,0.12); border-color:#475569; }
 
       /* ── BARN SCENE ─────────────────────────────────────────── */
       .barn-scene { position:relative; width:100%; max-width:700px;
@@ -259,6 +264,19 @@ export const render = (state) => {
       .warn-pill { color:#fbbf24; border-color:#f59e0b55; cursor:pointer; }
       .signin-pill{ color:#38bdf8; border-color:#38bdf844; cursor:pointer; font-weight:900; }
 
+      /* ── FORECAST ───────────────────────────────────────────── */
+      .fc-strip   { display:flex; gap:8px; overflow-x:auto; padding:10px 22px 0;
+                     scrollbar-width:none; }
+      .fc-strip::-webkit-scrollbar { display:none; }
+      .fc-day     { display:flex; flex-direction:column; align-items:center; gap:3px;
+                     background:rgba(15,23,42,0.85); border:1px solid #1e293b;
+                     border-radius:14px; padding:10px 14px; flex-shrink:0; min-width:60px; }
+      .fc-day-name{ font-size:.56em; font-weight:900; color:#64748b;
+                     text-transform:uppercase; letter-spacing:1px; }
+      .fc-icon    { font-size:1.3em; }
+      .fc-high    { font-size:.66em; font-weight:900; color:#fff; }
+      .fc-low     { font-size:.58em; color:#475569; }
+
       /* ── WELCOME ────────────────────────────────────────────── */
       .welcome-card { display:flex; gap:16px; align-items:flex-start;
                        margin:10px 22px 22px;
@@ -298,9 +316,15 @@ export const render = (state) => {
                     gap:16px; padding:0 22px; }
       .room-card { background:rgba(15,23,42,0.9); border:2px solid #1e293b;
                     border-radius:20px; padding:22px; cursor:pointer; text-align:left;
-                    width:100%; font-family:Georgia,serif; transition:all .25s; }
-      .room-card:hover { transform:translateY(-5px); border-color:#38bdf8;
-                          box-shadow:0 18px 44px rgba(0,0,0,.55), 0 0 0 1px var(--rc); }
+                    width:100%; font-family:Georgia,serif; transition:all .25s;
+                    border-color:var(--rc,#1e293b)22; }
+      .room-card:hover { transform:translateY(-6px); border-color:var(--rc,#38bdf8);
+                          box-shadow:0 20px 50px rgba(0,0,0,.6),
+                          0 0 0 1px var(--rc,#38bdf8),
+                          0 0 24px color-mix(in srgb,var(--rc,#38bdf8) 30%,transparent); }
+      .rc-enter { font-size:.64em; font-weight:900; letter-spacing:2px;
+                   transition:letter-spacing .2s; }
+      .room-card:hover .rc-enter { letter-spacing:3px; }
       .rc-emoji { font-size:2.8em; margin-bottom:11px; }
       .rc-title { font-weight:900; font-size:1.05em; color:#fff; margin-bottom:6px; }
       .rc-desc  { color:#64748b; font-size:.76em; line-height:1.6; margin-bottom:12px; }
@@ -329,6 +353,22 @@ export const mount = (state) => {
       if (typeof window.render === 'function') window.render();
     }
   }, 300000);
+
+  // 7-day forecast strip
+  fetchForecast('Piscataway').then(days => {
+    const strip = document.getElementById('forecast-strip');
+    if (!strip || !days.length) return;
+    strip.innerHTML = days.map(d => {
+      const day = new Date(d.date + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short' });
+      return `
+        <div class="fc-day">
+          <div class="fc-day-name">${day}</div>
+          <div class="fc-icon">${d.icon}</div>
+          <div class="fc-high">${d.high}°</div>
+          <div class="fc-low">${d.low}°</div>
+        </div>`;
+    }).join('');
+  });
 
   // Cameo appearances — bigfoot, UFO, jersey devil via naughty-layer
   const CAMEOS = [

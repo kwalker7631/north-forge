@@ -214,11 +214,11 @@ export const render = (state) => `
                       cursor:pointer; font-family:Georgia,serif; font-size:0.8em; }
 
     /* CHARACTER DETAIL */
-    .char-back  { background:none; border:2px solid #334155; border-radius:10px;
-                  color:#94a3b8; padding:9px 18px; font-weight:900; cursor:pointer;
+    .char-back  { background:rgba(15,23,42,0.8); border:2px solid #334155; border-radius:10px;
+                  color:#cbd5e1; padding:9px 18px; font-weight:900; cursor:pointer;
                   font-family:Georgia,serif; font-size:0.8em; margin-bottom:20px;
                   transition:all .2s; }
-    .char-back:hover { border-color:#38bdf8; color:#fff; }
+    .char-back:hover { border-color:#38bdf8; color:#fff; background:rgba(56,189,248,0.08); }
     .char-detail{ display:grid; grid-template-columns:280px 1fr; gap:24px; }
     @media(max-width:700px) { .char-detail { grid-template-columns:1fr; } }
     .char-photo-wrap { border-radius:20px; overflow:hidden;
@@ -243,9 +243,10 @@ export const render = (state) => `
                   font-size:0.76em; font-weight:900; }
     .forge-btn  { background:linear-gradient(135deg,#0284c7,#0ea5e9);
                   color:#fff; border:none; border-radius:14px; padding:14px 28px;
-                  font-weight:900; cursor:pointer; font-size:0.9em;
-                  font-family:Georgia,serif; transition:all .2s; margin-top:4px; }
-    .forge-btn:hover { transform:scale(1.03); }
+                  font-weight:900; cursor:pointer; font-size:0.9em; letter-spacing:0.3px;
+                  font-family:Georgia,serif; transition:all .2s; margin-top:4px;
+                  box-shadow:0 4px 18px rgba(2,132,199,0.4); }
+    .forge-btn:hover { transform:scale(1.03); filter:brightness(1.1); }
 
     /* LOCATIONS */
     .loc-grid { display:grid;
@@ -291,7 +292,7 @@ const gridHTML = () => `
              <div class="cast-icon-wrap" style="display:none;">${c.icon}</div>`
           : `<div class="cast-icon-wrap" style="background:${c.color}12;">${c.icon}</div>`}
         <div class="cast-info">
-          <div class="cast-sora">${c.soraId}</div>
+          <div class="cast-sora" onclick="castCopySora('${c.soraId}',event)" title="Click to copy Sora ID" style="cursor:pointer;">${c.soraId} 📋</div>
           <div class="cast-name">${c.name}</div>
           <div class="cast-role" style="color:${c.color};">${c.role}</div>
           <div class="cast-vibe">${c.vibe}</div>
@@ -334,7 +335,10 @@ const charHTML = () => {
         <div class="char-section">
           <div class="char-section-title">Identity</div>
           <div style="font-weight:900;font-size:1.2em;color:#fff;margin-bottom:4px;">${c.name}</div>
-          <div style="color:${c.color};font-size:0.66em;font-weight:900;letter-spacing:1px;margin-bottom:6px;">${c.soraId} · ${c.role}</div>
+          <div style="font-size:0.66em;font-weight:900;letter-spacing:1px;margin-bottom:6px;">
+            <span style="color:${c.color};cursor:pointer;" onclick="castCopySora('${c.soraId}',event)" title="Click to copy">${c.soraId} 📋</span>
+            <span style="color:#475569;"> · ${c.role}</span>
+          </div>
           <div class="char-bio">${c.bio}</div>
         </div>
 
@@ -402,7 +406,7 @@ const propsHTML = () => `
         <div class="pm-ava" style="background:${c.color}15;">${c.icon}</div>
         <div style="flex:1;">
           <div class="pm-name">${c.name}</div>
-          <div class="pm-sora">${c.soraId}</div>
+          <div class="pm-sora" onclick="castCopySora('${c.soraId}',event)" style="cursor:pointer;" title="Click to copy Sora ID">${c.soraId} 📋</div>
           <div class="pm-props">
             ${c.props.map(p => `<div class="prop-pill">🎒 ${p}</div>`).join('')}
           </div>
@@ -421,5 +425,11 @@ const propsHTML = () => `
 // ── WINDOW FUNCTIONS ──────────────────────────────────────────────────────────
 window.castView = (v) => { view = v; activeId = null; window.goTo('cast'); };
 window.castOpen = (id) => { activeId = id; view = 'character'; window.goTo('cast'); };
+window.castCopySora = (soraId, event) => {
+  event?.stopPropagation();
+  navigator.clipboard.writeText(soraId)
+    .then(() => window.showToast(`✓ ${soraId} copied!`))
+    .catch(() => window.showToast('Copy failed'));
+};
 
 export const mount = () => {};

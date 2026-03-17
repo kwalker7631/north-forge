@@ -111,23 +111,23 @@ export const render = (state) => {
     .id-src         { font-size:.7em; color:#64748b; font-style:italic; }
     .id-scene-row   { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
     .id-scene-btn   { flex:1; min-width:120px; background:rgba(15,23,42,.9);
-                      border:2px solid #1e293b; border-radius:12px; padding:10px 8px;
-                      font-weight:900; font-size:.72em; color:#94a3b8; cursor:pointer;
+                      border:2px solid #334155; border-radius:12px; padding:10px 8px;
+                      font-weight:900; font-size:.72em; color:#cbd5e1; cursor:pointer;
                       font-family:Georgia,serif; transition:all .2s; white-space:nowrap; }
     .id-scene-btn:hover  { border-color:#d97706; color:#d97706; }
     .id-scene-btn.active { border-color:#d97706; color:#d97706;
                            background:rgba(217,119,6,.12); }
     .id-btn-row     { display:flex; gap:12px; margin-bottom:22px; }
-    .id-btn-next    { flex:1; background:none; border:2px solid #1e293b;
+    .id-btn-next    { flex:1; background:rgba(15,23,42,0.8); border:2px solid #334155;
                       border-radius:14px; padding:14px; font-weight:900;
-                      font-size:.86em; color:#94a3b8; cursor:pointer;
+                      font-size:.86em; color:#cbd5e1; cursor:pointer;
                       font-family:Georgia,serif; transition:all .2s; }
-    .id-btn-next:hover { border-color:#38bdf8; color:#38bdf8; }
-    .id-btn-react   { flex:2; background:linear-gradient(135deg,#92400e,#d97706);
+    .id-btn-next:hover { border-color:#38bdf8; color:#38bdf8; background:rgba(56,189,248,0.06); }
+    .id-btn-react   { flex:2; background:linear-gradient(135deg,#78350f,#d97706);
                       color:#fff; border:none; border-radius:14px; padding:14px 20px;
-                      font-weight:900; font-size:.86em; cursor:pointer;
+                      font-weight:900; font-size:.86em; cursor:pointer; letter-spacing:0.5px;
                       font-family:Georgia,serif; transition:all .2s;
-                      box-shadow:0 4px 18px rgba(217,119,6,.25); }
+                      box-shadow:0 4px 20px rgba(217,119,6,.45),0 0 0 1px rgba(245,158,11,0.2); }
     .id-btn-react:hover:not(.disabled) { transform:scale(1.02); }
     .id-btn-react.disabled { opacity:.5; cursor:not-allowed; transform:none; }
     .id-thinking    { color:#fcd34d; }
@@ -144,11 +144,11 @@ export const render = (state) => {
     .id-soraid      { color:#38bdf8; font-family:monospace; }
     .id-react-text  { color:#fef3c7; font-size:.9em; line-height:1.8;
                       font-weight:700; margin-bottom:16px; }
-    .id-copy-btn    { flex:1; background:rgba(15,23,42,.9); border:2px solid #1e293b;
+    .id-copy-btn    { flex:1; background:rgba(15,23,42,.9); border:2px solid #334155;
                       border-radius:10px; padding:10px 16px; font-weight:900;
-                      font-size:0.72em; color:#94a3b8; cursor:pointer;
+                      font-size:0.72em; color:#cbd5e1; cursor:pointer;
                       font-family:Georgia,serif; transition:all .2s; }
-    .id-copy-btn:hover { border-color:#38bdf8; color:#38bdf8; }
+    .id-copy-btn:hover { border-color:#38bdf8; color:#38bdf8; background:rgba(56,189,248,0.06); }
     .id-forge-btn   { background:linear-gradient(135deg,#0284c7,#0ea5e9); color:#fff;
                       border:none; border-radius:10px; padding:12px 20px; font-weight:900;
                       font-size:0.76em; cursor:pointer; font-family:Georgia,serif;

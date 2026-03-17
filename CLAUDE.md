@@ -55,16 +55,16 @@ northforge/
     ├── app.js              ← state, navigation, render loop, send(), forgeScene()
     ├── north.js            ← North's voice, NORTH_SYSTEM prompt, CAST array, NORTH_VERSION
     ├── data.js             ← ROOMS array, SCENES array, all static content
-    ├── api.js              ← callNorth(), callAnthropic(), callGemini(), fetchWeather(), getMoonPhase(), NorthLog
-    ├── firebase.js         ← onAuth(), signIn(), signOut_(), savePrefs(), loadPrefs(), saveProfile(), loadProfile(), saveChatHistory(), loadChatHistory()
+    ├── api.js              ← callNorth(), callAnthropic(), callGemini(), fetchWeather(), fetchForecast(), getMoonPhase(), NorthLog
+    ├── firebase.js         ← onAuth(), signIn(), signOut_(), savePrefs(), loadPrefs(), saveProfile(), loadProfile(), saveChatHistory(), loadChatHistory(), saveNote(), loadNotes(), deleteNote(), saveShare(), loadShare(), saveWeeklyBrief(), loadWeeklyBrief()
     ├── platforms.js        ← PLATFORMS array, CINEMATOGRAPHY object, getPlatformContext()
     ├── render-guard.mjs    ← createRenderGuard() — prevents stale async renders
     ├── logs/
     │   └── logger.js       ← NorthLog, logDiag, installDiagListeners (single logging source)
     └── rooms/
-        ├── home.js         ← Barn photos, Wren's cutouts, weather sky, crew strip, room grid
-        ├── chat.js         ← Prompt Engine (form mode) + Free Chat mode
-        ├── cast.js         ← Character + Props Manager, Locations DB
+        ├── home.js         ← Barn photos, Wren's cutouts, weather sky, 7-day forecast strip, crew strip, room grid
+        ├── chat.js         ← Prompt Engine (form mode + platform quick-pick) + Free Chat mode
+        ├── cast.js         ← Character + Props Manager, Locations DB (Sora ID quick-copy on all cards)
         ├── platforms.js    ← Platform Lab room + Sora Scout card
         ├── setup.js        ← API keys, Google Sign-In, system status, event log
         ├── slots.js        ← Madlib story slots
@@ -73,8 +73,9 @@ northforge/
         ├── weird.js        ← Weird NJ cards
         ├── jeeb.js         ← Dreamcore / psychedelic content
         ├── idioms.js       ← Randy's Idioms + location picker + Forge This Scene
-        ├── digest.js       ← North Digest: weekly content calendar of forged call sheets
-        └── profile.js      ← User Character Profile: Sora appearance + IDs
+        ├── digest.js       ← North Digest: call sheets + Notes tab + Best-of-Week + Remix + Export Week
+        ├── profile.js      ← User Character Profile: Sora appearance + IDs
+        └── share.js        ← Read-only public call sheet viewer (URL-routed via /s/{token})
 ```
 
 ---
@@ -122,7 +123,15 @@ state = {
 - `window.saveUserProfile(data)` — save user character profile to state + Firestore
 - `window.loadNorthPrompts(count)` — load forged call sheets from Firestore
 - `window.loadNorthEvents(count)` — load event log from Firestore
+- `window.loadNorthNotes(count)` — load pinned notes from Firestore
+- `window.deleteNorthNote(noteId)` — delete a pinned note
+- `window.pinMsg(msgIdx)` — pin a chat message to Notes
+- `window.shareCS(msgIdx)` — generate public share link for a call sheet
 - `window.logDiag(type, data)` — write diagnostic entry to localStorage
+
+**State additions (beyond original):**
+- `state.shareData` — populated on `/s/{token}` boot, routes to share.js room
+- `state.forecast` — not in state; fetched locally in home.js mount via `fetchForecast()`
 
 ---
 
@@ -191,14 +200,22 @@ All data lives in `public/platforms.js`:
 ### Layer 3 — Intelligence Engine ✅ BUILT
 - Failure + Event Log (Firestore logging, event log in Setup room)
 - Weather Agent (real sky FX, farm almanac, filming condition, golden hour countdown)
+- 7-Day Filming Almanac — Open-Meteo daily forecast strip on Home tab
 - Viral Video Checker (score badge on every call sheet)
 - Chat History Persistence (Firestore, survives refresh — last 50 msgs)
-- North Digest (`rooms/digest.js`) — weekly content calendar of all forged call sheets
+- North Digest (`rooms/digest.js`) — weekly content calendar + Notes tab + Best-of-Week card
 - User Character Profile (`rooms/profile.js`) — age/build/hair/eyes/style + up to 3 Sora IDs + preferred duration; auto-injected into every North prompt
-- Sora Scout (card in Platforms room) — North surfaces live Sora 2 tips on demand
+- Sora Scout (card in Platforms room) — North surfaces Sora 2 tips on demand
 - Render Guard (`render-guard.mjs`) — prevents stale async renders on fast navigation
 - Unified Logging (`logs/logger.js`) — NorthLog + localStorage diagnostics
-- HOLD: Map Agent, web analytics, local news feeds
+- North's Notes — ⭐ Pin button saves call sheets to `users/{uid}/notes`; Notes tab in Digest
+- Crew Share — 🔗 Share button saves to public `shares/{token}` Firestore; read-only `share.js` viewer at `/s/{token}`
+- Weekly Brief — Firebase Scheduled Function (Mon 8am ET) generates North's one-liner per user; surfaces as North Peek on sign-in
+- Platform Quick-Pick — rule-based "North suggests" card in Prompt Engine above platform selector
+- Cast Sora ID Quick-Copy — tap any Sora ID in Cast room to copy to clipboard
+- Digest Remix — ↺ Remix button re-forges any call sheet with fresh take
+- Digest Export Week — ⬇ Export all call sheets in a week as single `.md`
+- HOLD: Map Agent, web analytics, local news feeds, North character/voice upgrade
 
 ---
 
@@ -221,9 +238,14 @@ All data lives in `public/platforms.js`:
 15. ✅ Chat history persistence — survives refresh via Firestore
 16. ✅ Render Guard — prevents stale renders on fast tab switching
 17. ✅ Unified logging — logs/logger.js replaces scattered console calls
+18. ✅ North's Notes + Crew Share + Best-of-Week + Node 22 + Weekly Brief (Cloud Function)
+19. ✅ Forge Again (Remix) + Export Week Pack + 7-Day Filming Almanac + Platform Quick-Pick + Cast Sora Quick-Copy
+20. ✅ Full visual contrast audit — all buttons readable, all CTAs with glow/energy
 
 **All layers complete. HOLD items:**
 - HOLD: Map Agent, web analytics, local news feeds
+- HOLD: North character/voice upgrade (planned — see memory for details)
+- PENDING: Set Anthropic key in Functions config for Weekly Brief: `firebase functions:config:set anthropic.key="sk-ant-..."`
 
 ---
 

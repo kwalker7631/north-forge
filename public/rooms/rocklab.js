@@ -42,13 +42,14 @@ export const render = (state) => `
     .rl-section-title { font-size:.62em; font-weight:900; color:#3b82f6; letter-spacing:2px;
                         text-transform:uppercase; margin-bottom:14px; }
     .rl-geo-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; }
-    .rl-geo-card { background:rgba(2,6,23,.95); border:2px solid #1e293b; border-radius:16px;
-                   padding:18px 14px; text-align:center; cursor:pointer; transition:all .2s; }
-    .rl-geo-card:hover { border-color:#3b82f6; transform:translateY(-2px); }
+    .rl-geo-card { background:rgba(2,6,23,.95); border:2px solid #1e293b33; border-radius:16px;
+                   padding:18px 14px; text-align:center; cursor:pointer; transition:all .25s; }
+    .rl-geo-card:hover { border-color:#3b82f6; transform:translateY(-4px);
+                         box-shadow:0 12px 30px rgba(59,130,246,0.25); }
     .rl-geo-icon  { font-size:2.2em; margin-bottom:8px; }
     .rl-geo-name  { font-weight:900; color:#fff; font-size:.78em; margin-bottom:4px; }
     .rl-geo-desc  { color:#64748b; font-size:.66em; line-height:1.4; margin-bottom:10px; }
-    .rl-forge-hint{ font-size:.6em; color:#3b82f6; font-weight:900; }
+    .rl-forge-hint{ font-size:.6em; color:#60a5fa; font-weight:900; letter-spacing:0.5px; }
     .rl-ep-list   { display:flex; flex-direction:column; gap:10px; margin-bottom:24px; }
     .rl-ep-card   { background:rgba(2,6,23,.95); border:2px solid #1e293b; border-radius:14px;
                     padding:16px 20px; display:flex; align-items:center; gap:16px; }
@@ -63,9 +64,9 @@ export const render = (state) => `
     .rl-ep-btn:hover { transform:scale(1.04); }
     .rl-big-btn   { width:100%; background:linear-gradient(135deg,#1d4ed8,#3b82f6); color:#fff;
                     border:none; border-radius:16px; padding:18px; font-weight:900; font-size:1em;
-                    cursor:pointer; font-family:Georgia,serif; transition:all .25s;
-                    box-shadow:0 6px 24px rgba(59,130,246,.3); }
-    .rl-big-btn:hover { transform:scale(1.01); }
+                    cursor:pointer; font-family:Georgia,serif; transition:all .25s; letter-spacing:0.5px;
+                    box-shadow:0 6px 28px rgba(59,130,246,.5),0 0 0 1px rgba(96,165,250,0.2); }
+    .rl-big-btn:hover { transform:scale(1.02); filter:brightness(1.1); }
   </style>
 `;
 
