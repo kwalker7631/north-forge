@@ -28,7 +28,7 @@ export const state = {
   sceneIdx: 0,
   toast:    null,
   northPeek:null,
-  fontSize: 28,
+  fontSize: 16,
   profile:  null,
 };
 
@@ -112,7 +112,7 @@ window.changeScene = () => {
 
 // ── FONT ──────────────────────────────────────────────────────────────────────
 window.bumpFont = (dir) => {
-  state.fontSize = Math.min(32, Math.max(13, state.fontSize + dir));
+  state.fontSize = Math.min(22, Math.max(12, state.fontSize + dir));
   document.documentElement.style.fontSize = state.fontSize + 'px';
   const el = document.getElementById('fs-display');
   if (el) el.textContent = state.fontSize + 'px';
@@ -133,6 +133,7 @@ onAuth(async (user) => {
       if (prefs.anthropicKey) state.keys.anthropic = prefs.anthropicKey;
       if (prefs.geminiKey)    state.keys.gemini    = prefs.geminiKey;
       if (prefs.fontSize)     state.fontSize       = prefs.fontSize;
+      if (state.fontSize > 22) state.fontSize = 16;
       if (prefs.sceneIdx !== undefined) state.sceneIdx = prefs.sceneIdx;
       document.documentElement.style.fontSize = state.fontSize + 'px';
     }
@@ -169,14 +170,34 @@ const PEEKS = [
   { msg:"Luna escaped again. Someone should film this.",            tab:"chat"    },
   { msg:"I've been up here all night. Let's make something.",       tab:"chat"    },
 ];
+let _lastActivity  = Date.now();
+let _peekThreshold = 60000 + Math.random() * 30000;
+let _peekShowing   = false;
+['mousemove','mousedown','keydown','touchstart','scroll'].forEach(evt =>
+  window.addEventListener(evt, () => { _lastActivity = Date.now(); }, { passive: true })
+);
 setInterval(() => {
-  if (state.tab !== 'home') {
-    state.northPeek = PEEKS[Math.floor(Math.random() * PEEKS.length)];
+  if (_peekShowing) return;
+  if (state.tab === 'home') return;
+  if (Date.now() - _lastActivity < _peekThreshold) return;
+  _peekShowing = true;
+  state.northPeek = PEEKS[Math.floor(Math.random() * PEEKS.length)];
+  render();
+  setTimeout(() => {
+    state.northPeek = null;
+    _peekShowing    = false;
+    _lastActivity   = Date.now();
+    _peekThreshold  = 60000 + Math.random() * 30000;
     render();
-    setTimeout(() => { state.northPeek = null; render(); }, 8000);
-  }
-}, 50000);
-window.dismissPeek = () => { state.northPeek = null; render(); };
+  }, 8000);
+}, 5000);
+window.dismissPeek = () => {
+  state.northPeek  = null;
+  _peekShowing     = false;
+  _lastActivity    = Date.now();
+  _peekThreshold   = 60000 + Math.random() * 30000;
+  render();
+};
 
 // ── NAUGHTY ANIMALS ───────────────────────────────────────────────────────────
 const ANIMALS = ['🐐','🐕','🛸','👽','🦍','🦊','🐓','🐇'];

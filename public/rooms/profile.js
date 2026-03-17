@@ -2,6 +2,8 @@
 // Define how you appear in Sora 2 videos.
 // Tap-to-select builder: age range, build, hair, eyes, style, Sora IDs, duration.
 
+import { CAST } from '../north.js';
+
 const OPTS = {
   age:   ['Teens','20s','30s','40s','50s','60s','70s+'],
   build: ['Slim','Athletic','Average','Stocky','Larger'],
@@ -55,19 +57,23 @@ export const render = (state) => {
         <button onclick="handleSignIn()" class="pf-save-btn">Sign in with Google</button>
       </div>` : `
 
-    <!-- HOW YOU LOOK --------------------------------------------------------->
+    <!-- CAST DIRECTORY -------------------------------------------------------->
     <div class="pf-section">
-      <div class="pf-section-label">🎭 HOW YOU APPEAR ON CAMERA</div>
-
-      ${Object.entries(OPTS).map(([field, choices]) => `
-        <div class="pf-field">
-          <div class="pf-field-label">${fieldLabel(field)}</div>
-          <div class="pf-pills">
-            ${choices.map(c => `
-              <button class="pf-pill ${draft[field]===c?'active':''}"
-                      onclick="pfSet('${field}','${c}')">
-                ${c}
-              </button>`).join('')}
+      <div class="pf-section-label">🎬 CAST DIRECTORY — SORA IDs</div>
+      <div style="font-size:0.72em;color:#475569;margin-bottom:14px;line-height:1.6;">
+        Tap <strong style="color:#38bdf8;">Load</strong> to pull any character into your workspace below.
+      </div>
+      ${CAST.map(c => `
+        <div class="pf-cast-row">
+          <span class="pf-cast-icon" style="color:${c.color}">${c.icon}</span>
+          <div class="pf-cast-info">
+            <div class="pf-cast-name" style="color:${c.color}">${c.name}</div>
+            <div class="pf-cast-role">${c.role}</div>
+          </div>
+          <div class="pf-cast-id">${c.soraId}</div>
+          <div class="pf-cast-actions">
+            <button class="pf-cast-btn" onclick="pfCopyId('${c.soraId}')">Copy</button>
+            <button class="pf-cast-btn pf-cast-load" onclick="pfLoadChar('${c.soraId}')">Load →</button>
           </div>
         </div>`).join('')}
     </div>
@@ -86,6 +92,23 @@ export const render = (state) => {
                  placeholder="@your-sora-id"
                  value="${esc(draft.soraIds[i] || '')}"
                  oninput="pfSetId(${i}, this.value)" />
+        </div>`).join('')}
+    </div>
+
+    <!-- HOW YOU LOOK --------------------------------------------------------->
+    <div class="pf-section">
+      <div class="pf-section-label">🎭 HOW YOU APPEAR ON CAMERA</div>
+
+      ${Object.entries(OPTS).map(([field, choices]) => `
+        <div class="pf-field">
+          <div class="pf-field-label">${fieldLabel(field)}</div>
+          <div class="pf-pills">
+            ${choices.map(c => `
+              <button class="pf-pill ${draft[field]===c?'active':''}"
+                      onclick="pfSet('${field}','${c}')">
+                ${c}
+              </button>`).join('')}
+          </div>
         </div>`).join('')}
     </div>
 
@@ -164,6 +187,23 @@ export const render = (state) => {
     .pf-save-btn:hover:not(.disabled) { transform:scale(1.02); }
     .pf-save-btn.disabled { background:rgba(30,41,59,.9); color:#334155;
                              box-shadow:none; cursor:not-allowed; }
+    .pf-cast-row    { display:flex; align-items:center; gap:10px; padding:10px 0;
+                      border-bottom:1px solid #1e293b; }
+    .pf-cast-row:last-child { border-bottom:none; }
+    .pf-cast-icon   { font-size:1.3em; flex-shrink:0; width:28px; text-align:center; }
+    .pf-cast-info   { flex:1; min-width:0; }
+    .pf-cast-name   { font-size:.72em; font-weight:900; }
+    .pf-cast-role   { font-size:.62em; color:#475569; }
+    .pf-cast-id     { font-family:monospace; font-size:.68em; color:#38bdf8;
+                      flex-shrink:0; max-width:140px; word-break:break-all; }
+    .pf-cast-actions { display:flex; gap:6px; flex-shrink:0; }
+    .pf-cast-btn    { background:rgba(15,23,42,.9); border:2px solid #1e293b;
+                      border-radius:8px; padding:5px 10px; color:#64748b;
+                      font-size:.62em; font-weight:900; cursor:pointer;
+                      font-family:Georgia,serif; transition:all .2s; }
+    .pf-cast-btn:hover { border-color:#38bdf844; color:#38bdf8; }
+    .pf-cast-load   { border-color:#c084fc44; color:#c084fc; }
+    .pf-cast-load:hover { border-color:#c084fc; background:rgba(192,132,252,.12); }
   </style>
   `;
 };
@@ -189,6 +229,16 @@ window.pfSetId = (idx, value) => {
 
 window.pfSave = () => {
   window.saveUserProfile({ ...draft });
+};
+
+window.pfCopyId = (soraId) => {
+  navigator.clipboard.writeText(soraId).then(() => window.showToast(`Copied ${soraId}`));
+};
+
+window.pfLoadChar = (soraId) => {
+  draft.soraIds[0] = soraId;
+  window.showToast(`Loaded ${soraId} into slot 1`);
+  window.goTo('profile');
 };
 
 export const mount = (state) => {

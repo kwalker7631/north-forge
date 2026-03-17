@@ -199,6 +199,7 @@ const csBlock = (text, idx) => {
         <button class="cs-btn cs-copy" onclick="copyCS('cs-body-${idx}')">📋 Copy Prompt</button>
         <button class="cs-btn cs-full" onclick="copyFull(${idx})">📄 Copy Full Sheet</button>
         <button class="cs-btn cs-save" onclick="saveMD(${idx})">💾 Save MD</button>
+        <button class="cs-btn cs-save" onclick="saveTXT(${idx})">📝 Save TXT</button>
       </div>
     </div>`;
 };
@@ -242,12 +243,12 @@ const styles = () => `<style>
   .msg-row.user{flex-direction:row-reverse;}
   .msg-ava{width:46px;height:46px;border-radius:50% 50% 50% 8px;flex-shrink:0;background:linear-gradient(135deg,#0ea5e9,#0284c7);display:flex;align-items:center;justify-content:center;font-size:1.3em;}
   .msg-row.user .msg-ava{background:linear-gradient(135deg,#166534,#14532d);border-radius:50%;}
-  .msg-bub{max-width:84%;background:rgba(15,23,42,0.95);border:2px solid #1e293b;padding:16px 20px;border-radius:6px 20px 20px 20px;}
+  .msg-bub{max-width:84%;background:rgba(15,23,42,0.95);border:2px solid #1e293b;padding:16px 20px;border-radius:6px 20px 20px 20px;overflow-wrap:break-word;word-break:break-word;}
   .msg-row.user .msg-bub{background:rgba(20,83,45,0.92);border-color:#14532d;border-radius:20px 6px 20px 20px;}
   .msg-lbl{color:#38bdf8;font-size:0.56em;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;}
   .msg-text{color:#f1f5f9;font-size:0.88em;line-height:1.8;white-space:pre-wrap;}
   .callsheet{background:#000;border:2px solid #38bdf8;border-radius:14px;padding:18px;margin-top:14px;}
-  .cs-body{font-family:monospace;font-size:0.74em;color:#bae6fd;line-height:1.7;white-space:pre-wrap;max-height:300px;overflow-y:auto;margin-bottom:12px;}
+  .cs-body{font-family:monospace;font-size:0.74em;color:#bae6fd;line-height:1.7;white-space:pre-wrap;max-height:300px;overflow-y:auto;overflow-x:auto;margin-bottom:12px;}
   .cs-actions{display:flex;gap:10px;flex-wrap:wrap;}
   .cs-btn{border:none;border-radius:10px;padding:10px 18px;font-weight:900;font-size:0.72em;cursor:pointer;font-family:Georgia,serif;transition:all .2s;}
   .cs-copy{background:#0284c7;color:#fff;}
@@ -487,6 +488,20 @@ window.saveMD = (msgIdx) => {
   a.click();
   URL.revokeObjectURL(url);
   window.showToast('✓ Saved as .md!');
+};
+
+window.saveTXT = (msgIdx) => {
+  const el = document.getElementById(`msg-text-${msgIdx}`);
+  if (!el) return;
+  const text = el.innerText || el.textContent || '';
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `north-forge-${Date.now()}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+  window.showToast('✓ Saved as .txt!');
 };
 
 export const mount = (state) => {

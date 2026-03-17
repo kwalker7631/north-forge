@@ -154,6 +154,9 @@ export const render = (state) => `
     .sdot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
     .sdot.on  { background:#22c55e; box-shadow:0 0 8px #22c55e; }
     .sdot.off { background:#334155; }
+    @media (max-width: 640px) {
+      .setup-input { min-width: 0 !important; width: 100%; }
+    }
   </style>
 `;
 

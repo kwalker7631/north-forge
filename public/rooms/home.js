@@ -92,20 +92,9 @@ export const render = (state) => {
         </div>` : ''}
 
       <!-- BIG RED BARN SCENE -->
-      <svg width="0" height="0" style="position:absolute;overflow:hidden;">
-        <defs>
-          <filter id="north-remove-white" color-interpolation-filters="sRGB">
-            <feColorMatrix type="matrix"
-              values="1 0 0 0 0
-                      0 1 0 0 0
-                      0 0 1 0 0
-                     -4 -4 -4 1 10"/>
-          </filter>
-        </defs>
-      </svg>
       <div class="barn-scene">
         <img class="barn-img" src="${barnPhoto(wx)}" alt="Big Red Barn"/>
-        ${seasonalOverlay() ? `<img class="barn-overlay" src="${seasonalOverlay()}" alt=""/>` : ''}
+        ${seasonalTint() ? `<div class="barn-tint" style="background:${seasonalTint()}"></div>` : ''}
 
         <!-- WREN'S CHARACTER CUTOUTS -->
         <div class="cutout luna-cutout" title="Luna the Goat">
@@ -229,9 +218,8 @@ export const render = (state) => {
                      margin:0 auto; padding-top:16px; }
       .barn-img    { width:100%; border-radius:18px 18px 0 0; display:block;
                      object-fit:cover; max-height:340px; }
-      .barn-overlay{ position:absolute; top:16px; left:0; width:100%; height:calc(100% - 16px);
-                     object-fit:cover; border-radius:18px 18px 0 0; pointer-events:none;
-                     filter:url(#north-remove-white); opacity:0.9; }
+      .barn-tint   { position:absolute; top:16px; left:0; width:100%; height:calc(100% - 16px);
+                     border-radius:18px 18px 0 0; pointer-events:none; opacity:0.22; }
 
       /* ── CUTOUTS ────────────────────────────────────────────── */
       .cutout { position:absolute; bottom:8%; z-index:10; }
@@ -466,16 +454,16 @@ const seasonalParticles = () => {
   }
   return html;
 };
-const seasonalOverlay = () => {
+const seasonalTint = () => {
   const m = new Date().getMonth() + 1;
   const d = new Date().getDate();
-  if (m === 10)                        return '/images/overlays/overlay-halloween.png';
-  if (m === 11)                        return '/images/overlays/overlay-thanksgiving.png';
-  if (m === 12)                        return '/images/overlays/overlay-christmas.png';
-  if (m === 1  && d === 1)             return '/images/overlays/overlay-newyear..png';
-  if (m === 7  && d <= 7)              return '/images/overlays/overlay-july4.png';
-  if (m === 3  || m === 4 || m === 5)  return '/images/overlays/overlay-spring.png';
-  if (m === 1  || m === 2)             return '/images/overlays/overlay-winter.png';
+  if (m === 10)               return 'linear-gradient(135deg,#f97316,#7c3aed)'; // Halloween orange/purple
+  if (m === 11)               return 'linear-gradient(135deg,#b45309,#d97706)'; // Thanksgiving amber
+  if (m === 12)               return 'linear-gradient(135deg,#dc2626,#16a34a)'; // Christmas red/green
+  if (m === 1  && d === 1)    return 'linear-gradient(135deg,#6366f1,#f59e0b)'; // New Year gold/indigo
+  if (m === 7  && d <= 7)     return 'linear-gradient(135deg,#dc2626,#1d4ed8)'; // July 4 red/blue
+  if (m === 3  || m === 4 || m === 5) return 'linear-gradient(135deg,#ec4899,#84cc16)'; // Spring pink/green
+  if (m === 1  || m === 2)    return 'linear-gradient(135deg,#38bdf8,#e2e8f0)'; // Winter ice blue
   return null;
 };
 
