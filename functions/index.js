@@ -1,9 +1,9 @@
 // functions/index.js — North Forge Anthropic proxy + scheduled functions
 // Runs server-side to avoid CORS restrictions on the Anthropic API.
 
-const functions   = require('firebase-functions');
+const { onRequest }  = require('firebase-functions/v2/https');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
-const admin       = require('firebase-admin');
+const admin          = require('firebase-admin');
 admin.initializeApp();
 
 const ALLOWED_ORIGINS = [
@@ -13,7 +13,7 @@ const ALLOWED_ORIGINS = [
   'http://127.0.0.1:5000',
 ];
 
-exports.northProxy = functions.https.onRequest(async (req, res) => {
+exports.northProxy = onRequest(async (req, res) => {
   // ── CORS ──────────────────────────────────────────────────────────────────
   const origin = req.headers.origin;
   if (ALLOWED_ORIGINS.includes(origin)) {
@@ -72,8 +72,8 @@ exports.weeklyBrief = onSchedule(
   { schedule: 'every monday 08:00', timeZone: 'America/New_York' },
   async () => {
     const db      = admin.firestore();
-    const apiKey  = functions.config().anthropic?.key;
-    if (!apiKey) { console.error('weeklyBrief: anthropic.key not set'); return; }
+    const apiKey  = process.env.ANTHROPIC_KEY;
+    if (!apiKey) { console.error('weeklyBrief: ANTHROPIC_KEY env var not set'); return; }
 
     const weekKey = getWeekKey(new Date());
 
