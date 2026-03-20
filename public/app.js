@@ -61,33 +61,45 @@ window.send = async (text) => {
   state.loading   = true;
   state.chatMode  = 'chat';   // tell chat.js to show chat view, consumed on render
   window.goTo('chat');
-  const result = await callNorth(state.msgs, state.keys, state.weather, state.profile);
-  state.msgs.push({ role:'assistant', content:result.text });
-  state.loading = false;
-  if (state.user) {
-    saveChatHistory(state.user.uid, state.msgs);
-    logEvent(state.user.uid, {
-      type:     result.ok ? 'success' : 'error',
-      provider: result.provider,
-      chars:    result.text.length,
-      prompt:   text.slice(0, 80),
-      ...(result.reason ? { reason: result.reason } : {}),
-    });
-    // Auto-save call sheets to Firestore
-    if (result.ok && /CLEAN PROMPT|═══/i.test(result.text)) {
-      const pm = result.text.match(/CLEAN PROMPT[^\n]*\n([\s\S]*?)(?:═══|$)/i);
-      const vs = result.text.match(/VIRAL SCORE:\s*(\d+)\/10/i);
-      const clean = pm ? pm[1].trim() : '';
-      if (clean) savePrompt(state.user.uid, {
-        clean,
-        score:    vs ? parseInt(vs[1]) : null,
+  try {
+    const result = await callNorth(state.msgs, state.keys, state.weather, state.profile);
+    state.msgs.push({ role:'assistant', content:result.text });
+    if (state.user) {
+      saveChatHistory(state.user.uid, state.msgs);
+      logEvent(state.user.uid, {
+        type:     result.ok ? 'success' : 'error',
         provider: result.provider,
-        idea:     text.slice(0, 80),
+        chars:    result.text.length,
+        prompt:   text.slice(0, 80),
+        ...(result.reason ? { reason: result.reason } : {}),
       });
+      // Auto-save call sheets to Firestore
+      if (result.ok && /CLEAN PROMPT|═══/i.test(result.text)) {
+        const pm = result.text.match(/CLEAN PROMPT[^\n]*\n([\s\S]*?)(?:═══|$)/i);
+        const vs = result.text.match(/VIRAL SCORE:\s*(\d+)\/10/i);
+        const clean = pm ? pm[1].trim() : '';
+        if (clean) savePrompt(state.user.uid, {
+          clean,
+          score:    vs ? parseInt(vs[1]) : null,
+          provider: result.provider,
+          idea:     text.slice(0, 80),
+        });
+      }
     }
+  } catch (e) {
+    const message = e?.message || 'Unknown error';
+    NorthLog.error(`send failed: ${message}`);
+    logDiag('send_failed', { message });
+    state.msgs.push({
+      role: 'assistant',
+      content: `Oops—North hit a snag while sending that. ${message}. Please try again in a moment. 🏚️`,
+    });
+    window.showToast('Oops—message failed to send. Try again?');
+  } finally {
+    state.loading = false;
+    render();
+    setTimeout(() => document.getElementById('chat-bottom')?.scrollIntoView({ behavior:'smooth' }), 120);
   }
-  render();
-  setTimeout(() => document.getElementById('chat-bottom')?.scrollIntoView({ behavior:'smooth' }), 120);
 };
 
 window.forgeScene = (prompt) => {

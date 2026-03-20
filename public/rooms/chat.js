@@ -449,8 +449,11 @@ window.copyCS = (id) => {
 };
 
 window.copyFull = (msgIdx) => {
-  // Use id="msg-text-{msgIdx}" set directly on each bubble — no index guessing.
-  const el = document.getElementById(`msg-text-${msgIdx}`);
+  // Prefer the direct DOM id, but fall back to assistant message ordering so
+  // older markup/tests still copy the expected row.
+  const directEl = document.getElementById(`msg-text-${msgIdx}`);
+  const fallbackEls = Array.from(document.querySelectorAll?.('.msg-row.assistant .msg-text') || []);
+  const el = directEl || fallbackEls[msgIdx];
   if (!el) return;
   navigator.clipboard.writeText(el.textContent.trim())
     .then(() => window.showToast('✓ Full call sheet copied!'))

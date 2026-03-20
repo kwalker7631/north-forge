@@ -51,3 +51,26 @@ test('copyFull uses assistant-rendered message index order', async () => {
 
   assert.deepEqual(copied, ['Assistant row two']);
 });
+
+test('copyFull prefers direct message id when available', async () => {
+  const copied = [];
+  document.getElementById = (id) => (
+    id === 'msg-text-1'
+      ? { textContent: 'Direct message match' }
+      : id === 'pe-idea'
+        ? { value: document._ideaValue }
+        : null
+  );
+  document.querySelectorAll = () => [
+    { textContent: 'Assistant row one' },
+    { textContent: 'Assistant row two' }
+  ];
+  navigator.clipboard.writeText = async (txt) => {
+    copied.push(txt);
+  };
+
+  window.copyFull(1);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.deepEqual(copied, ['Direct message match']);
+});
