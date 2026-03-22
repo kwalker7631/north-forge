@@ -22,7 +22,20 @@
       "Bash(grep:*)",
       "Bash(for func:*)",
       "Bash(node:*)",
-      "Bash(head:*)"
+      "Bash(head:*)",
+      "Bash(npm install:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(npm show:*)",
+      "Bash(npm audit:*)",
+      "WebFetch(domain:chatgpt.com)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:developers.openai.com)",
+      "WebFetch(domain:gist.github.com)",
+      "Read(//c/Users/kwalk/**)",
+      "Read(//c/Users/kwalk/OneDrive/Desktop//**)"
     ]
   }
 }
