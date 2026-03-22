@@ -35,7 +35,9 @@
       "WebFetch(domain:developers.openai.com)",
       "WebFetch(domain:gist.github.com)",
       "Read(//c/Users/kwalk/**)",
-      "Read(//c/Users/kwalk/OneDrive/Desktop//**)"
+      "Read(//c/Users/kwalk/OneDrive/Desktop//**)",
+      "Bash(claude update:*)",
+      "Bash(git pull:*)"
     ]
   }
 }
