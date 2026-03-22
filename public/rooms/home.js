@@ -60,16 +60,21 @@ const shotCallCard = (state) => {
 
 // ── NORTH PEEK MESSAGES ──────────────────────────────────────────────────────
 const NORTH_TIPS = [
-  "Luna escaped the coop again. Third time this week. Randy filmed it.",
-  "Farmer's Almanac says frost by Thursday. Marguerite's already on it.",
-  "The loft light has been on all night. North's been busy up there.",
-  "Real talk — Piscataway sunsets hit different when you film them vertical.",
-  "Eleanor wants a scene from the 1960s farm. She remembers everything.",
-  "Weird NJ tip: the Pine Barrens are 45 mins south. Randy knows a path.",
-  "Salem just finished something in the studio. Go look before she hides it.",
-  "The Big Red Barn has stories. Ask North to dig one out.",
-  "Ken's been in the workbench since 6am. Something's getting over-engineered.",
-  "Moon's almost full. Best night this week to film something outdoors.",
+  "Luna got out again. Third fence this week. I've stopped being surprised.",
+  "Frost by Thursday — Marguerite already moved the seedlings. She always knows first.",
+  "The loft light's been on since 2am. Some nights the work just doesn't stop.",
+  "Piscataway sunsets hit different on a clear evening. You should have the camera ready.",
+  "Eleanor remembers every inch of this farm back to the sixties. That's a scene waiting to happen.",
+  "Randy found something in Cave #1 yesterday. He hasn't said what yet.",
+  "Salem finished something new. She'll bury it if no one asks soon.",
+  "This barn has more stories than we've filmed. Good problem to have.",
+  "Ken's been at the workbench since before sunrise. Whatever it is, it's getting over-engineered.",
+  "Full moon in two nights. The back field will look like something else entirely.",
+  "I've been watching the light change over the Big Red Barn all week. Tuesday morning was the one.",
+  "Tank found something buried near the chicken coop. Classic Tank.",
+  "The Pine Barrens are 45 minutes south and Randy knows a path most people have never walked.",
+  "BigTheSqua's been watching the east tree line every night this week. I don't ask anymore.",
+  "There's a scene with Eleanor and a mason jar of sweet tea that I keep thinking about.",
 ];
 
 let northTipTimer = null;
@@ -183,10 +188,10 @@ export const render = (state) => {
         <div class="wel-body">
           <div class="wel-label">North · From the Loft</div>
           <div class="wel-msg">
-            Hey — welcome to the farm. The door's always open.
-            Ken's tinkering, Marguerite's cooking, Randy's underground,
-            Salem's creating, Eleanor's watching everything.
-            Pick a room and let's make something worth watching.
+            The farm's all here. Ken's in the workshop, Marguerite's got something
+            on the stove, Randy's underground, Salem's creating, Eleanor's watching
+            everything from the porch. I've been up here thinking about the next shot.
+            Pick a room — let's make something worth watching.
           </div>
         </div>
       </div>
@@ -232,6 +237,9 @@ export const render = (state) => {
       @keyframes moonPulse {
         0%,100% { box-shadow:0 0 20px rgba(249,168,37,.4); }
         50%      { box-shadow:0 0 44px rgba(249,168,37,.75); } }
+      @keyframes moonPulseFull {
+        0%,100% { box-shadow:0 0 60px rgba(249,168,37,.9),0 0 110px rgba(249,168,37,.35); }
+        50%      { box-shadow:0 0 90px rgba(249,168,37,1), 0 0 160px rgba(249,168,37,.55); } }
 
       /* ── RAIN / SNOW ────────────────────────────────────────── */
       .rain-drop { position:fixed; top:-20px; width:2px; border-radius:2px;
@@ -264,7 +272,9 @@ export const render = (state) => {
       .barn-scene { position:relative; width:100%; max-width:700px;
                      margin:0 auto; padding-top:16px; }
       .barn-img    { width:100%; border-radius:18px 18px 0 0; display:block;
-                     object-fit:cover; max-height:340px; }
+                     object-fit:cover; max-height:340px;
+                     transition:opacity .8s ease; animation:barnFade .9s ease; }
+      @keyframes barnFade { from{opacity:0} to{opacity:1} }
       .barn-tint   { position:absolute; top:16px; left:0; width:100%; height:calc(100% - 16px);
                      border-radius:18px 18px 0 0; pointer-events:none; opacity:0.22; }
 
@@ -486,8 +496,14 @@ const moonPhoto = (moon) => {
   };
   return `/images/moon/${map[moon.name] ?? 'moon-full'}.jpg`;
 };
-const moonHTML = (moon) =>
-  `<img class="moon-photo" src="${moonPhoto(moon)}" alt="${moon.name}" title="${moon.name}"/>`;
+const moonHTML = (moon) => {
+  const isFull = moon.name === 'Full Moon';
+  const glowStyle = isFull
+    ? 'box-shadow:0 0 60px rgba(249,168,37,0.95),0 0 120px rgba(249,168,37,0.4);animation:moonPulseFull 3s ease-in-out infinite;'
+    : '';
+  return `<img class="moon-photo" src="${moonPhoto(moon)}" alt="${moon.name}" title="${moon.name}" style="${glowStyle}"/>
+    ${isFull ? `<div style="font-size:.58em;font-weight:900;color:#fbbf24;letter-spacing:2px;text-transform:uppercase;text-align:center;margin-top:6px;animation:eyePulse 2s ease-in-out infinite;">◉ FULL MOON TONIGHT</div>` : ''}`;
+};
 
 const rainHTML = () => {
   let drops = '';

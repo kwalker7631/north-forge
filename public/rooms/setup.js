@@ -39,19 +39,35 @@ export const render = (state) => `
         Powers all of North's prompt generation and call sheet output.
         Get your key at <span onclick="window.open('https://console.anthropic.com','_blank')" style="color:#38bdf8;cursor:pointer;text-decoration:underline;">console.anthropic.com ↗</span>
       </div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-        <input type="password"
-               id="anthropic-key-input"
-               class="setup-input"
-               placeholder="${state.keys.anthropic ? '••••••••••••••••••••' : 'sk-ant-...'}"
-               value="${state.keys.anthropic || ''}"
-               style="flex:1;min-width:200px;"/>
-        <button class="setup-btn" onclick="saveAnthropicKey()">Save Key</button>
-      </div>
       ${state.keys.anthropic ? `
-        <div style="margin-top:10px;font-size:0.68em;color:#22c55e;font-weight:900;">
-          ✓ KEY SAVED · NORTH ONLINE
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+          <div style="flex:1;background:rgba(15,23,42,0.95);border:2px solid #1e4d2b;border-radius:12px;
+                      padding:11px 16px;font-family:monospace;font-size:0.82em;color:#22c55e;letter-spacing:1px;">
+            ✓ ${state.keys.anthropic.slice(0,14)}••••••••••••${state.keys.anthropic.slice(-4)}
+          </div>
+          <button class="setup-btn" style="background:rgba(15,23,42,0.8);border:2px solid #334155;color:#cbd5e1;"
+                  onclick="document.getElementById('key-replace-form').style.display='flex';this.style.display='none';">
+            🔄 Replace
+          </button>
+          <button class="setup-btn" id="test-key-btn" onclick="testAnthropicKey()">✓ Test</button>
+        </div>
+        <div id="key-replace-form" style="display:none;gap:10px;align-items:center;flex-wrap:wrap;">
+          <input type="password" id="anthropic-key-input" class="setup-input"
+                 placeholder="Paste new key — sk-ant-..."
+                 style="flex:1;min-width:200px;"/>
+          <button class="setup-btn" onclick="saveAnthropicKey()">Save</button>
+          <button class="setup-btn" style="background:rgba(15,23,42,0.8);border:2px solid #334155;color:#64748b;"
+                  onclick="document.getElementById('key-replace-form').style.display='none';
+                           document.querySelector('[onclick*=key-replace-form]').style.display='';">
+            Cancel
+          </button>
         </div>` : `
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <input type="password" id="anthropic-key-input" class="setup-input"
+                 placeholder="Paste your key — sk-ant-..."
+                 style="flex:1;min-width:200px;"/>
+          <button class="setup-btn" onclick="saveAnthropicKey()">Save Key</button>
+        </div>
         <div style="margin-top:10px;font-size:0.68em;color:#ef4444;font-weight:900;">
           ✗ NO KEY · North cannot generate prompts
         </div>`}
@@ -312,6 +328,36 @@ window.saveAnthropicKey = () => {
   if (!val) { window.showToast('Paste your key first'); return; }
   window.saveKey('anthropic', val);
   window.showToast('✓ Anthropic key saved — North is online!');
+  window.goTo('setup');
+};
+
+window.testAnthropicKey = async () => {
+  const btn = document.getElementById('test-key-btn');
+  if (!btn) return;
+  btn.textContent = '⟳ Testing…';
+  btn.disabled = true;
+  try {
+    const result = await window.callNorthDirect([{ role:'user', content:'Reply with exactly: ONLINE' }]);
+    if (result && result.toUpperCase().includes('ONLINE')) {
+      btn.textContent = '✅ Connected';
+      btn.style.background = 'linear-gradient(135deg,#065f46,#059669)';
+      window.showToast('✓ Anthropic key is working!');
+    } else {
+      btn.textContent = '⚠ Check key';
+      btn.style.background = 'linear-gradient(135deg,#92400e,#d97706)';
+      window.showToast('Key responded but unexpected reply');
+    }
+  } catch {
+    btn.textContent = '✗ Failed';
+    btn.style.background = 'linear-gradient(135deg,#7f1d1d,#ef4444)';
+    window.showToast('✗ Key test failed — check your key');
+  } finally {
+    btn.disabled = false;
+    setTimeout(() => {
+      btn.textContent = '✓ Test';
+      btn.style.background = '';
+    }, 4000);
+  }
 };
 
 window.saveGeminiKey = () => {
