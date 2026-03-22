@@ -13,7 +13,7 @@ const CAST_DB = [
     photo:   null,
     bio:     'Founder of Pine Barron Farms. Builds everything, fixes everything, films everything. The mind behind North Forge.',
     vibe:    'Calm under pressure. Creative tinkerer. Sees the shot before the camera does.',
-    props:   ['Tool belt', 'Work boots', 'Camera rig', 'NJ Nets cap', 'Old Ford truck'],
+    props:   ['Tool belt', 'Work boots', 'Camera rig', 'NJ Nets cap', 'Old Ford truck', 'Helicopter'],
     looks:   'Medium build, weathered hands, always has a camera or a wrench nearby.',
     voice:   'Direct, warm, measured. Doesn\'t waste words.',
   },
@@ -370,6 +370,14 @@ const charHTML = () => {
               onclick="forgeScene('WEIRD NJ MOMENT — ${c.name} (${c.soraId}) encounters something unexplained in the Pine Barrens. Lean into their personality: ${c.vibe}. 9:16 SORA format.')">
               👻 Weird NJ Moment
             </button>
+            <button class="forge-btn" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8);margin-top:4px;"
+              onclick="window.castSoraSheet('${c.id}')">
+              🪪 Build Sora Character Sheet
+            </button>
+            <button class="forge-btn" style="background:linear-gradient(135deg,#be185d,#f43f5e);margin-top:4px;"
+              onclick="window.castChemistry('${c.id}')">
+              ⚡ Chemistry Scene
+            </button>
           </div>
         </div>
       </div>
@@ -430,6 +438,52 @@ window.castCopySora = (soraId, event) => {
   navigator.clipboard.writeText(soraId)
     .then(() => window.showToast(`✓ ${soraId} copied!`))
     .catch(() => window.showToast('Copy failed'));
+};
+
+window.castSoraSheet = (id) => {
+  const c = CAST.find(x => x.id === id);
+  if (!c) return;
+  const prompt = `BUILD SORA 2 CHARACTER CONSISTENCY SHEET for ${c.name}
+
+Sora ID: ${c.soraId}
+Role: ${c.role}
+Looks: ${c.looks}
+Voice / Energy: ${c.voice} · ${c.vibe}
+Props: ${c.props.join(', ')}
+
+Generate a structured reference I can paste into Sora's character field:
+1. APPEARANCE ANCHOR — 2-sentence physical description Sora should lock to every time
+2. SIGNATURE PROPS — which 1-2 props must appear in every shot
+3. MOVEMENT PROFILE — how this character moves, walks, gestures
+4. EXAMPLE PROMPTS (3) — ready-to-use Sora 2 prompts, each grounded with the Sora ID and at least one prop
+5. AVOID LIST — what Sora tends to hallucinate for this character that breaks consistency
+
+Keep it tight. This is a production reference card.`;
+  window.goTo('chat');
+  setTimeout(() => window.send(prompt), 120);
+};
+
+window.castChemistry = (id) => {
+  const c = CAST.find(x => x.id === id);
+  if (!c) return;
+  const others = CAST.filter(x => x.id !== id);
+  const partner = others[Math.floor(Math.random() * others.length)];
+  const prompt =
+`CHEMISTRY SCENE — ${c.name} + ${partner.name} · Pine Barron Farms
+
+${c.name} (${c.soraId}) · ${c.role} · Props: ${c.props.slice(0,3).join(', ')}
+${partner.name} (${partner.soraId}) · ${partner.role} · Props: ${partner.props.slice(0,3).join(', ')}
+
+Write a scene that puts these two characters together and lets their dynamic do the work. Don't explain their relationship — show it. One of them does something, the other reacts. That reaction IS the scene.
+
+Give me:
+- HOOK (the moment that makes you stop scrolling)
+- SCENE (2-3 sentences, both Sora IDs embedded, at least one prop each)
+- CAMERA angle
+- CLEAN PROMPT (paste-ready Sora 2)
+- One line: why THIS pairing works on camera`;
+  window.goTo('chat');
+  setTimeout(() => window.send(prompt), 120);
 };
 
 export const mount = () => {};

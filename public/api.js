@@ -94,6 +94,22 @@ const callGemini = async (messages, apiKey, systemPrompt) => {
   }
 };
 
+// ── CAST + PROPS CONTEXT (injected into every North call) ─────────────────────
+const CAST_PROPS_CONTEXT = `
+
+CAST PROPS REFERENCE — always pull from this when building scenes:
+- Ken Walker (@kennethwalker479): tool belt, camera rig, NJ Nets cap, Old Ford truck, helicopter
+- Marguerite (@prprincess138): apron, cast iron skillet, garden gloves, mason jars, rocking chair
+- Randy "Sarge" (@geodudenj): camo helmet, headlamp, rock hammer, tactical vest, geode bag, racing goggles
+- Salem (@kennethwa.majorbilli): pearl necklace, black notebook, camera, tarot deck
+- Skully (@kennethwa.shadowblaz): black hoodie, night vision monocle, laptop, walkie talkie
+- Tank (@kennethwa.bronzedogg): bandana, work gloves, wheelbarrow, feed bucket [FARM DOG]
+- BigTheSqua (@kennethwa.bigthesqua): field journal, binoculars, trail camera, thermos
+- Grand Ma Eleanor (@grandma.eleanor): wheelchair, red blouse, glasses, sweet tea, farm photo albums
+- Luna (@kennethwa.luna): gold bell collar, LUNA name sign, tiny horns [PYGMY GOAT — always scheming]
+Farm vehicles: helicopter (Ken's), red Farmall tractor, Go-Kart, Old Ford truck.
+When a character appears in a scene, ground them with at least one of their props.`;
+
 // ── CALL NORTH (main entry point) ─────────────────────────────────────────────
 export const callNorth = async (messages, keys = {}, weather = null, profile = null) => {
   // Inject live weather context into system prompt
@@ -110,7 +126,7 @@ export const callNorth = async (messages, keys = {}, weather = null, profile = n
       `When they want to appear in scenes, use their Sora IDs and match their appearance.`
     : '';
 
-  const systemPrompt = NORTH_SYSTEM + wxContext + profileContext;
+  const systemPrompt = NORTH_SYSTEM + CAST_PROPS_CONTEXT + wxContext + profileContext;
 
   const reply = await callAnthropic(messages, keys.anthropic, systemPrompt);
   if (reply.text) return { ok: true, ...reply };

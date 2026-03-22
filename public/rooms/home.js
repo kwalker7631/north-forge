@@ -5,10 +5,58 @@ import { ROOMS }           from '../data.js';
 import { NORTH_VERSION }   from '../north.js';
 import { fetchForecast }   from '../api.js';
 
-// ── CHARACTER CUTOUTS (Wren's artwork) ───────────────────────────────────────
-const LUNA_IMG    = "/images/characters/Luna.png";
-const ELEANOR_IMG = "/images/characters/Grand-Ma%20Eleanor.png";
-const SALEM_IMG   = "/images/characters/Salem.png";
+// ── CHARACTER CUTOUTS — only the 3 characters with actual photos ───────────────
+const CUTOUT_CHARS = [
+  { id:'luna',    name:'Luna',              photo:'/images/characters/Luna.png',              anim:'hop',   pos:'left:4%;bottom:6%',   size:'clamp(40px,5.8vw,79px)'  },
+  { id:'eleanor', name:'Grand Ma Eleanor',  photo:'/images/characters/Grand-Ma%20Eleanor.png',anim:'still', pos:'right:19%;bottom:5%'  },
+  { id:'salem',   name:'Salem',             photo:'/images/characters/Salem.png',             anim:'float', pos:'right:2%;bottom:4%'   },
+];
+
+const ANIM_MAP = {
+  hop:   'lunaHop 4s ease-in-out infinite',
+  float: 'salemFloat 5s ease-in-out infinite',
+  still: 'none',
+};
+
+const cutoutHTML = (c) => `
+  <div class="cutout" style="${c.pos};cursor:pointer;" onclick="goTo('cast')" title="${c.name}">
+    <img src="${c.photo}" alt="${c.name}"
+         style="width:${c.size||'clamp(55px,8vw,110px)'};height:auto;display:block;
+                image-rendering:crisp-edges;
+                filter:drop-shadow(3px 8px 14px rgba(0,0,0,0.85));
+                animation:${ANIM_MAP[c.anim]};"/>
+  </div>`;
+
+// ── TODAY'S SHOT CALL ─────────────────────────────────────────────────────────
+const SHOT_CALLS = [
+  { t:[5,8],   icon:'🌅', plat:'Sora 2',   shot:"Ken Walker (@kennethwalker479) steps out of the Big Red Barn into early golden light. Tool belt on, coffee in hand. The farm breathes awake behind him. 9:16 Sora 2." },
+  { t:[8,11],  icon:'☀️', plat:'Sora 2',   shot:"Randy \"Sarge\" (@geodudenj) loads gear into the truck outside the barn. Camo helmet, geode bag over shoulder, headlamp in hand. Morning prep before the caves. 9:16 Sora 2." },
+  { t:[11,14], icon:'☀️', plat:'Kling AI', shot:"Marguerite (@prprincess138) working the farm garden mid-morning. Garden gloves, cast iron skillet on the porch behind her. Real hands doing real work. 9:16 Kling AI." },
+  { t:[14,17], icon:'🌤️', plat:'Sora 2',   shot:"Salem (@kennethwa.majorbilli) in the barn loft, black notebook open, pearl necklace catching diffused afternoon light. The creative at work. 9:16 Sora 2." },
+  { t:[17,20], icon:'🌇', plat:'Sora 2',   shot:"Golden hour over the back field. Luna (@kennethwa.luna) squeezes under a fence gap, gold bell collar catching the last sun. Ken Walker (@kennethwalker479) spots her from 20 feet back. 9:16 Sora 2." },
+  { t:[20,24], icon:'🌙', plat:'Kling AI', shot:"Skully (@kennethwa.shadowblaz) at the edge of the Pine Barrens forest, night vision monocle raised. Something moves in the tree line. Trail cam catches it. 9:16 Kling AI." },
+  { t:[0,5],   icon:'🌌', plat:'Grok Aurora', shot:"The Big Red Barn under a full sky. Stars over Pine Barron Farms, Piscataway NJ. BigTheSqua (@kennethwa.bigthesqua) watching the back field with binoculars. Trail camera nearby. 9:16 Aurora." },
+];
+let _activeShotIdx = 0;
+const shotCallCard = (state) => {
+  const h = new Date().getHours();
+  const wx = (state.weather?.condition || '').toLowerCase();
+  let idx = SHOT_CALLS.findIndex(s => h >= s.t[0] && h < s.t[1]);
+  if (idx === -1) idx = 6;
+  if (wx.includes('rain')) idx = 3; // rain → indoor/barn shot
+  _activeShotIdx = idx;
+  const s = SHOT_CALLS[idx];
+  return `
+    <div class="shot-card">
+      <div class="shot-card-header">
+        <span class="shot-card-icon">${s.icon}</span>
+        <span class="shot-card-label">NORTH'S SHOT CALL</span>
+        <span class="shot-card-plat">${s.plat}</span>
+      </div>
+      <div class="shot-card-text">${s.shot}</div>
+      <button class="shot-card-btn" onclick="homeForgeShot()">→ Forge This Shot</button>
+    </div>`;
+};
 
 // ── NORTH PEEK MESSAGES ──────────────────────────────────────────────────────
 const NORTH_TIPS = [
@@ -97,17 +145,8 @@ export const render = (state) => {
         <img class="barn-img" src="${barnPhoto(wx)}" alt="Big Red Barn"/>
         ${seasonalTint() ? `<div class="barn-tint" style="background:${seasonalTint()}"></div>` : ''}
 
-        <!-- WREN'S CHARACTER CUTOUTS -->
-        <div class="cutout luna-cutout" title="Luna the Goat">
-          <img src="${LUNA_IMG}" alt="Luna"/>
-          <div class="cutout-glow luna-glow"></div>
-        </div>
-        <div class="cutout eleanor-cutout" title="Grand Ma Eleanor" onclick="goTo('cast')">
-          <img src="${ELEANOR_IMG}" alt="Grand Ma Eleanor"/>
-        </div>
-        <div class="cutout salem-cutout" title="Salem" onclick="goTo('cast')">
-          <img src="${SALEM_IMG}" alt="Salem"/>
-        </div>
+        <!-- CHARACTER CUTOUTS — Luna, Eleanor, Salem -->
+        ${CUTOUT_CHARS.map(c => cutoutHTML(c)).join('')}
       </div>
 
       <!-- FARM ALMANAC STRIP -->
@@ -125,6 +164,9 @@ export const render = (state) => {
           : `<span class="alm signin-pill" onclick="handleSignIn()">🔐 Sign In</span>`}
         ${!hasKey ? `<span class="alm warn-pill" onclick="goTo('setup')">⚠ Add API Key</span>` : ''}
       </div>
+
+      <!-- TODAY'S SHOT CALL -->
+      ${shotCallCard(state)}
 
       <!-- FILMING ALMANAC — 7-DAY FORECAST -->
       <div id="forecast-strip" class="fc-strip"></div>
@@ -227,29 +269,35 @@ export const render = (state) => {
                      border-radius:18px 18px 0 0; pointer-events:none; opacity:0.22; }
 
       /* ── CUTOUTS ────────────────────────────────────────────── */
-      .cutout { position:absolute; bottom:8%; z-index:10; }
-      .cutout img { display:block; height:auto; image-rendering:crisp-edges;
-                     filter:drop-shadow(3px 6px 12px rgba(0,0,0,0.7)); }
+      .cutout { position:absolute; z-index:10; transition:transform .25s; }
+      .cutout:hover { transform:scale(1.08) translateY(-3px); }
 
-      .luna-cutout { left:4%; bottom:6%; }
-      .luna-cutout img { width:clamp(70px,12vw,140px);
-                          animation:lunaHop 4s ease-in-out infinite; }
       @keyframes lunaHop {
         0%,100% { transform:translateY(0) rotate(-2deg); }
-        30%     { transform:translateY(-10px) rotate(2deg); }
-        60%     { transform:translateY(-4px) rotate(-1deg); } }
+        30%     { transform:translateY(-8px) rotate(2deg); }
+        60%     { transform:translateY(-3px) rotate(-1deg); } }
 
-      .eleanor-cutout { right:2%; bottom:4%; cursor:pointer; }
-      .eleanor-cutout img { width:clamp(60px,10vw,120px);
-                             transition:transform .3s; }
-      .eleanor-cutout:hover img { transform:scale(1.06) translateY(-4px); }
-
-      .salem-cutout { right:18%; bottom:5%; cursor:pointer; }
-      .salem-cutout img { width:clamp(55px,9vw,110px);
-                           animation:salemFloat 5s ease-in-out infinite; }
       @keyframes salemFloat {
-        0%,100% { transform:translateY(0); filter:drop-shadow(3px 6px 12px rgba(0,0,0,0.7)); }
-        50%     { transform:translateY(-7px); filter:drop-shadow(3px 14px 18px rgba(168,85,247,0.5)); } }
+        0%,100% { transform:translateY(0); }
+        50%     { transform:translateY(-6px); } }
+
+
+      /* ── SHOT CALL CARD ─────────────────────────────────────── */
+      .shot-card { margin:12px 22px 4px; background:rgba(2,6,23,0.95);
+                   border:2px solid #38bdf844; border-radius:16px; padding:16px 20px; }
+      .shot-card-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+      .shot-card-icon   { font-size:1.4em; }
+      .shot-card-label  { font-size:.56em; font-weight:900; color:#38bdf8;
+                          letter-spacing:2px; text-transform:uppercase; flex:1; }
+      .shot-card-plat   { font-size:.58em; font-weight:900; color:#64748b;
+                          background:rgba(15,23,42,.9); border:1px solid #1e293b;
+                          border-radius:8px; padding:3px 10px; }
+      .shot-card-text   { font-size:.8em; color:#cbd5e1; line-height:1.65; margin-bottom:14px; }
+      .shot-card-btn    { background:linear-gradient(135deg,#0284c7,#0ea5e9); color:#fff;
+                          border:none; border-radius:10px; padding:10px 20px; font-weight:900;
+                          font-size:.74em; cursor:pointer; font-family:Georgia,serif;
+                          transition:all .2s; box-shadow:0 4px 14px rgba(2,132,199,0.35); }
+      .shot-card-btn:hover { transform:scale(1.03); box-shadow:0 6px 20px rgba(2,132,199,0.5); }
 
       /* ── ALMANAC ────────────────────────────────────────────── */
       .almanac-strip { display:flex; gap:8px; flex-wrap:wrap; padding:14px 22px 10px;
@@ -387,6 +435,10 @@ export const mount = (state) => {
     document.getElementById('naughty-layer')?.appendChild(el);
     setTimeout(() => el.remove(), 5500);
   }, 28000);
+};
+
+window.homeForgeShot = () => {
+  window.forgeScene(SHOT_CALLS[_activeShotIdx].shot);
 };
 
 window.dismissFarmTip = () => {

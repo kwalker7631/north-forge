@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+functions/node_modules/
+
+# Environment variables — NEVER commit these
+.env
+functions/.env
+functions/.env.local
+*.env
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log

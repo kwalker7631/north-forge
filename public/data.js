@@ -38,11 +38,12 @@ export const SLOT_LOCATIONS = [
 ];
 
 export const SLOT_RIDES = [
-  { id:"tractor", icon:"🚜", label:"Red Farmall",  desc:"1960s steel barn beast"       },
-  { id:"f1",      icon:"🏎️", label:"Formula 1",   desc:"Sarge's greatest dream"       },
-  { id:"kart",    icon:"🏎️", label:"Go-Kart",     desc:"Dust trails through the pines"},
-  { id:"horse",   icon:"🐎", label:"On Horseback", desc:"Through the back meadow"      },
-  { id:"foot",    icon:"🥾", label:"On Foot",      desc:"Just walking the grounds"     },
+  { id:"tractor",    icon:"🚜", label:"Red Farmall",  desc:"1960s steel barn beast"           },
+  { id:"helicopter", icon:"🚁", label:"Helicopter",   desc:"Ken's bird, aerial farm view"     },
+  { id:"f1",         icon:"🏎️", label:"Formula 1",   desc:"Sarge's greatest dream"           },
+  { id:"kart",       icon:"🏎️", label:"Go-Kart",     desc:"Dust trails through the pines"    },
+  { id:"horse",      icon:"🐎", label:"On Horseback", desc:"Through the back meadow"          },
+  { id:"foot",       icon:"🥾", label:"On Foot",      desc:"Just walking the grounds"         },
 ];
 
 export const SLOT_AUDIO = [

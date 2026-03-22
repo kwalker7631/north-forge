@@ -21,13 +21,14 @@ const SCENES = {
 
 // Cast pool for random nearby members (excluding Randy himself)
 const CAST_POOL = [
-  { name:'Ken Walker',       soraId:'@kennethwalker479',     icon:'👨‍🌾' },
-  { name:'Marguerite',       soraId:'@prprincess138',        icon:'👩🏽‍🌾' },
-  { name:'Salem',            soraId:'@kennethwa.majorbilli', icon:'✨'   },
-  { name:'Skully',           soraId:'@kennethwa.shadowblaz', icon:'🌑'   },
-  { name:'BigTheSqua',       soraId:'@kennethwa.bigthesqua', icon:'🦍'   },
-  { name:'Grand Ma Eleanor', soraId:'@grandma.eleanor',      icon:'👵'   },
-  { name:'Luna',             soraId:'@kennethwa.luna',        icon:'🐐'   },
+  { name:'Ken Walker',       soraId:'@kennethwalker479',     icon:'👨‍🌾', props:'tool belt, camera rig' },
+  { name:'Marguerite',       soraId:'@prprincess138',        icon:'👩🏽‍🌾', props:'apron, cast iron skillet' },
+  { name:'Salem',            soraId:'@kennethwa.majorbilli', icon:'✨',   props:'pearl necklace, black notebook' },
+  { name:'Skully',           soraId:'@kennethwa.shadowblaz', icon:'🌑',   props:'black hoodie, walkie talkie' },
+  { name:'Tank',             soraId:'@kennethwa.bronzedogg', icon:'🐕',   props:'bandana, work gloves [farm dog]' },
+  { name:'BigTheSqua',       soraId:'@kennethwa.bigthesqua', icon:'🦍',   props:'field journal, binoculars' },
+  { name:'Grand Ma Eleanor', soraId:'@grandma.eleanor',      icon:'👵',   props:'wheelchair, sweet tea' },
+  { name:'Luna',             soraId:'@kennethwa.luna',        icon:'🐐',   props:'gold bell collar, LUNA name sign [pygmy goat]' },
 ];
 
 const pickNearby = () => {
@@ -184,11 +185,12 @@ window.idReact = async () => {
 
   const idiom     = IDIOMS[idiomIdx];
   const s         = SCENES[scene];
-  const nearbyStr = nearby.map(c => `${c.name} (${c.soraId})`).join(' and ');
+  const nearbyStr = nearby.map(c => `${c.name} (${c.soraId}) — ${c.props}`).join(' and ');
   const text = await window.callNorthDirect([{
     role: 'user',
     content:
       `Randy "Sarge" (@geodudenj) — ex-military, NJ dirt track racer, cave hunter, Piscataway born — ` +
+      `camo helmet, headlamp, rock hammer, tactical vest — ` +
       `is at ${s.label} on Pine Barron Farms. ${nearbyStr} ${nearby.length > 1 ? 'are' : 'is'} nearby.\n\n` +
       `He just heard: "${idiom.text}" (— ${idiom.src})\n\n` +
       `Write his raw in-character reaction. 3 sentences max. First person. No labels. Pure Randy. ` +
@@ -212,16 +214,17 @@ window.idForgeScene = () => {
   if (!reaction) return;
   const idiom     = IDIOMS[idiomIdx];
   const s         = SCENES[scene];
-  const nearbyStr = nearby.map(c => `${c.name} (${c.soraId})`).join(', ');
+  const nearbyForge = nearby.map(c => `${c.name} (${c.soraId}) — ${c.props}`).join(', ');
 
   window.forgeScene(
     `SORA 2 · 9:16 · 20s max\n` +
     `LOCATION: ${s.label} — Pine Barron Farms, Piscataway NJ\n` +
     `CAMERA: ${s.cam}\n` +
-    `SUBJECT: Randy "Sarge" (@geodudenj)\n` +
-    `${nearby.length ? `ALSO PRESENT: ${nearbyStr}\n` : ''}` +
+    `SUBJECT: Randy "Sarge" (@geodudenj) — camo helmet, headlamp, rock hammer, tactical vest\n` +
+    `${nearby.length ? `ALSO PRESENT: ${nearbyForge}\n` : ''}` +
     `EMOTIONAL ANCHOR: Randy just said — "${reaction}"\n` +
     `TRIGGERED BY: Hearing the phrase — "${idiom.text}"\n\n` +
+    `Ground each character with at least one of their props. ` +
     `Build a tight cinematic call sheet. Lock to the emotional beat in Randy's reaction. ` +
     `First 1.5 seconds must earn the scroll-stop.`
   );

@@ -1,5 +1,9 @@
 // rooms/setup.js — API Keys, Google Sign-In, Preferences
 
+let _setupSheets  = [];   // cached for live filter
+let _setupQuery   = '';   // search text
+let _setupPlat    = '';   // platform filter: '' | 'sora' | 'kling' | 'veo' | 'aurora'
+
 export const render = (state) => `
   <div class="room-wrap">
 
@@ -122,12 +126,23 @@ export const render = (state) => `
       <div class="setup-card-title">🎬 Call Sheet History
         ${!state.user ? `<span style="color:#64748b;font-weight:400;font-size:0.78em;"> — sign in to enable</span>` : ''}
       </div>
-      <div id="sheet-history-body" style="font-size:0.72em;color:#64748b;min-height:40px;">
+      ${state.user ? `
+        <input type="text" class="setup-input sh-search" id="sh-search"
+          placeholder="🔍 Search by idea, character, location..."
+          oninput="setupFilterSheets()"
+          value="${_setupQuery}"
+          style="width:100%;margin-bottom:10px;box-sizing:border-box;font-size:0.82em;padding:10px 14px;">
+        <div class="sh-plat-row">
+          ${['','sora','kling','veo','aurora'].map(p => `
+            <button class="sh-plat-btn ${_setupPlat===p?'active':''}"
+                    onclick="setupSetPlat('${p}')">${p||'All'}</button>`).join('')}
+        </div>` : ''}
+      <div id="sheet-history-body" style="font-size:0.72em;color:#64748b;min-height:40px;margin-top:12px;">
         ${state.user ? 'Loading…' : 'Sign in with Google to view your call sheet history.'}
       </div>
       ${state.user ? `
         <button class="setup-btn" style="margin-top:14px;font-size:0.72em;padding:10px 18px;"
-                onclick="setupRefreshSheets()">↺ Refresh History</button>` : ''}
+                onclick="setupRefreshSheets()">↺ Refresh</button>` : ''}
     </div>
 
   </div>
@@ -154,6 +169,17 @@ export const render = (state) => `
     .sdot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
     .sdot.on  { background:#22c55e; box-shadow:0 0 8px #22c55e; }
     .sdot.off { background:#334155; }
+    .sh-plat-row { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:4px; }
+    .sh-plat-btn { background:rgba(15,23,42,0.9); border:1px solid #334155; border-radius:20px;
+                   padding:5px 14px; color:#64748b; font-size:.64em; font-weight:900;
+                   cursor:pointer; font-family:Georgia,serif; text-transform:uppercase;
+                   letter-spacing:.5px; transition:all .2s; }
+    .sh-plat-btn:hover  { border-color:#38bdf844; color:#cbd5e1; }
+    .sh-plat-btn.active { border-color:#38bdf8; background:rgba(56,189,248,.12); color:#38bdf8; }
+    .sh-reforge { background:linear-gradient(135deg,#065f46,#059669); color:#fff; border:none;
+                  border-radius:8px; padding:5px 12px; font-size:.62em; font-weight:900;
+                  cursor:pointer; font-family:Georgia,serif; flex-shrink:0; transition:all .2s; }
+    .sh-reforge:hover { transform:scale(1.04); }
     @media (max-width: 640px) {
       .setup-input { min-width: 0 !important; width: 100%; }
     }
@@ -212,7 +238,7 @@ const renderEventRows = (events) => {
 };
 
 const renderSheetRows = (sheets) => {
-  if (!sheets.length) return '<div style="color:#475569;">No call sheets saved yet. Forge a scene to start building your history.</div>';
+  if (!sheets.length) return '<div style="color:#475569;">No call sheets match. Try a different search or filter.</div>';
   const groups = {};
   sheets.forEach(s => {
     const d = s.savedAt ? new Date(s.savedAt).toLocaleDateString() : 'Unknown';
@@ -220,30 +246,58 @@ const renderSheetRows = (sheets) => {
   });
   return Object.entries(groups).map(([date, items]) => `
     <div style="margin-bottom:14px;">
-      <div style="font-size:0.66em;font-weight:900;color:#38bdf8;letter-spacing:1px;
+      <div style="font-size:.66em;font-weight:900;color:#38bdf8;letter-spacing:1px;
                   text-transform:uppercase;padding:6px 0 8px;border-bottom:1px solid #1e293b;
                   margin-bottom:8px;">${date}</div>
       ${items.map(s => {
-        const sc = s.score >= 8 ? '#22c55e' : s.score >= 5 ? '#d97706' : s.score ? '#ef4444' : '#475569';
-        const preview = (s.idea || s.clean || '').slice(0, 60);
+        const sc      = s.score >= 8 ? '#22c55e' : s.score >= 5 ? '#d97706' : s.score ? '#ef4444' : '#475569';
+        const preview = (s.idea || s.clean || '').slice(0, 65);
+        const idea    = (s.idea || s.clean || '').slice(0, 200);
         return `
-          <div style="padding:8px 0;border-bottom:1px solid #1e293b22;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-            ${s.score ? `<span style="color:${sc};font-weight:900;font-size:0.8em;flex-shrink:0;">🔥 ${s.score}/10</span>` : ''}
-            <span style="color:#94a3b8;font-size:0.78em;flex:1;">${preview}…</span>
-            <button onclick="navigator.clipboard.writeText(${JSON.stringify(s.clean || '').replace(/"/g,'&quot;')}).then(()=>window.showToast('✓ Copied!'))"
+          <div style="padding:8px 0;border-bottom:1px solid #1e293b22;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            ${s.score ? `<span style="color:${sc};font-weight:900;font-size:.78em;flex-shrink:0;">🔥 ${s.score}/10</span>` : ''}
+            <span style="color:#94a3b8;font-size:.76em;flex:1;min-width:0;">${preview}…</span>
+            <button class="sh-reforge"
+                    onclick="window.forgeScene(${JSON.stringify('REFORGE — fresh take on this scene idea:\n"' + idea + '"')})">
+              ↺ Reforge</button>
+            <button onclick="navigator.clipboard.writeText(${JSON.stringify(s.clean||'').replace(/"/g,'&quot;')}).then(()=>window.showToast('✓ Copied!'))"
                     style="background:#0284c7;color:#fff;border:none;border-radius:8px;
-                           padding:5px 12px;font-size:0.62em;font-weight:900;cursor:pointer;
+                           padding:5px 12px;font-size:.62em;font-weight:900;cursor:pointer;
                            font-family:Georgia,serif;flex-shrink:0;">📋 Copy</button>
           </div>`;
       }).join('')}
     </div>`).join('');
 };
 
+const _applyFilter = () => {
+  const el = document.getElementById('sheet-history-body');
+  if (!el) return;
+  let filtered = _setupSheets;
+  if (_setupQuery) {
+    const q = _setupQuery.toLowerCase();
+    filtered = filtered.filter(s => (s.idea || s.clean || '').toLowerCase().includes(q));
+  }
+  if (_setupPlat) {
+    filtered = filtered.filter(s => (s.idea || s.clean || '').toLowerCase().includes(_setupPlat));
+  }
+  el.innerHTML = renderSheetRows(filtered);
+};
+
 window.setupRefreshSheets = async () => {
   const el = document.getElementById('sheet-history-body');
   if (el) el.innerHTML = '<span style="color:#64748b;">Loading…</span>';
-  const sheets = await window.loadNorthPrompts?.(30) || [];
-  if (el) el.innerHTML = renderSheetRows(sheets);
+  _setupSheets = await window.loadNorthPrompts?.(50) || [];
+  _applyFilter();
+};
+
+window.setupFilterSheets = () => {
+  _setupQuery = document.getElementById('sh-search')?.value || '';
+  _applyFilter();
+};
+
+window.setupSetPlat = (p) => {
+  _setupPlat = p;
+  window.goTo('setup');
 };
 
 window.setupRefreshLog = async () => {
@@ -271,11 +325,11 @@ export const mount = async (state) => {
   if (state?.user && window.loadNorthEvents) {
     const [events, sheets] = await Promise.all([
       window.loadNorthEvents(30),
-      window.loadNorthPrompts?.(30) ?? Promise.resolve([]),
+      window.loadNorthPrompts?.(50) ?? Promise.resolve([]),
     ]);
     const el = document.getElementById('event-log-body');
     if (el) el.innerHTML = renderEventRows(events);
-    const sl = document.getElementById('sheet-history-body');
-    if (sl) sl.innerHTML = renderSheetRows(sheets);
+    _setupSheets = sheets;
+    _applyFilter();
   }
 };

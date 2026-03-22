@@ -213,21 +213,31 @@ window.slotsForge = () => {
   const twist  = REELS.twist[current.twist];
   const plat   = REELS.platform[current.platform];
 
-  const CAST_MAP = {
-    ken:'@kennethwalker479', randy:'@geodudenj', salem:'@kennethwa.majorbilli',
-    eleanor:'@grandma.eleanor', luna:'@kennethwa.luna', marguerite:'@prprincess138',
-    skully:'@kennethwa.shadowblaz', tank:'@kennethwa.bronzedogg', big:'@kennethwa.bigthesqua',
+  const CAST_DATA = {
+    ken:       { soraId:'@kennethwalker479',     props:'tool belt, camera rig, NJ Nets cap, Old Ford truck, helicopter' },
+    randy:     { soraId:'@geodudenj',            props:'camo helmet, headlamp, rock hammer, tactical vest, geode bag' },
+    salem:     { soraId:'@kennethwa.majorbilli', props:'pearl necklace, black notebook, tarot deck' },
+    eleanor:   { soraId:'@grandma.eleanor',      props:'wheelchair, red blouse, glasses, sweet tea' },
+    luna:      { soraId:'@kennethwa.luna',        props:'gold bell collar, LUNA name sign, tiny horns [pygmy goat]' },
+    marguerite:{ soraId:'@prprincess138',         props:'apron, cast iron skillet, garden gloves, mason jars' },
+    skully:    { soraId:'@kennethwa.shadowblaz',  props:'black hoodie, night vision monocle, walkie talkie' },
+    tank:      { soraId:'@kennethwa.bronzedogg',  props:'bandana, work gloves, wheelbarrow, feed bucket [farm dog]' },
+    big:       { soraId:'@kennethwa.bigthesqua',  props:'field journal, binoculars, trail camera, thermos' },
   };
 
-  const soraId = CAST_MAP[who.val] || '';
+  const charData = CAST_DATA[who.val] || { soraId:'', props:'' };
+  const soraId   = charData.soraId;
+  const charProps = charData.props;
 
   const prompt =
     `You are North, AI director of Pine Barron Farms. ` +
     `Generate a FULL PROFESSIONAL CALL SHEET for ${plat.label}.\n\n` +
     `STORY PREMISE: ${who.label} (${soraId}) ${action.val} at ${loc.val}. Twist: ${twist.val}.\n` +
+    `CHARACTER PROPS: ${charProps}\n` +
     `PLATFORM: ${plat.label}\n` +
     `FORMAT: 9:16 vertical\n\n` +
     `Use the character's Sora ID (${soraId}) in the scene. ` +
+    `Ground the scene with their props — specifically ${charProps.split(',')[0]}. ` +
     `Make it specific to Pine Barron Farms, Piscataway NJ. ` +
     `Output the full call sheet with HOOK, SCENE, CAMERA, AUDIO, DIRECTOR'S NOTE, ` +
     `and a CLEAN PROMPT section at the end with the paste-ready text.`;

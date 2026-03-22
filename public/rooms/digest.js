@@ -4,9 +4,11 @@
 
 const esc = (s) => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-let digestTab  = 'sheets';  // 'sheets' | 'notes'
-let _state     = null;
-const _pickCache = {};      // weekKey → North's one-liner
+let digestTab    = 'sheets';  // 'sheets' | 'notes'
+let _state       = null;
+let _allSheets   = [];        // full unfiltered list — used by search
+let _searchQuery = '';        // current filter text
+const _pickCache = {};        // weekKey → North's one-liner
 
 // ── WEEK HELPERS ──────────────────────────────────────────────────────────────
 const getWeekKey = (date) => {
@@ -151,6 +153,10 @@ export const render = (state) => {
         </div>
         <button onclick="handleSignIn()" class="dg-cta">Sign in with Google</button>
       </div>` : `
+      <input type="text" id="dg-search" class="dg-search"
+        placeholder="🔍 Search scenes, characters, locations..."
+        oninput="digestSearch(this.value)"
+        value="${esc(_searchQuery)}">
       <div id="digest-body" style="color:#64748b;font-size:0.82em;">Loading…</div>
       <button class="dg-refresh" onclick="digestRefresh()">↺ Refresh</button>`}
 
@@ -232,6 +238,11 @@ export const render = (state) => {
                    padding:3px 10px; color:#94a3b8; cursor:pointer; font-size:.6em;
                    font-weight:900; font-family:Georgia,serif; transition:all .2s; }
     .dg-export:hover { border-color:#22c55e; color:#22c55e; }
+    .dg-search { width:100%; background:rgba(15,23,42,0.95); border:2px solid #334155;
+                 border-radius:12px; padding:11px 16px; color:#fff; font-family:Georgia,serif;
+                 font-size:0.82em; outline:none; transition:border-color .3s; margin-bottom:12px;
+                 box-sizing:border-box; }
+    .dg-search:focus { border-color:#38bdf8; }
   </style>
 `;
 };
@@ -250,6 +261,7 @@ const sheetsLoad = async () => {
   if (!el) return;
 
   const sheets = await window.loadNorthPrompts?.(50) ?? [];
+  _allSheets = sheets;
   _weekData = {};
   sheets.forEach(s => {
     const key = getWeekKey(s.savedAt || new Date().toISOString());
@@ -257,7 +269,10 @@ const sheetsLoad = async () => {
     _weekData[key].push(s);
   });
 
-  el.innerHTML = renderWeeks(sheets);
+  const filtered = _searchQuery
+    ? sheets.filter(s => (s.idea || s.clean || '').toLowerCase().includes(_searchQuery))
+    : sheets;
+  el.innerHTML = renderWeeks(filtered);
   fetchPicks(sheets);
 };
 
@@ -316,8 +331,19 @@ window.digestSetTab = (tab) => {
 
 window.digestRefresh = () => {
   Object.keys(_pickCache).forEach(k => delete _pickCache[k]);
+  _searchQuery = '';
   if (digestTab === 'sheets') sheetsLoad();
   else                         notesLoad();
+};
+
+window.digestSearch = (q) => {
+  _searchQuery = (q || '').toLowerCase().trim();
+  const el = document.getElementById('digest-body');
+  if (!el || !_allSheets.length) return;
+  const filtered = _searchQuery
+    ? _allSheets.filter(s => (s.idea || s.clean || '').toLowerCase().includes(_searchQuery))
+    : _allSheets;
+  el.innerHTML = renderWeeks(filtered);
 };
 
 window.digestExpand = (btn) => {
@@ -361,8 +387,11 @@ window.digestRemix = (idx, weekKey) => {
   if (!s) return;
   const idea = s.idea || s.clean?.slice(0, 120) || '';
   if (!idea) { window.showToast('No idea text to remix'); return; }
+  const parent = idea.slice(0, 60).replace(/"/g, "'");
   window.showToast('↺ Remixing with North...');
-  window.forgeScene(`REMIX THIS SCENE — give me a completely fresh take on this idea, new angle, new energy:\n"${idea}"`);
+  window.forgeScene(
+    `REMIX — Fresh take, new angle, new energy. Start your call sheet header with the line "← Remixed from: ${parent}"\n\nOriginal idea to remix:\n"${idea}"`
+  );
 };
 
 window.digestExportWeek = (weekKey) => {
