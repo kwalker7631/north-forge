@@ -236,6 +236,23 @@
     }
     #fs-toggle-icon { font-size: 1.15em; line-height: 1; }
 
+    /* ── THEATER MODE (auto-hide chrome in fullscreen) ──────────── */
+    #topbar, #bottomnav {
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    body.theater #topbar {
+      opacity: 0; transform: translateY(-110%); pointer-events: none;
+    }
+    body.theater #bottomnav {
+      opacity: 0; transform: translateY(110%); pointer-events: none;
+    }
+    body.theater.bars-peek #topbar,
+    body.theater.bars-peek #bottomnav {
+      opacity: 1; transform: translateY(0); pointer-events: auto;
+    }
+    body.theater { cursor: none; }
+    body.theater.bars-peek { cursor: default; }
+
     /* ── MOBILE ≤640px ──────────────────────────────────────────── */
     @media (max-width: 640px) {
       #topbar         { padding: 8px 12px; gap: 8px; }
@@ -358,6 +375,18 @@
     }
   }
 
+  let _theaterTimer = null;
+
+  function _showBars() {
+    document.body.classList.add('bars-peek');
+    clearTimeout(_theaterTimer);
+    _theaterTimer = setTimeout(_hideBars, 2500);
+  }
+
+  function _hideBars() {
+    document.body.classList.remove('bars-peek');
+  }
+
   function _updateFsBtn() {
     const btn   = document.getElementById('fs-toggle-btn');
     const icon  = document.getElementById('fs-toggle-icon');
@@ -367,19 +396,36 @@
       icon.textContent  = '✕';
       label.textContent = 'Exit Full';
       btn.classList.add('active');
+      document.body.classList.add('theater');
+      _showBars(); // briefly show bars so user knows how to exit
     } else {
       icon.textContent  = '⛶';
       label.textContent = 'Full Screen';
       btn.classList.remove('active');
+      document.body.classList.remove('theater', 'bars-peek');
+      clearTimeout(_theaterTimer);
     }
   }
 
   document.addEventListener('fullscreenchange', _updateFsBtn);
 
-  // F11 keeps the button in sync when user uses keyboard shortcut
+  // F11 keeps the button in sync
   document.addEventListener('keydown', (e) => {
     if (e.key === 'F11') setTimeout(_updateFsBtn, 100);
   });
+
+  // Mouse near top or bottom edge reveals the bars
+  document.addEventListener('mousemove', (e) => {
+    if (!document.body.classList.contains('theater')) return;
+    if (e.clientY < 70 || e.clientY > window.innerHeight - 70) _showBars();
+  });
+
+  // Touch near top or bottom edge reveals the bars (for tablets/elder care displays)
+  document.addEventListener('touchstart', (e) => {
+    if (!document.body.classList.contains('theater')) return;
+    const y = e.touches[0].clientY;
+    if (y < 80 || y > window.innerHeight - 80) _showBars();
+  }, { passive: true });
 </script>
 </body>
 </html>

@@ -23,7 +23,7 @@ export const state = {
   keys:     { anthropic:'', gemini:'' },
   msgs:     [{
     role:'assistant',
-    content: `🏚️ Hey — welcome to Pine Barron Farms.\n\nThe door's open. It always is.\n\nKen's probably tinkering with something. Marguerite has something on the stove. Randy's either underground looking for geodes or watching race footage. Salem's making something beautiful. Skully's asleep by the barn door. Luna's already plotting an escape.\n\nI'm North. I live up in the loft above the Big Red Barn. My whole job is helping this crew turn everyday farm life into stories worth watching.\n\nPick a room from the menu, or just tell me what's on your mind. 🌾`
+    content: `Pine Barron Farms. The door's always open.\n\nSomewhere out there Ken's working on something half-finished and completely intentional. Marguerite's holding the center like she always does. Randy's underground or watching race footage — probably both. Salem's in the middle of something that doesn't have a name yet. Skully's running perimeter. Luna's already three steps ahead of wherever she's supposed to be. BigThe's at the edge of the property, watching. Grand Ma Eleanor knows something she's not saying yet.\n\nI'm North. I've been here long enough that the barn knows my weight on the floor.\n\nMy job is turning this crew's real life into footage worth watching — Sora 2, Kling, VEO 3, Grok Aurora. Everything locked to real people, real places, real props. No generic content. Ever.\n\nPick a room, or just tell me what's on your mind. 🌾`
   }],
   loading:  false,
   weather:  null,
