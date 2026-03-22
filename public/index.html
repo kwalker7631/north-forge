@@ -209,6 +209,33 @@
     .chat-send{background:linear-gradient(135deg,#0284c7,#0369a1);border:none;border-radius:14px;width:58px;color:#fff;cursor:pointer;font-size:1.4em;transition:all .25s;}
     .chat-send:hover{transform:scale(1.06);}
 
+    .fs-toggle-btn {
+      display: flex; align-items: center; gap: 7px;
+      background: rgba(15,23,42,0.9);
+      border: 2px solid #334155;
+      border-radius: 10px;
+      color: #e2e8f0;
+      padding: 9px 16px;
+      cursor: pointer;
+      font-size: 0.78em;
+      font-weight: 900;
+      font-family: Georgia,serif;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .fs-toggle-btn:hover {
+      color: #fff;
+      border-color: #38bdf8;
+      background: rgba(56,189,248,0.1);
+    }
+    .fs-toggle-btn.active {
+      border-color: #22c55e;
+      background: rgba(34,197,94,0.12);
+      color: #86efac;
+      box-shadow: 0 0 12px rgba(34,197,94,0.25);
+    }
+    #fs-toggle-icon { font-size: 1.15em; line-height: 1; }
+
     /* ── MOBILE ≤640px ──────────────────────────────────────────── */
     @media (max-width: 640px) {
       #topbar         { padding: 8px 12px; gap: 8px; }
@@ -252,6 +279,10 @@
     </div>
     <div id="topbar-right">
       <button class="tbtn" onclick="changeScene()">🌅 Sky</button>
+      <button class="fs-toggle-btn" id="fs-toggle-btn" onclick="toggleFullscreen()" title="Toggle fullscreen (F11)">
+        <span id="fs-toggle-icon">⛶</span>
+        <span id="fs-toggle-label">Full Screen</span>
+      </button>
       <div class="fs-row">
         <button class="fsbtn" onclick="bumpFont(-1)">−</button>
         <div class="fs-val" id="fs-display">16px</div>
@@ -317,5 +348,38 @@
 </div>
 
 <script type="module" src="./app.js"></script>
+
+<script>
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+
+  function _updateFsBtn() {
+    const btn   = document.getElementById('fs-toggle-btn');
+    const icon  = document.getElementById('fs-toggle-icon');
+    const label = document.getElementById('fs-toggle-label');
+    if (!btn) return;
+    if (document.fullscreenElement) {
+      icon.textContent  = '✕';
+      label.textContent = 'Exit Full';
+      btn.classList.add('active');
+    } else {
+      icon.textContent  = '⛶';
+      label.textContent = 'Full Screen';
+      btn.classList.remove('active');
+    }
+  }
+
+  document.addEventListener('fullscreenchange', _updateFsBtn);
+
+  // F11 keeps the button in sync when user uses keyboard shortcut
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'F11') setTimeout(_updateFsBtn, 100);
+  });
+</script>
 </body>
 </html>
