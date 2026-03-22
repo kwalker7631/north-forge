@@ -80,17 +80,38 @@ export const render = (state) => `
         Optional backup if Anthropic is unavailable.
         Get your key at <span onclick="window.open('https://aistudio.google.com','_blank')" style="color:#38bdf8;cursor:pointer;text-decoration:underline;">aistudio.google.com ↗</span>
       </div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-        <input type="password"
-               id="gemini-key-input"
-               class="setup-input"
-               placeholder="${state.keys.gemini ? '••••••••••••••••••••' : 'AIza...'}"
-               value="${state.keys.gemini || ''}"
-               style="flex:1;min-width:200px;"/>
-        <button class="setup-btn" style="background:rgba(99,102,241,0.8);" onclick="saveGeminiKey()">Save Key</button>
-      </div>
       ${state.keys.gemini ? `
-        <div style="margin-top:10px;font-size:0.68em;color:#22c55e;font-weight:900;">✓ FALLBACK READY</div>` : ''}
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+          <div style="flex:1;background:rgba(15,23,42,0.95);border:2px solid #1e4d2b;border-radius:12px;
+                      padding:11px 16px;font-family:monospace;font-size:0.82em;color:#22c55e;letter-spacing:1px;">
+            ✓ ${state.keys.gemini.slice(0,10)}••••••••••••${state.keys.gemini.slice(-4)}
+          </div>
+          <button class="setup-btn" style="background:rgba(15,23,42,0.8);border:2px solid #334155;color:#cbd5e1;"
+                  onclick="document.getElementById('gemini-replace-form').style.display='flex';this.style.display='none';">
+            🔄 Replace
+          </button>
+          <button class="setup-btn" id="test-gemini-btn" style="background:rgba(99,102,241,0.8);" onclick="testGeminiKey()">✓ Test</button>
+        </div>
+        <div id="gemini-replace-form" style="display:none;gap:10px;align-items:center;flex-wrap:wrap;">
+          <input type="password" id="gemini-key-input" class="setup-input"
+                 placeholder="Paste new key — AIza..."
+                 style="flex:1;min-width:200px;"/>
+          <button class="setup-btn" style="background:rgba(99,102,241,0.8);" onclick="saveGeminiKey()">Save</button>
+          <button class="setup-btn" style="background:rgba(15,23,42,0.8);border:2px solid #334155;color:#64748b;"
+                  onclick="document.getElementById('gemini-replace-form').style.display='none';
+                           document.querySelector('[onclick*=gemini-replace-form]').style.display='';">
+            Cancel
+          </button>
+        </div>` : `
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <input type="password" id="gemini-key-input" class="setup-input"
+                 placeholder="Paste your key — AIza..."
+                 style="flex:1;min-width:200px;"/>
+          <button class="setup-btn" style="background:rgba(99,102,241,0.8);" onclick="saveGeminiKey()">Save Key</button>
+        </div>
+        <div style="margin-top:10px;font-size:0.68em;color:#64748b;font-weight:900;">
+          — Not configured · Anthropic is primary
+        </div>`}
     </div>
 
     <!-- STATUS -->
@@ -365,6 +386,44 @@ window.saveGeminiKey = () => {
   if (!val) { window.showToast('Paste your key first'); return; }
   window.saveKey('gemini', val);
   window.showToast('✓ Gemini key saved');
+  window.goTo('setup');
+};
+
+window.testGeminiKey = async () => {
+  const btn = document.getElementById('test-gemini-btn');
+  if (!btn) return;
+  btn.textContent = '⟳ Testing…';
+  btn.disabled = true;
+  try {
+    const key = window._state?.keys?.gemini;
+    if (!key) throw new Error('No key');
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ contents:[{ role:'user', parts:[{ text:'Reply with exactly: ONLINE' }] }] }),
+    });
+    const data = await res.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    if (text.toUpperCase().includes('ONLINE')) {
+      btn.textContent = '✅ Connected';
+      btn.style.background = 'linear-gradient(135deg,#065f46,#059669)';
+      window.showToast('✓ Gemini key is working!');
+    } else {
+      btn.textContent = '⚠ Check key';
+      btn.style.background = 'linear-gradient(135deg,#92400e,#d97706)';
+      window.showToast('Key responded but unexpected reply');
+    }
+  } catch {
+    btn.textContent = '✗ Failed';
+    btn.style.background = 'linear-gradient(135deg,#7f1d1d,#ef4444)';
+    window.showToast('✗ Gemini key test failed');
+  } finally {
+    btn.disabled = false;
+    setTimeout(() => {
+      btn.textContent = '✓ Test';
+      btn.style.background = 'rgba(99,102,241,0.8)';
+    }, 4000);
+  }
 };
 
 export const mount = async (state) => {
