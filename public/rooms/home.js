@@ -467,6 +467,7 @@ const crewStrip = () => [
   {i:"🐕", n:"Bronzedogg"},
   {i:"🦍", n:"BigTheSqua"},
   {i:"👵", n:"Eleanor"},
+  {i:"🐐", n:"Luna"},
 ].map(c=>`
   <div class="crew-chip" onclick="goTo('cast')">
     <div class="crew-icon">${c.i}</div>

@@ -3,6 +3,8 @@
 let _setupSheets  = [];   // cached for live filter
 let _setupQuery   = '';   // search text
 let _setupPlat    = '';   // platform filter: '' | 'sora' | 'kling' | 'veo' | 'aurora'
+let _setupState   = null; // reference to app state, set in mount()
+let _clipStore    = [];   // safe clipboard text store indexed by position
 
 export const render = (state) => `
   <div class="room-wrap">
@@ -276,6 +278,7 @@ const renderEventRows = (events) => {
 
 const renderSheetRows = (sheets) => {
   if (!sheets.length) return '<div style="color:#475569;">No call sheets match. Try a different search or filter.</div>';
+  _clipStore = []; // reset safe clipboard store before re-render
   const groups = {};
   sheets.forEach(s => {
     const d = s.savedAt ? new Date(s.savedAt).toLocaleDateString() : 'Unknown';
@@ -290,20 +293,34 @@ const renderSheetRows = (sheets) => {
         const sc      = s.score >= 8 ? '#22c55e' : s.score >= 5 ? '#d97706' : s.score ? '#ef4444' : '#475569';
         const preview = (s.idea || s.clean || '').slice(0, 65);
         const idea    = (s.idea || s.clean || '').slice(0, 200);
+        const clipIdx = _clipStore.push(s.clean || '') - 1;
+        const reforgeIdx = _clipStore.push('REFORGE — fresh take on this scene idea:\n"' + idea + '"') - 1;
         return `
           <div style="padding:8px 0;border-bottom:1px solid #1e293b22;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
             ${s.score ? `<span style="color:${sc};font-weight:900;font-size:.78em;flex-shrink:0;">🔥 ${s.score}/10</span>` : ''}
             <span style="color:#94a3b8;font-size:.76em;flex:1;min-width:0;">${preview}…</span>
-            <button class="sh-reforge"
-                    onclick="window.forgeScene(${JSON.stringify('REFORGE — fresh take on this scene idea:\n"' + idea + '"')})">
-              ↺ Reforge</button>
-            <button onclick="navigator.clipboard.writeText(${JSON.stringify(s.clean||'').replace(/"/g,'&quot;')}).then(()=>window.showToast('✓ Copied!'))"
+            <button class="sh-reforge" onclick="setupReforge(${reforgeIdx})">↺ Reforge</button>
+            <button onclick="setupCopySheet(${clipIdx})"
                     style="background:#0284c7;color:#fff;border:none;border-radius:8px;
                            padding:5px 12px;font-size:.62em;font-weight:900;cursor:pointer;
                            font-family:Georgia,serif;flex-shrink:0;">📋 Copy</button>
           </div>`;
       }).join('')}
     </div>`).join('');
+};
+
+window.setupCopySheet = (idx) => {
+  const text = _clipStore[idx] || '';
+  if (!text) { window.showToast('Nothing to copy'); return; }
+  navigator.clipboard.writeText(text)
+    .then(() => window.showToast('✓ Copied!'))
+    .catch(() => window.showToast('Copy failed'));
+};
+
+window.setupReforge = (idx) => {
+  const text = _clipStore[idx] || '';
+  if (!text) return;
+  window.forgeScene(text);
 };
 
 const _applyFilter = () => {
@@ -395,7 +412,7 @@ window.testGeminiKey = async () => {
   btn.textContent = '⟳ Testing…';
   btn.disabled = true;
   try {
-    const key = window._state?.keys?.gemini;
+    const key = _setupState?.keys?.gemini;
     if (!key) throw new Error('No key');
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
       method: 'POST',
@@ -427,6 +444,7 @@ window.testGeminiKey = async () => {
 };
 
 export const mount = async (state) => {
+  _setupState = state;
   if (state?.user && window.loadNorthEvents) {
     const [events, sheets] = await Promise.all([
       window.loadNorthEvents(30),

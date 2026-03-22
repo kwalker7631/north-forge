@@ -1,6 +1,8 @@
 // rooms/slots.js — Madlib Story Slots
 // Spin the reels, lock what you like, forge the scene.
 
+import { CAST_DB } from '../cast-data.js';
+
 // ── SLOT DATA ─────────────────────────────────────────────────────────────────
 const REELS = {
   who: [
@@ -213,21 +215,9 @@ window.slotsForge = () => {
   const twist  = REELS.twist[current.twist];
   const plat   = REELS.platform[current.platform];
 
-  const CAST_DATA = {
-    ken:       { soraId:'@kennethwalker479',     props:'tool belt, camera rig, NJ Nets cap, Old Ford truck, helicopter' },
-    randy:     { soraId:'@geodudenj',            props:'camo helmet, headlamp, rock hammer, tactical vest, geode bag' },
-    salem:     { soraId:'@kennethwa.majorbilli', props:'pearl necklace, black notebook, tarot deck' },
-    eleanor:   { soraId:'@grandma.eleanor',      props:'wheelchair, red blouse, glasses, sweet tea' },
-    luna:      { soraId:'@kennethwa.luna',        props:'gold bell collar, LUNA name sign, tiny horns [pygmy goat]' },
-    marguerite:{ soraId:'@prprincess138',         props:'apron, cast iron skillet, garden gloves, mason jars' },
-    skully:    { soraId:'@kennethwa.shadowblaz',  props:'black hoodie, night vision monocle, walkie talkie' },
-    tank:      { soraId:'@kennethwa.bronzedogg',  props:'bandana, work gloves, wheelbarrow, feed bucket [farm dog]' },
-    big:       { soraId:'@kennethwa.bigthesqua',  props:'field journal, binoculars, trail camera, thermos' },
-  };
-
-  const charData = CAST_DATA[who.val] || { soraId:'', props:'' };
-  const soraId   = charData.soraId;
-  const charProps = charData.props;
+  const charData  = CAST_DB.find(c => c.id === who.val) || { soraId:'', props:[] };
+  const soraId    = charData.soraId;
+  const charProps = Array.isArray(charData.props) ? charData.props.join(', ') : charData.props;
 
   const prompt =
     `You are North, AI director of Pine Barron Farms. ` +

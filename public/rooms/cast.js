@@ -1,149 +1,7 @@
 // rooms/cast.js — Character + Props Manager
 // The world engine. Every prompt North generates pulls from here.
 
-// ── CAST DATABASE (source of truth) ──────────────────────────────────────────
-const CAST_DB = [
-  {
-    id:      'ken',
-    name:    'Ken Walker',
-    soraId:  '@kennethwalker479',
-    role:    'The Engineer',
-    icon:    '👨‍🌾',
-    color:   '#22c55e',
-    photo:   null,
-    bio:     'Founder of Pine Barron Farms. Builds everything, fixes everything, films everything. The mind behind North Forge.',
-    vibe:    'Calm under pressure. Creative tinkerer. Sees the shot before the camera does.',
-    props:   ['Tool belt', 'Work boots', 'Camera rig', 'NJ Nets cap', 'Old Ford truck', 'Helicopter'],
-    looks:   'Medium build, weathered hands, always has a camera or a wrench nearby.',
-    voice:   'Direct, warm, measured. Doesn\'t waste words.',
-  },
-  {
-    id:      'marguerite',
-    name:    'Marguerite',
-    soraId:  '@prprincess138',
-    role:    'Heart of the Farm',
-    icon:    '👩🏽‍🌾',
-    color:   '#ef4444',
-    photo:   null,
-    bio:     'Keeps the farm running when Ken disappears into a project. Her kitchen is the social hub of Pine Barron.',
-    vibe:    'Warm, sharp, quietly funny. Nothing gets past her.',
-    props:   ['Apron', 'Cast iron skillet', 'Garden gloves', 'Mason jars', 'Front porch rocking chair'],
-    looks:   'Warm brown skin, natural hair, often flour on her hands.',
-    voice:   'Rich, grounding, slightly exasperated by Randy.',
-  },
-  {
-    id:      'randy',
-    name:    'Randy "Sarge"',
-    soraId:  '@geodudenj',
-    role:    'Rock Lab Lead',
-    icon:    '🪖',
-    color:   '#3b82f6',
-    photo:   null,
-    bio:     'Retired military, now NJ\'s most intense geode hunter and amateur racing fan. Runs the cave series. Drives everything too fast.',
-    vibe:    'High energy, tactical, turns everything into a mission briefing.',
-    props:   ['Camo helmet', 'Headlamp', 'Rock hammer', 'Tactical vest', 'Geode bag', 'Racing goggles'],
-    looks:   'Stocky, ex-military bearing, always wearing the helmet.',
-    voice:   'Loud, enthusiastic, military cadence, goes on longer than necessary.',
-  },
-  {
-    id:      'salem',
-    name:    'Salem',
-    soraId:  '@kennethwa.majorbilli',
-    role:    'The Creative',
-    icon:    '✨',
-    color:   '#c084fc',
-    photo:   '/images/characters/Salem.png',
-    bio:     'Wren\'s character. Goth energy, purple streaks, pearl necklace, black everything. The visual genius of the farm.',
-    vibe:    'Quiet intensity. Sees beauty in dark places. Dry humor.',
-    props:   ['Pearl necklace', 'Black notebook', 'Camera', 'Purple nail polish', 'Tarot deck'],
-    looks:   'Dark hair with purple highlights, heavy eye shadow, black lips, black shirt. South Park cutout style.',
-    voice:   'Low, measured, occasionally devastating one-liners.',
-  },
-  {
-    id:      'skully',
-    name:    'Skully',
-    soraId:  '@kennethwa.shadowblaz',
-    role:    'Security & Tech',
-    icon:    '🌑',
-    color:   '#94a3b8',
-    photo:   null,
-    bio:     'Handles the farm\'s security systems and tech infrastructure. Operates mostly at night. Nobody is sure when he sleeps.',
-    vibe:    'Paranoid in a useful way. Tactical. Loyal.',
-    props:   ['Black hoodie', 'Night vision monocle', 'Laptop', 'Walkie talkie', 'Motion sensor gear'],
-    looks:   'Slight build, always in dark clothes, moves quietly.',
-    voice:   'Clipped, precise. Speaks in short bursts.',
-  },
-  {
-    id:      'tank',
-    name:    'Tank',
-    soraId:  '@kennethwa.bronzedogg',
-    role:    'Farm Hand',
-    icon:    '🐕',
-    color:   '#d97706',
-    photo:   null,
-    bio:     'The farm\'s most loyal worker. Big energy, big heart. Always first to volunteer, last to stop.',
-    vibe:    'Enthusiastic, reliable, genuinely happy to be here.',
-    props:   ['Work gloves', 'Wheelbarrow', 'Feed bucket', 'Bandana'],
-    looks:   'Broad shoulders, easy smile, always muddy boots.',
-    voice:   'Booming, positive, uses everyone\'s name.',
-  },
-  {
-    id:      'big',
-    name:    'BigTheSqua',
-    soraId:  '@kennethwa.bigthesqua',
-    role:    'Legend Watcher',
-    icon:    '🦍',
-    color:   '#4ade80',
-    photo:   null,
-    bio:     'The farm\'s cryptid expert and legend keeper. Has a theory about everything unusual in the Pine Barrens.',
-    vibe:    'Intense, scholarly about the unexplained, unshakeable.',
-    props:   ['Field journal', 'Plaster cast kit', 'Binoculars', 'Trail camera', 'Thermos'],
-    looks:   'Large frame, serious expression, always has the field journal.',
-    voice:   'Deep, deliberate, speaks about cryptids with complete sincerity.',
-  },
-  {
-    id:      'eleanor',
-    name:    'Grand Ma Eleanor',
-    soraId:  '@grandma.eleanor',
-    role:    'The Elder Authority',
-    icon:    '👵',
-    color:   '#fb7185',
-    photo:   '/images/characters/Grand-Ma Eleanor.png',
-    bio:     'Ken\'s grandmother. Has seen everything, forgotten nothing. Her word is final on the farm.',
-    vibe:    'Razor sharp under the grandma sweetness. Will roast anyone.',
-    props:   ['Wheelchair', 'Red blouse', 'Glasses', 'Knitting', 'Sweet tea', 'Farm photo albums'],
-    looks:   'Grey hair, glasses, red shirt, wheelchair. South Park cutout style.',
-    voice:   'Sweet on the surface, surgical underneath.',
-  },
-  {
-    id:      'luna',
-    name:    'Luna',
-    soraId:  '@kennethwa.luna',
-    role:    'The Escape Artist',
-    icon:    '🐐',
-    color:   '#fbbf24',
-    photo:   '/images/characters/Luna.png',
-    bio:     'Pine Barron\'s pygmy goat. Has escaped the pen 47 documented times. Wears a bell and a LUNA name sign. Always scheming.',
-    vibe:    'Chaotic neutral. Adorable. Relentless.',
-    props:   ['Gold bell collar', 'LUNA name sign', 'Tiny horns'],
-    looks:   'Black and white pygmy goat, big eyes, tiny horns, gold bell. South Park sticker style.',
-    voice:   'Says nothing. Communicates entirely through eye contact and property damage.',
-  },
-];
-
-// ── FILMING LOCATIONS ─────────────────────────────────────────────────────────
-const LOCATIONS = [
-  { id:'barn',      name:'Big Red Barn',       icon:'🏚️', desc:'Main barn. Loft is North\'s domain. Afternoon golden hour hits the west wall perfectly.' },
-  { id:'loft',      name:'Barn Loft',           icon:'🔭', desc:'North\'s command center. Blue glow from monitors. Hay bales. Perfect surveillance angle over the farm.' },
-  { id:'coop',      name:'Chicken Coop',        icon:'🐔', desc:'Chaos energy. Dawn light is magic here. Randy once filmed a 10-minute tactical assessment of a chicken.' },
-  { id:'garden',    name:'Farm Garden',         icon:'🌻', desc:'Sunflowers, corn, carrots. Marguerite\'s territory. Best light is morning.' },
-  { id:'pond',      name:'Assunpink Creek',     icon:'💧', desc:'Edge of the property. Mist at dawn. Great for atmospheric shots.' },
-  { id:'cave1',     name:'Randy\'s Cave #1',    icon:'⛏️', desc:'First documented cave site. 200ft in. Quartz and calcite formations. No cell signal.' },
-  { id:'cave2',     name:'Pine Barrens Shaft',  icon:'🪨', desc:'Old mining shaft. Spectacular geode finds. Randy\'s favorite. Tight squeeze at the entrance.' },
-  { id:'route539',  name:'Route 539',           icon:'🛣️', desc:'The long straight Pine Barrens road. Randy races here at 5am. Foggy in autumn.' },
-  { id:'dirttrack', name:'NJ Dirt Track',       icon:'🏁', desc:'Local racing circuit. Randy knows everyone. Great dust clouds at sunset.' },
-  { id:'field',     name:'Back Field',          icon:'🌾', desc:'Open field behind the barn. Stars are incredible here. Good for night shoots.' },
-];
+import { CAST_DB, CAST_LOCATIONS } from '../cast-data.js';
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let view       = 'grid';    // 'grid' | 'character' | 'locations' | 'props'
@@ -391,7 +249,7 @@ const locationsHTML = () => `
     Every filming location on the farm and in New Jersey. Tap any location to forge a scene there.
   </div>
   <div class="loc-grid">
-    ${LOCATIONS.map(l => `
+    ${CAST_LOCATIONS.map(l => `
       <div class="loc-card"
            onclick="forgeScene('LOCATION SCOUT — Cinematic establishing shot of ${l.name} at Pine Barron Farms NJ. ${l.desc} 9:16 vertical SORA format.')">
         <div class="loc-icon">${l.icon}</div>
@@ -441,7 +299,7 @@ window.castCopySora = (soraId, event) => {
 };
 
 window.castSoraSheet = (id) => {
-  const c = CAST.find(x => x.id === id);
+  const c = CAST_DB.find(x => x.id === id);
   if (!c) return;
   const prompt = `BUILD SORA 2 CHARACTER CONSISTENCY SHEET for ${c.name}
 
@@ -464,9 +322,9 @@ Keep it tight. This is a production reference card.`;
 };
 
 window.castChemistry = (id) => {
-  const c = CAST.find(x => x.id === id);
+  const c = CAST_DB.find(x => x.id === id);
   if (!c) return;
-  const others = CAST.filter(x => x.id !== id);
+  const others = CAST_DB.filter(x => x.id !== id);
   const partner = others[Math.floor(Math.random() * others.length)];
   const prompt =
 `CHEMISTRY SCENE — ${c.name} + ${partner.name} · Pine Barron Farms

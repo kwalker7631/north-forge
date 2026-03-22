@@ -23,7 +23,7 @@ export const render = (state) => {
     ? `<div class="share-idea">"${d.idea}"</div>`
     : '';
 
-  const cleanText = (d.clean || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const cleanText = (d.clean || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
   return `
 <div class="room-wrap">

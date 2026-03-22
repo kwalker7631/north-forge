@@ -4,6 +4,7 @@
 
 import { NORTH_SYSTEM } from './north.js';
 import { NorthLog }     from './logs/logger.js';
+import { CAST_DB }      from './cast-data.js';
 export { NorthLog };    // re-export so existing imports from api.js still work
 
 // ── SANITIZE MESSAGES ─────────────────────────────────────────────────────────
@@ -62,7 +63,7 @@ const callGemini = async (messages, apiKey, systemPrompt) => {
 
   try {
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -95,20 +96,11 @@ const callGemini = async (messages, apiKey, systemPrompt) => {
 };
 
 // ── CAST + PROPS CONTEXT (injected into every North call) ─────────────────────
-const CAST_PROPS_CONTEXT = `
-
-CAST PROPS REFERENCE — always pull from this when building scenes:
-- Ken Walker (@kennethwalker479): tool belt, camera rig, NJ Nets cap, Old Ford truck, helicopter
-- Marguerite (@prprincess138): apron, cast iron skillet, garden gloves, mason jars, rocking chair
-- Randy "Sarge" (@geodudenj): camo helmet, headlamp, rock hammer, tactical vest, geode bag, racing goggles
-- Salem (@kennethwa.majorbilli): pearl necklace, black notebook, camera, tarot deck
-- Skully (@kennethwa.shadowblaz): black hoodie, night vision monocle, laptop, walkie talkie
-- Tank (@kennethwa.bronzedogg): bandana, work gloves, wheelbarrow, feed bucket [FARM DOG]
-- BigTheSqua (@kennethwa.bigthesqua): field journal, binoculars, trail camera, thermos
-- Grand Ma Eleanor (@grandma.eleanor): wheelchair, red blouse, glasses, sweet tea, farm photo albums
-- Luna (@kennethwa.luna): gold bell collar, LUNA name sign, tiny horns [PYGMY GOAT — always scheming]
-Farm vehicles: helicopter (Ken's), red Farmall tractor, Go-Kart, Old Ford truck.
-When a character appears in a scene, ground them with at least one of their props.`;
+// Generated from CAST_DB (cast-data.js) — update cast data there, not here.
+const CAST_PROPS_CONTEXT = '\n\nCAST PROPS REFERENCE — always pull from this when building scenes:\n' +
+  CAST_DB.map(c => `- ${c.name} (${c.soraId}): ${c.props.join(', ')}`).join('\n') +
+  '\nFarm vehicles: helicopter (Ken\'s), red Farmall tractor, Go-Kart, Old Ford truck.' +
+  '\nWhen a character appears in a scene, ground them with at least one of their props.';
 
 // ── CALL NORTH (main entry point) ─────────────────────────────────────────────
 export const callNorth = async (messages, keys = {}, weather = null, profile = null) => {
@@ -152,7 +144,11 @@ export const fetchWeather = async (location = 'Piscataway') => {
     const place   = geoData.results?.[0];
     if (!place) return null;
 
-    const wxRes  = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current_weather=true&temperature_unit=fahrenheit`);
+    const wxRes  = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}` +
+      `&current_weather=true&temperature_unit=fahrenheit` +
+      `&daily=sunrise,sunset&timezone=America%2FNew_York`
+    );
     const wxData = await wxRes.json();
     const wx     = wxData.current_weather;
     if (!wx) return null;
@@ -167,6 +163,8 @@ export const fetchWeather = async (location = 'Piscataway') => {
       condition: conditions[wx.weathercode] ?? 'Mixed',
       wind:      `${Math.round(wx.windspeed)} mph`,
       location:  place.name,
+      sunrise:   wxData.daily?.sunrise?.[0] ?? null,
+      sunset:    wxData.daily?.sunset?.[0]  ?? null,
     };
   } catch (e) {
     NorthLog.warn(`Weather fetch failed: ${e.message}`);

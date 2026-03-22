@@ -2,6 +2,7 @@
 // Form/Prompt Engine lives in chat-form.js
 
 import { formView, resetFormStep } from './chat-form.js';
+import { esc }                    from '../utils.js';
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let chatMode = 'form';
@@ -119,7 +120,7 @@ const csBlock = (text, idx) => {
     </div>`;
 };
 
-const esc = (s) => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+// esc() imported from utils.js
 
 // ── STYLES ────────────────────────────────────────────────────────────────────
 const styles = () => `<style>

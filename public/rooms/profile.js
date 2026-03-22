@@ -15,6 +15,8 @@ const OPTS = {
 const DURATIONS = ['10s','15s','20s'];
 
 // ── LOCAL STATE ───────────────────────────────────────────────────────────────
+let _hydrated = false;  // must be declared before render() which references it
+
 let draft = {
   age: '', build: '', hair: '', eyes: '', style: '',
   soraIds: ['','',''],
@@ -209,9 +211,9 @@ export const render = (state) => {
 };
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
-let _hydrated = false;
+// _hydrated declared at top of module (before render) — do not redeclare here
 
-const esc = (s) => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+import { esc } from '../utils.js';
 
 const fieldLabel = (f) => ({
   age:'Age Range', build:'Build', hair:'Hair', eyes:'Eyes', style:'Style Vibe'

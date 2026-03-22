@@ -2,7 +2,7 @@
 // Tab 1: Call Sheets grouped by week with North's Pick
 // Tab 2: Pinned Notes from chat
 
-const esc = (s) => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+import { esc } from '../utils.js'; // canonical HTML-escape — covers &, <, >, "
 
 let digestTab    = 'sheets';  // 'sheets' | 'notes'
 let _state       = null;
@@ -435,7 +435,7 @@ window.digestSaveMD = (idx, weekKey) => {
     '', '---', '',
     '## Clean Prompt', '',
     s.clean || '', '',
-  ].filter(l => l !== null).join('\n');
+  ].filter(Boolean).join('\n');
   const blob = new Blob([md], { type:'text/markdown' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');

@@ -1,6 +1,6 @@
 // app.js — North Forge shell, state, navigation, render loop
 
-import { CAST, NORTH_VERSION }     from './north.js';
+import { NORTH_VERSION }           from './north.js';
 import { ROOMS, SCENES }           from './data.js';
 import { callNorth, fetchWeather,
          getMoonPhase, NorthLog }   from './api.js';
@@ -148,7 +148,7 @@ onAuth(async (user) => {
       if (prefs.anthropicKey) state.keys.anthropic = prefs.anthropicKey;
       if (prefs.geminiKey)    state.keys.gemini    = prefs.geminiKey;
       if (prefs.fontSize)     state.fontSize       = prefs.fontSize;
-      if (state.fontSize > 22) state.fontSize = 16;
+      state.fontSize = Math.min(22, Math.max(12, state.fontSize));
       if (prefs.sceneIdx !== undefined) state.sceneIdx = prefs.sceneIdx;
       document.documentElement.style.fontSize = state.fontSize + 'px';
     }

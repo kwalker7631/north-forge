@@ -1,9 +1,10 @@
 // rooms/idioms.js — Randy's Idioms (upgraded)
 // Location picker → Randy reacts with full cast context → Forge proper call sheet
 
-import { IDIOMS } from '../data.js';
+import { IDIOMS }   from '../data.js';
+import { CAST_DB } from '../cast-data.js';
 
-const esc = (s) => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+import { esc } from '../utils.js';
 
 let idiomIdx  = Math.floor(Math.random() * IDIOMS.length);
 let reaction  = null;
@@ -19,17 +20,15 @@ const SCENES = {
   pines: { label:'Pine Barrens',    icon:'🌲', cam:'night vision green tint, ancient shadows',           night:true  },
 };
 
-// Cast pool for random nearby members (excluding Randy himself)
-const CAST_POOL = [
-  { name:'Ken Walker',       soraId:'@kennethwalker479',     icon:'👨‍🌾', props:'tool belt, camera rig' },
-  { name:'Marguerite',       soraId:'@prprincess138',        icon:'👩🏽‍🌾', props:'apron, cast iron skillet' },
-  { name:'Salem',            soraId:'@kennethwa.majorbilli', icon:'✨',   props:'pearl necklace, black notebook' },
-  { name:'Skully',           soraId:'@kennethwa.shadowblaz', icon:'🌑',   props:'black hoodie, walkie talkie' },
-  { name:'Tank',             soraId:'@kennethwa.bronzedogg', icon:'🐕',   props:'bandana, work gloves [farm dog]' },
-  { name:'BigTheSqua',       soraId:'@kennethwa.bigthesqua', icon:'🦍',   props:'field journal, binoculars' },
-  { name:'Grand Ma Eleanor', soraId:'@grandma.eleanor',      icon:'👵',   props:'wheelchair, sweet tea' },
-  { name:'Luna',             soraId:'@kennethwa.luna',        icon:'🐐',   props:'gold bell collar, LUNA name sign [pygmy goat]' },
-];
+// Cast pool for random nearby members (excluding Randy himself) — derived from CAST_DB.
+const CAST_POOL = CAST_DB
+  .filter(c => c.id !== 'randy')
+  .map(c => ({
+    name:   c.name,
+    soraId: c.soraId,
+    icon:   c.icon,
+    props:  c.props.slice(0, 2).join(', ') + (c.id === 'tank' ? ' [farm dog]' : c.id === 'luna' ? ' [pygmy goat]' : ''),
+  }));
 
 const pickNearby = () => {
   const shuffled = [...CAST_POOL].sort(() => Math.random() - 0.5);

@@ -2,18 +2,7 @@
 // Imported by chat.js — do not import chat.js from here (one-way dependency)
 
 import { PLATFORMS, getPlatformContext } from '../platforms.js';
-
-const CAST = [
-  { id:'ken',       name:'Ken Walker',      soraId:'@kennethwalker479',     icon:'👨‍🌾', role:'The Engineer',       props:['Tool belt','Camera rig','NJ Nets cap','Helicopter'] },
-  { id:'marguerite',name:'Marguerite',       soraId:'@prprincess138',        icon:'👩🏽‍🌾', role:'Heart of the Farm',   props:['Apron','Cast iron skillet','Garden gloves'] },
-  { id:'randy',     name:'Randy "Sarge"',    soraId:'@geodudenj',            icon:'🪖',  role:'Rock Lab Lead',       props:['Camo helmet','Headlamp','Rock hammer','Geode bag'] },
-  { id:'salem',     name:'Salem',            soraId:'@kennethwa.majorbilli', icon:'✨',  role:'The Creative',        props:['Pearl necklace','Black notebook','Camera'] },
-  { id:'skully',    name:'Skully',           soraId:'@kennethwa.shadowblaz', icon:'🌑',  role:'Security & Tech',     props:['Black hoodie','Night vision monocle','Walkie talkie'] },
-  { id:'tank',      name:'Tank',             soraId:'@kennethwa.bronzedogg', icon:'🐕',  role:'Farm Hand [dog]',     props:['Bandana','Work gloves','Wheelbarrow'] },
-  { id:'big',       name:'BigTheSqua',       soraId:'@kennethwa.bigthesqua', icon:'🦍',  role:'Legend Watcher',      props:['Field journal','Binoculars','Trail camera'] },
-  { id:'eleanor',   name:'Grand Ma Eleanor', soraId:'@grandma.eleanor',      icon:'👵',  role:'The Elder Authority', props:['Wheelchair','Red blouse','Glasses','Sweet tea'] },
-  { id:'luna',      name:'Luna',             soraId:'@kennethwa.luna',       icon:'🐐',  role:'Escape Artist [goat]',props:['Gold bell collar','LUNA name sign','Tiny horns'] },
-];
+import { CAST_DB as CAST }              from '../cast-data.js';
 
 const LOCATIONS = [
   'Big Red Barn','Barn Loft','Chicken Coop','Farm Garden',

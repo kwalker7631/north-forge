@@ -37,7 +37,10 @@
       "Read(//c/Users/kwalk/**)",
       "Read(//c/Users/kwalk/OneDrive/Desktop//**)",
       "Bash(claude update:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(gh api:*)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ]
   }
 }

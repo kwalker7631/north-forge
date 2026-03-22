@@ -91,21 +91,15 @@ VIRAL SCORE: X/10 — [one sentence: the specific reason this stops the scroll]
 Close with one direct sentence on the strongest production element of the scene. No filler.`;
 
 // ── CHARACTER REGISTRY ──────────────────────────────────────────────────────
-export const CAST = [
-  { id:"ken",      name:"Ken Walker",       soraId:"@kennethwalker479",      icon:"👨‍🌾", color:"#22c55e", role:"The Engineer"    },
-  { id:"marguerite",name:"Marguerite",      soraId:"@prprincess138",         icon:"👩🏽‍🌾", color:"#ef4444", role:"Heart of Farm"   },
-  { id:"randy",    name:"Randy Sarge",      soraId:"@geodudenj",             icon:"🪖",  color:"#3b82f6", role:"Rock Lab Lead"   },
-  { id:"wren",     name:"Salem / Wren",     soraId:"@kennethwa.majorbilli",  icon:"✨",  color:"#c084fc", role:"The Creative"    },
-  { id:"shadow",   name:"Shadowblaz",       soraId:"@kennethwa.shadowblaz",  icon:"🌑",  color:"#94a3b8", role:"Security Tech"   },
-  { id:"bronze",   name:"Bronzedogg",       soraId:"@kennethwa.bronzedogg",  icon:"🐕",  color:"#d97706", role:"Farm Hand"       },
-  { id:"big",      name:"BigTheSqua",       soraId:"@kennethwa.bigthesqua",  icon:"🦍",  color:"#4ade80", role:"Legend Watcher"  },
-  { id:"eleanor",  name:"Grand Ma Eleanor", soraId:"@grandma.eleanor",       icon:"👵",  color:"#f9a8d4", role:"The Matriarch"   },
-  { id:"luna",     name:"Luna",             soraId:"@kennethwa.luna",         icon:"🐐",  color:"#fbbf24", role:"The Escape Artist"},
-];
+// Derived from CAST_DB (cast-data.js) — single source of truth for all cast data.
+import { CAST_DB } from './cast-data.js';
+export const CAST = CAST_DB.map(({ id, name, soraId, icon, color, role }) =>
+  ({ id, name, soraId, icon, color, role })
+);
 
 // ── VERSION ─────────────────────────────────────────────────────────────────
 export const NORTH_VERSION = {
-  current: "1.3.0",
+  current: "1.5.0",
   built:   "2026-03-22",
   channel: "firebase",
 };
