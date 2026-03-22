@@ -91,21 +91,31 @@
                    border-radius:18px 18px 4px 18px; padding:16px 20px;
                    max-width:260px; margin-right:8px;
                    box-shadow:0 8px 32px rgba(56,189,248,0.4); }
-    .peek-label  { color:#38bdf8; font-size:0.58em; font-weight:900;
-                   letter-spacing:1px; text-transform:uppercase; margin-bottom:6px; }
-    .peek-msg    { color:#ffffff; font-size:0.82em; line-height:1.55;
-                   margin-bottom:12px; font-weight:500; }
+    .peek-label  { color:#64748b; font-size:0.58em; font-weight:700;
+                   letter-spacing:0.5px; margin-bottom:8px;
+                   display:flex; align-items:center; gap:6px; }
+    .peek-label-dot { width:6px; height:6px; border-radius:50%;
+                      background:#38bdf8; box-shadow:0 0 8px #38bdf8;
+                      animation:peekDotPulse 2s ease-in-out infinite; flex-shrink:0; }
+    @keyframes peekDotPulse {
+      0%,100% { opacity:0.5; } 50% { opacity:1; } }
+    .peek-msg    { color:#e2e8f0; font-size:0.84em; line-height:1.6;
+                   margin-bottom:14px; font-weight:500; font-style:italic; }
     .peek-actions{ display:flex; gap:8px; }
     .peek-actions button { border:none; border-radius:8px; padding:7px 14px;
                            font-weight:900; font-size:0.68em; cursor:pointer;
                            font-family:Georgia,serif; }
     .peek-actions button:first-child { background:#38bdf8; color:#020617; }
-    .peek-actions button:last-child  { background:rgba(255,255,255,0.08);
-                                       color:#94a3b8; }
-    .peek-avatar { width:54px; height:54px; border-radius:50% 50% 50% 8px;
-                   background:linear-gradient(135deg,#0ea5e9,#0284c7);
+    .peek-actions button:last-child  { background:rgba(255,255,255,0.06);
+                                       color:#64748b; border:1px solid #1e293b; }
+    .peek-avatar { width:52px; height:52px; border-radius:50% 50% 50% 8px;
+                   background:linear-gradient(135deg,#0c4a6e,#0284c7);
                    display:flex; align-items:center; justify-content:center;
-                   font-size:1.6em; box-shadow:0 0 25px rgba(56,189,248,0.5); }
+                   font-size:1.5em; box-shadow:0 0 20px rgba(56,189,248,0.35);
+                   animation:peekAvaGlow 4s ease-in-out infinite; }
+    @keyframes peekAvaGlow {
+      0%,100% { box-shadow:0 0 14px rgba(56,189,248,.3); }
+      50%      { box-shadow:0 0 28px rgba(56,189,248,.65); } }
 
     #naughty-layer { position:fixed; inset:0; pointer-events:none;
                      z-index:300; overflow:hidden; }

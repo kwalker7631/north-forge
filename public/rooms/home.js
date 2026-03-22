@@ -333,7 +333,7 @@ export const render = (state) => {
                      text-transform:uppercase; letter-spacing:1px; }
       .fc-icon    { font-size:1.3em; }
       .fc-high    { font-size:.66em; font-weight:900; color:#fff; }
-      .fc-low     { font-size:.58em; color:#475569; }
+      .fc-low     { font-size:.58em; color:#64748b; }
 
       /* ── WELCOME ────────────────────────────────────────────── */
       .welcome-card { display:flex; gap:16px; align-items:flex-start;
@@ -354,7 +354,7 @@ export const render = (state) => {
       .wel-msg   { color:#cbd5e1; font-size:.88em; line-height:1.7; }
 
       /* ── CREW ───────────────────────────────────────────────── */
-      .crew-label { font-size:.58em; font-weight:900; color:#334155;
+      .crew-label { font-size:.58em; font-weight:900; color:#64748b;
                      letter-spacing:2px; text-transform:uppercase;
                      padding:0 22px; margin-bottom:10px; }
       .crew-strip { display:flex; gap:12px; overflow-x:auto; padding:0 22px 10px;

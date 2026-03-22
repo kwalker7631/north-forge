@@ -172,7 +172,7 @@ export const render = (state) => `
     /* TABS */
     .cm-tabs { display:flex; gap:10px; margin-bottom:22px; flex-wrap:wrap; }
     .cm-tab  { background:rgba(15,23,42,0.9); border:2px solid #1e293b;
-               border-radius:12px; padding:11px 22px; color:#64748b;
+               border-radius:12px; padding:11px 22px; color:#94a3b8;
                cursor:pointer; font-weight:900; font-size:0.82em;
                font-family:Georgia,serif; transition:all .2s; }
     .cm-tab.active { color:#fff; border-color:#38bdf8;
@@ -197,7 +197,7 @@ export const render = (state) => `
     .cast-sora  { font-size:0.56em; font-weight:900; color:#38bdf8;
                   letter-spacing:1px; margin-bottom:5px; }
     .cast-name  { font-weight:900; font-size:1em; color:#fff; margin-bottom:3px; }
-    .cast-role  { font-size:0.62em; color:#64748b; font-weight:700;
+    .cast-role  { font-size:0.62em; color:#94a3b8; font-weight:700;
                   text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
     .cast-vibe  { font-size:0.74em; color:#94a3b8; line-height:1.55;
                   margin-bottom:12px; font-style:italic; }

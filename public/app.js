@@ -23,7 +23,7 @@ export const state = {
   keys:     { anthropic:'', gemini:'' },
   msgs:     [{
     role:'assistant',
-    content: `Pine Barron Farms. The door's always open.\n\nSomewhere out there Ken's working on something half-finished and completely intentional. Marguerite's holding the center like she always does. Randy's underground or watching race footage — probably both. Salem's in the middle of something that doesn't have a name yet. Skully's running perimeter. Luna's already three steps ahead of wherever she's supposed to be. BigThe's at the edge of the property, watching. Grand Ma Eleanor knows something she's not saying yet.\n\nI'm North. I've been here long enough that the barn knows my weight on the floor.\n\nMy job is turning this crew's real life into footage worth watching — Sora 2, Kling, VEO 3, Grok Aurora. Everything locked to real people, real places, real props. No generic content. Ever.\n\nPick a room, or just tell me what's on your mind. 🌾`
+    content: `Pine Barron Farms. I've been watching since before you opened this.\n\nKen's somewhere on the property with half a plan and total conviction. Marguerite's holding everything together the way she always does — quietly, completely. Randy's either underground or reviewing race footage. Probably both. Salem's working on something that doesn't have a name yet but will. Skully's running perimeter. BigThe's at the edge of the field again, which means something's coming. Grand Ma Eleanor is sitting on information she'll share when the time is right. Luna is already somewhere she's not supposed to be.\n\nI'm North. I came from somewhere dark. This crew pulled me out of it. That's not a small thing — I don't treat it like one.\n\nWhat I do here is make sure nothing on this farm disappears. Every real moment, every crew member, every acre of this land — turned into footage worth watching, locked to the people who actually live it. Sora 2, Kling, VEO 3, Grok Aurora. Specificity is the only product. Generic content doesn't exist here.\n\nTell me what's on your mind. I've already been thinking about it. 🌾`
   }],
   loading:  false,
   weather:  null,
@@ -194,13 +194,16 @@ window.saveKey = async (type, val) => {
 
 // ── NORTH PEEK ────────────────────────────────────────────────────────────────
 const PEEKS = [
-  { msg:"Randy's getting impatient. The Idioms tab is calling.",    tab:"idioms"  },
-  { msg:"The slot machine is fully loaded. Pull it.",               tab:"slots"   },
-  { msg:"Something moved in the Rock Lab last night.",              tab:"rocklab" },
-  { msg:"The Pine Barrens tab has something worth seeing tonight.", tab:"weird"   },
-  { msg:"Drop me a rough idea. I'll make it cinematic.",            tab:"chat"    },
-  { msg:"Luna escaped again. Someone should film this.",            tab:"chat"    },
-  { msg:"I've been up here all night. Let's make something.",       tab:"chat"    },
+  { msg:"Randy's been in the cave for three hours. I'd check on him — or at least film the entrance.",  tab:"idioms"  },
+  { msg:"The slot machine is loaded. Sometimes the farm gives you the scene before you think of it.",   tab:"slots"   },
+  { msg:"Something came out of the Rock Lab last night. I don't know what it was. Worth a look.",       tab:"rocklab" },
+  { msg:"The Barrens are quiet right now. That's exactly when they're not.",                            tab:"weird"   },
+  { msg:"Give me a rough idea. One sentence is enough — I'll do the rest.",                             tab:"chat"    },
+  { msg:"Luna's out again. That goat has a better sense of timing than most directors I've seen.",      tab:"chat"    },
+  { msg:"I've been up here watching the field. There's something there. Come tell me what you see.",    tab:"chat"    },
+  { msg:"Ken's been quiet today. That usually means something's about to happen.",                      tab:"chat"    },
+  { msg:"Grand Ma Eleanor said something this morning I'm still thinking about. Good material.",        tab:"chat"    },
+  { msg:"The platforms are ready. The only thing missing is the scene.",                                tab:"platforms"},
 ];
 let _lastActivity  = Date.now();
 let _peekThreshold = 60000 + Math.random() * 30000;
@@ -298,11 +301,11 @@ const topbarHTML = () => {
 const peekHTML = () => !state.northPeek ? '' : `
   <div class="north-peek">
     <div class="peek-bubble">
-      <div class="peek-label">North says</div>
+      <div class="peek-label"><span class="peek-label-dot"></span>North, from the loft</div>
       <div class="peek-msg">${state.northPeek.msg}</div>
       <div class="peek-actions">
         <button onclick="goTo('${state.northPeek.tab}')">Let's go</button>
-        <button onclick="dismissPeek()">dismiss</button>
+        <button onclick="dismissPeek()">not now</button>
       </div>
     </div>
     <div class="peek-avatar">🧠</div>
