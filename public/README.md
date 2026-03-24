@@ -53,4 +53,4 @@ This tool is built exclusively for **Pine Barron Farms** and is not a general-pu
 
 ---
 
-*North Forge v1.0.0 · Pine Barron Farms, Piscataway NJ · 2026*
+*North Forge v1.5.0 · Pine Barron Farms, Piscataway NJ · 2026*

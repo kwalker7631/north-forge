@@ -59,7 +59,7 @@ Character artwork by **Wren Walker** — South Park-style photo cutouts.
 - **Firebase Hosting** — project: `north-forge-ai`
 - **Firestore** — user prefs, event logs
 - **Firebase Auth** — Google Sign-In only
-- **Primary AI** — Anthropic Claude (`claude-sonnet-4-5`)
+- **Primary AI** — Anthropic Claude (`claude-sonnet-4-6`)
 - **Fallback AI** — Google Gemini (`gemini-2.0-flash`)
 - **Weather** — Open-Meteo (free, no API key required)
 
@@ -82,14 +82,19 @@ northforge/
     ├── api.js              ← callNorth(), callAnthropic(), callGemini(), fetchWeather(), NorthLog
     ├── firebase.js         ← auth, Firestore prefs, chat history, prompts, events, profile
     ├── platforms.js        ← platform data, cinematography knowledge, hacks
+    ├── cast-data.js        ← CAST_DB, CAST_LOCATIONS — single source of truth for all cast data
+    ├── utils.js            ← esc() HTML escape utility (shared across rooms)
+    ├── render-guard.mjs    ← createRenderGuard() — prevents stale async renders
     ├── logs/
     │   └── logger.js       ← NorthLog, logDiag, installDiagListeners (single logging source)
     └── rooms/
         ├── home.js         ← Big Red Barn SVG, Wren's cutouts, crew strip
         ├── chat.js         ← Prompt Engine (form mode) + Free Chat mode
+        ├── chat-form.js    ← Prompt Engine form state and window functions (split from chat.js)
         ├── cast.js         ← Character + Props Manager, Locations DB
         ├── platforms.js    ← Platform Lab (browse platform data) + Sora Scout
         ├── setup.js        ← API keys, Google Sign-In, system status
+        ├── share.js        ← Read-only public call sheet viewer (URL-routed via /s/{token})
         ├── slots.js        ← Madlib story slots
         ├── rocklab.js      ← Geode types, cave episodes
         ├── racing.js       ← Racing cards
@@ -174,4 +179,4 @@ Add your keys in the **Setup** tab inside the app. They are stored in Firestore 
 
 ---
 
-*North Forge v1.0.0 · March 2026*
+*North Forge v1.5.0 · March 2026*

@@ -58,12 +58,15 @@ northforge/
     ├── api.js              ← callNorth(), callAnthropic(), callGemini(), fetchWeather(), fetchForecast(), getMoonPhase(), NorthLog
     ├── firebase.js         ← onAuth(), signIn(), signOut_(), savePrefs(), loadPrefs(), saveProfile(), loadProfile(), saveChatHistory(), loadChatHistory(), saveNote(), loadNotes(), deleteNote(), saveShare(), loadShare(), saveWeeklyBrief(), loadWeeklyBrief()
     ├── platforms.js        ← PLATFORMS array, CINEMATOGRAPHY object, getPlatformContext()
+    ├── cast-data.js        ← CAST_DB array, CAST_LOCATIONS array — single source of truth for all cast data (imported by north.js, cast.js, chat-form.js, slots.js, idioms.js)
+    ├── utils.js            ← esc() HTML escape utility — shared across rooms
     ├── render-guard.mjs    ← createRenderGuard() — prevents stale async renders
     ├── logs/
     │   └── logger.js       ← NorthLog, logDiag, installDiagListeners (single logging source)
     └── rooms/
         ├── home.js         ← Barn photos, Wren's cutouts, weather sky, 7-day forecast strip, crew strip, room grid
         ├── chat.js         ← Prompt Engine (form mode + platform quick-pick) + Free Chat mode
+        ├── chat-form.js    ← Prompt Engine form state, TONES/STYLES/PALETTES/LEVELS arrays, peForge/peForgeStoryboard/peCompare window functions (split from chat.js)
         ├── cast.js         ← Character + Props Manager, Locations DB (Sora ID quick-copy on all cards)
         ├── platforms.js    ← Platform Lab room + Sora Scout card
         ├── setup.js        ← API keys, Google Sign-In, system status, event log
@@ -158,7 +161,6 @@ state = {
 - `barn/` — barn-clear, barn-cloudy, barn-golden, barn-night, barn-rain, barn-snow (weather-matched)
 - `moon/` — all 8 moon phase photos (matched to `state.moon.name`)
 - `cameos/` — bigfoot, bigfoot-run, jersey-devil, ufo, ufo-hover (random home tab appearances)
-- `overlays/` — seasonal overlays (halloween, christmas, thanksgiving, july4, spring, winter, newyear)
 
 ---
 
@@ -228,7 +230,7 @@ All data lives in `public/platforms.js`:
 5. ✅ Failure + Event Log
 6. ✅ Weather Agent
 7. ✅ Viral Checker
-8. ✅ home.js polish (barn photos, Wren's cutouts, weather sky, cameos, seasonal overlays)
+8. ✅ home.js polish (barn photos, Wren's cutouts, weather sky, cameos, seasonal tints + particles)
 9. ✅ Room content (slots, rocklab, racing, weird, jeeb, idioms — all fully built)
 10. ✅ Call Sheet History — saved to Firestore, viewable in Digest + Setup
 11. ✅ Idioms upgrade — Randy reactions with location picker + Forge This Scene
@@ -265,9 +267,8 @@ These buttons appear on every assistant message in the Chat room that contains a
 ### `copyFull()` fix
 Previously used a fragile DOM index scan. Now uses `id="msg-text-{idx}"` directly — always grabs the correct message bubble.
 
-### `seasonalOverlay()` fix
-Was hardcoded to return `null` — overlays never loaded. Fixed to return correct overlay image by month/date:
-- Oct → halloween, Nov → thanksgiving, Dec → christmas, Jan 1 → newyear
+### Seasonal system
+Implemented as `seasonalTint()` (CSS color tint) + `seasonalParticles()` (DOM particles) in `home.js`. Overlay PNG images were removed 2026-03-23 — unused.
 - Jul 1–7 → july4, Mar–May → spring, Jan–Feb → winter
 
 ---
@@ -350,4 +351,4 @@ Live URL: `https://north-forge-ai.firebaseapp.com`
 
 ---
 
-*Last updated: 2026-03-15 · North Forge v1.0.1 · All 17 build orders complete · All 3 layers shipped · Output/Export system complete*
+*Last updated: 2026-03-23 · North Forge v1.5.0 · All layers complete · cast-data.js + utils.js + chat-form.js added as canonical modules*
